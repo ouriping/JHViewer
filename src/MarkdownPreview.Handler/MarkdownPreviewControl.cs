@@ -102,4 +102,16 @@ public sealed class MarkdownPreviewControl : PreviewHandlerControl
             HandlerLog.Error("NavigateToString failed.", ex);
         }
     }
+
+    private void InitializeComponent()
+    {
+            this.SuspendLayout();
+            // 
+            // MarkdownPreviewControl
+            // 
+            this.Name = "MarkdownPreviewControl";
+            this.Size = new System.Drawing.Size(720, 742);
+            this.ResumeLayout(false);
+
+    }
 }
