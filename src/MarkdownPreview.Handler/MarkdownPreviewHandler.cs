@@ -26,19 +26,17 @@ public sealed class MarkdownPreviewHandler : SharpPreviewHandler
         {
             if (!string.IsNullOrWhiteSpace(path) && System.IO.File.Exists(path))
             {
-                var markdown = System.IO.File.ReadAllText(path);
-                var html = MarkdownHtmlRenderer.Render(markdown);
-                control.SetHtmlContent(html);
+                control.ShowFile(path);
             }
             else
             {
-                control.SetHtmlContent(MarkdownHtmlRenderer.Render("**无法读取 Markdown 文件。**"));
+                control.ShowMarkdown("**无法读取 Markdown 文件。**");
             }
         }
         catch (System.Exception ex)
         {
             HandlerLog.Error("DoPreview failed.", ex);
-            control.SetHtmlContent(MarkdownHtmlRenderer.Render($"**预览失败：** {ex.Message}"));
+            control.ShowMarkdown($"**预览失败：** {ex.Message}");
         }
 
         return control;
