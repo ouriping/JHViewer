@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- 仅提供应用内调试预览窗体；资源管理器预览由 MarkdownPreview.Handler 负责 -->
+    <EnableComHosting>false</EnableComHosting>
+    <RootNamespace>MarkdownPreview.Shell</RootNamespace>
+    <AssemblyName>MarkdownPreview.Shell</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Markdig" Version="0.37.0" />
+  </ItemGroup>
+</Project>

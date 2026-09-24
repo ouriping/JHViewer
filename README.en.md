@@ -1,36 +1,33 @@
 # JinghuaMarkdownViewer
 
-#### Description
-{**When you're done, you can delete the content in this README and update the file with details for others getting started with your repository**}
+Windows Markdown 浏览器：编辑、发布站点、资源管理器预览窗格。
 
-#### Software Architecture
-Software architecture description
+## 目录结构
 
-#### Installation
+```
+MarkdownContextViewer/
+├── MarkdownContextViewer.sln
+├── docs/                          # 设计与说明文档
+│   ├── 说明文档.md
+│   ├── 预览窗格.md
+│   └── 网站访问功能设计说明.md
+└── src/
+    ├── MarkdownContextViewer/     # 主程序 (net8 WinForms)
+    │   ├── UI/                    # 窗体与控件
+    │   ├── Services/              # 业务服务
+    │   └── Program.cs
+    ├── MarkdownPreview.Handler/   # Explorer 预览处理程序 (net48 + SharpShell + WebView2)
+    ├── MarkdownPreview.Register/  # 预览 COM 注册工具 (net48)
+    └── MarkdownPreview.Shell/     # 应用内调试预览窗体 (net8)
+```
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+## 构建与运行
 
-#### Instructions
+```powershell
+dotnet build .\MarkdownContextViewer.sln -c Debug
+dotnet run --project .\src\MarkdownContextViewer\MarkdownContextViewer.csproj
+```
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+启用「资源管理器预览」后，Handler DLL 会部署到：
 
-#### Contribution
-
-1.  Fork the repository
-2.  Create Feat_xxx branch
-3.  Commit your code
-4.  Create Pull Request
-
-
-#### Gitee Feature
-
-1.  You can use Readme\_XXX.md to support different languages, such as Readme\_en.md, Readme\_zh.md
-2.  Gitee blog [blog.gitee.com](https://blog.gitee.com)
-3.  Explore open source project [https://gitee.com/explore](https://gitee.com/explore)
-4.  The most valuable open source project [GVP](https://gitee.com/gvp)
-5.  The manual of Gitee [https://gitee.com/help](https://gitee.com/help)
-6.  The most popular members  [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+`%LocalAppData%\MarkdownContextViewer\PreviewHandler`
