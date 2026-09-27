@@ -3,12 +3,17 @@ using System.Text;
 
 namespace MarkdownContextViewer;
 
+/// <summary>
+/// Markdown 编辑用户控件。
+/// Ribbon：TabControl + ToolStrip；命令：<see cref="MarkdownTextCommands"/>；本类只做编排与快捷键。
+/// </summary>
 public partial class MarkdownEditorControl : UserControl
 {
     private const int PreviewDebounceMs = 200;
 
     private readonly MarkdownRenderService _renderService;
     private readonly System.Windows.Forms.Timer _previewDebounceTimer;
+    private MarkdownTextCommands _commands = null!;
     private string? _tempHtmlPath;
 
     public event EventHandler? SaveRequested;
@@ -23,6 +28,7 @@ public partial class MarkdownEditorControl : UserControl
         _renderService = renderService ?? throw new ArgumentNullException(nameof(renderService));
 
         InitializeComponent();
+        _commands = new MarkdownTextCommands(editor);
 
         components ??= new Container();
         _previewDebounceTimer = new System.Windows.Forms.Timer(components)
@@ -32,6 +38,7 @@ public partial class MarkdownEditorControl : UserControl
         _previewDebounceTimer.Tick += PreviewDebounceTimer_Tick;
 
         Disposed += (_, _) => CleanupTempFile();
+        SyncViewModeButtons(showEditor: true, showPreview: true);
     }
 
     public string MarkdownText
@@ -53,68 +60,127 @@ public partial class MarkdownEditorControl : UserControl
     }
 
     public void SetSplitMode() => ShowPanels(true, true);
+
     public void SetEditorMode() => ShowPanels(true, false);
+
     public void SetPreviewMode() => ShowPanels(false, true);
 
-    private void btnSave_Click(object sender, EventArgs e) => SaveRequested?.Invoke(this, EventArgs.Empty);
+    private void btnSave_Click(object? sender, EventArgs e) => RequestSave();
 
-    private void btnUndo_Click(object sender, EventArgs e) => UndoEditor();
+    private void btnUndo_Click(object? sender, EventArgs e) => _commands.Undo();
 
-    private void btnRedo_Click(object sender, EventArgs e) => RedoEditor();
+    private void btnRedo_Click(object? sender, EventArgs e) => _commands.Redo();
 
-    private void btnBold_Click(object sender, EventArgs e) => WrapSelection("**", "**");
+    private void btnBold_Click(object? sender, EventArgs e) => _commands.ToggleBold();
 
-    private void btnItalic_Click(object sender, EventArgs e) => WrapSelection("*", "*");
+    private void btnItalic_Click(object? sender, EventArgs e) => _commands.ToggleItalic();
 
-    private void btnInlineCode_Click(object sender, EventArgs e) => WrapSelection("`", "`");
+    private void btnStrike_Click(object? sender, EventArgs e) => _commands.ToggleStrikethrough();
 
-    private void btnHeading_Click(object sender, EventArgs e) => InsertLinePrefix("# ");
+    private void btnInlineCode_Click(object? sender, EventArgs e) => _commands.ToggleInlineCode();
 
-    private void btnQuote_Click(object sender, EventArgs e) => InsertLinePrefix("> ");
+    private void btnHeading1_Click(object? sender, EventArgs e) => _commands.SetHeading(1);
 
-    private void btnList_Click(object sender, EventArgs e) => InsertLinePrefix("- ");
+    private void btnHeading2_Click(object? sender, EventArgs e) => _commands.SetHeading(2);
 
-    private void btnLink_Click(object sender, EventArgs e) => InsertAtCaret("[文本](https://example.com)");
+    private void btnHeading3_Click(object? sender, EventArgs e) => _commands.SetHeading(3);
 
-    private void btnImage_Click(object sender, EventArgs e) => InsertAtCaret("![说明](https://example.com/image.png)");
+    private void btnQuote_Click(object? sender, EventArgs e) => _commands.ToggleQuote();
 
-    private void btnCodeBlock_Click(object sender, EventArgs e) => InsertAtCaret("```\ncode\n```\n");
+    private void btnBulletList_Click(object? sender, EventArgs e) => _commands.ToggleBulletList();
 
-    private void btnEditorOnly_Click(object sender, EventArgs e) => SetEditorMode();
+    private void btnOrderedList_Click(object? sender, EventArgs e) => _commands.ToggleOrderedList();
 
-    private void btnPreviewOnly_Click(object sender, EventArgs e) => SetPreviewMode();
+    private void btnTaskList_Click(object? sender, EventArgs e) => _commands.ToggleTaskList();
 
-    private void btnSplit_Click(object sender, EventArgs e) => SetSplitMode();
+    private void btnLink_Click(object? sender, EventArgs e) => _commands.InsertLink();
 
-    private void editor_TextChanged(object sender, EventArgs e) => SchedulePreviewRefresh();
+    private void btnImage_Click(object? sender, EventArgs e) => _commands.InsertImage();
 
-    private void editor_KeyDown(object sender, KeyEventArgs e)
+    private void btnCodeBlock_Click(object? sender, EventArgs e) => _commands.InsertCodeBlock();
+
+    private void btnTable_Click(object? sender, EventArgs e) => _commands.InsertTable();
+
+    private void btnHr_Click(object? sender, EventArgs e) => _commands.InsertHorizontalRule();
+
+    private void btnEditorOnly_Click(object? sender, EventArgs e) => SetEditorMode();
+
+    private void btnPreviewOnly_Click(object? sender, EventArgs e) => SetPreviewMode();
+
+    private void btnSplit_Click(object? sender, EventArgs e) => SetSplitMode();
+
+    private void editor_TextChanged(object? sender, EventArgs e) => SchedulePreviewRefresh();
+
+    private void editor_KeyDown(object? sender, KeyEventArgs e)
     {
         if (!e.Control)
         {
             return;
         }
 
+        if (e.Shift)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.X:
+                    _commands.ToggleStrikethrough();
+                    e.SuppressKeyPress = true;
+                    break;
+                case Keys.K:
+                    _commands.InsertCodeBlock();
+                    e.SuppressKeyPress = true;
+                    break;
+                case Keys.D8:
+                    _commands.ToggleBulletList();
+                    e.SuppressKeyPress = true;
+                    break;
+                case Keys.D7:
+                    _commands.ToggleOrderedList();
+                    e.SuppressKeyPress = true;
+                    break;
+            }
+
+            return;
+        }
+
         switch (e.KeyCode)
         {
             case Keys.S:
-                SaveRequested?.Invoke(this, EventArgs.Empty);
+                RequestSave();
                 e.SuppressKeyPress = true;
                 break;
             case Keys.B:
-                WrapSelection("**", "**");
+                _commands.ToggleBold();
                 e.SuppressKeyPress = true;
                 break;
             case Keys.I:
-                WrapSelection("*", "*");
+                _commands.ToggleItalic();
                 e.SuppressKeyPress = true;
                 break;
             case Keys.K:
-                InsertAtCaret("[文本](https://example.com)");
+                _commands.InsertLink();
+                e.SuppressKeyPress = true;
+                break;
+            case Keys.Oemtilde:
+                _commands.ToggleInlineCode();
+                e.SuppressKeyPress = true;
+                break;
+            case Keys.D1:
+                _commands.SetHeading(1);
+                e.SuppressKeyPress = true;
+                break;
+            case Keys.D2:
+                _commands.SetHeading(2);
+                e.SuppressKeyPress = true;
+                break;
+            case Keys.D3:
+                _commands.SetHeading(3);
                 e.SuppressKeyPress = true;
                 break;
         }
     }
+
+    private void RequestSave() => SaveRequested?.Invoke(this, EventArgs.Empty);
 
     private void PreviewDebounceTimer_Tick(object? sender, EventArgs e)
     {
@@ -142,26 +208,6 @@ public partial class MarkdownEditorControl : UserControl
 
         _previewDebounceTimer.Stop();
         ApplyPreview();
-    }
-
-    private void UndoEditor()
-    {
-        if (editor.CanUndo)
-        {
-            editor.Undo();
-        }
-
-        editor.Focus();
-    }
-
-    private void RedoEditor()
-    {
-        if (editor.CanRedo)
-        {
-            editor.Redo();
-        }
-
-        editor.Focus();
     }
 
     private void ApplyPreview()
@@ -213,7 +259,7 @@ public partial class MarkdownEditorControl : UserControl
         }
         catch
         {
-            // 临时文件清理失败可忽略
+            // ignore
         }
         finally
         {
@@ -221,45 +267,18 @@ public partial class MarkdownEditorControl : UserControl
         }
     }
 
-    private void WrapSelection(string prefix, string suffix)
-    {
-        var start = editor.SelectionStart;
-        var selected = editor.SelectedText;
-
-        editor.SelectedText = prefix + selected + suffix;
-        editor.SelectionStart = start + prefix.Length;
-        editor.SelectionLength = selected.Length;
-        editor.Focus();
-    }
-
-    private void InsertAtCaret(string value)
-    {
-        var start = editor.SelectionStart;
-        editor.SelectionLength = 0;
-        editor.SelectedText = value;
-        editor.SelectionStart = start + value.Length;
-        editor.SelectionLength = 0;
-        editor.Focus();
-    }
-
-    private void InsertLinePrefix(string prefix)
-    {
-        var start = editor.SelectionStart;
-        var lineStart = editor.Text.LastIndexOf('\n', Math.Max(0, start - 1));
-        var insertPos = lineStart < 0 ? 0 : lineStart + 1;
-
-        editor.SelectionStart = insertPos;
-        editor.SelectionLength = 0;
-        editor.SelectedText = prefix;
-        editor.SelectionStart = start + prefix.Length;
-        editor.SelectionLength = 0;
-        editor.Focus();
-    }
-
     private void ShowPanels(bool showEditor, bool showPreview)
     {
         mainSplit.Panel1Collapsed = !showEditor;
         mainSplit.Panel2Collapsed = !showPreview;
+        SyncViewModeButtons(showEditor, showPreview);
+    }
+
+    private void SyncViewModeButtons(bool showEditor, bool showPreview)
+    {
+        btnEditorOnly.Checked = showEditor && !showPreview;
+        btnPreviewOnly.Checked = !showEditor && showPreview;
+        btnSplit.Checked = showEditor && showPreview;
     }
 
     private static bool IsDesignTime() =>

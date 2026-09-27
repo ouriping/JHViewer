@@ -17,58 +17,56 @@ partial class MarkdownEditorControl
     private void InitializeComponent()
     {
         ribbonHost = new Panel();
-        quickAccessBar = new FlowLayoutPanel();
-        btnSave = new Button();
-        btnUndo = new Button();
-        btnRedo = new Button();
+        quickAccessStrip = new ToolStrip();
+        btnSave = new ToolStripButton();
+        btnUndo = new ToolStripButton();
+        btnRedo = new ToolStripButton();
         ribbonTabs = new TabControl();
         tabStart = new TabPage();
-        flowStart = new FlowLayoutPanel();
-        grpFont = new GroupBox();
-        flowFont = new FlowLayoutPanel();
-        btnBold = new Button();
-        btnItalic = new Button();
-        btnInlineCode = new Button();
-        grpParagraph = new GroupBox();
-        flowParagraph = new FlowLayoutPanel();
-        btnHeading = new Button();
-        btnQuote = new Button();
-        btnList = new Button();
+        stripStart = new ToolStrip();
+        lblFont = new ToolStripLabel();
+        btnBold = new ToolStripButton();
+        btnItalic = new ToolStripButton();
+        btnStrike = new ToolStripButton();
+        btnInlineCode = new ToolStripButton();
+        sepFont = new ToolStripSeparator();
+        lblParagraph = new ToolStripLabel();
+        btnHeading1 = new ToolStripButton();
+        btnHeading2 = new ToolStripButton();
+        btnHeading3 = new ToolStripButton();
+        btnQuote = new ToolStripButton();
+        sepParagraph = new ToolStripSeparator();
+        lblLists = new ToolStripLabel();
+        btnBulletList = new ToolStripButton();
+        btnOrderedList = new ToolStripButton();
+        btnTaskList = new ToolStripButton();
         tabInsert = new TabPage();
-        flowInsert = new FlowLayoutPanel();
-        grpCommon = new GroupBox();
-        flowCommon = new FlowLayoutPanel();
-        btnLink = new Button();
-        btnImage = new Button();
-        btnCodeBlock = new Button();
+        stripInsert = new ToolStrip();
+        lblInsert = new ToolStripLabel();
+        btnLink = new ToolStripButton();
+        btnImage = new ToolStripButton();
+        btnCodeBlock = new ToolStripButton();
+        btnTable = new ToolStripButton();
+        btnHr = new ToolStripButton();
         tabView = new TabPage();
-        flowView = new FlowLayoutPanel();
-        grpLayout = new GroupBox();
-        flowLayout = new FlowLayoutPanel();
-        btnEditorOnly = new Button();
-        btnPreviewOnly = new Button();
-        btnSplit = new Button();
+        stripView = new ToolStrip();
+        lblLayout = new ToolStripLabel();
+        btnEditorOnly = new ToolStripButton();
+        btnPreviewOnly = new ToolStripButton();
+        btnSplit = new ToolStripButton();
         mainSplit = new SplitContainer();
         editor = new RichTextBox();
         preview = new WebBrowser();
         winFormsPreview = new WinFormsMarkdownView();
         ribbonHost.SuspendLayout();
-        quickAccessBar.SuspendLayout();
+        quickAccessStrip.SuspendLayout();
         ribbonTabs.SuspendLayout();
         tabStart.SuspendLayout();
-        flowStart.SuspendLayout();
-        grpFont.SuspendLayout();
-        flowFont.SuspendLayout();
-        grpParagraph.SuspendLayout();
-        flowParagraph.SuspendLayout();
+        stripStart.SuspendLayout();
         tabInsert.SuspendLayout();
-        flowInsert.SuspendLayout();
-        grpCommon.SuspendLayout();
-        flowCommon.SuspendLayout();
+        stripInsert.SuspendLayout();
         tabView.SuspendLayout();
-        flowView.SuspendLayout();
-        grpLayout.SuspendLayout();
-        flowLayout.SuspendLayout();
+        stripView.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)mainSplit).BeginInit();
         mainSplit.Panel1.SuspendLayout();
         mainSplit.Panel2.SuspendLayout();
@@ -79,55 +77,50 @@ partial class MarkdownEditorControl
         // 
         ribbonHost.BackColor = Color.FromArgb(243, 246, 251);
         ribbonHost.Controls.Add(ribbonTabs);
-        ribbonHost.Controls.Add(quickAccessBar);
+        ribbonHost.Controls.Add(quickAccessStrip);
         ribbonHost.Dock = DockStyle.Top;
-        ribbonHost.Location = new Point(0, 0);
         ribbonHost.Name = "ribbonHost";
-        ribbonHost.Padding = new Padding(6, 6, 6, 0);
-        ribbonHost.Size = new Size(960, 168);
+        ribbonHost.Padding = new Padding(4, 4, 4, 0);
+        ribbonHost.Size = new Size(1100, 96);
         ribbonHost.TabIndex = 1;
         // 
-        // quickAccessBar
+        // quickAccessStrip
         // 
-        quickAccessBar.Controls.Add(btnSave);
-        quickAccessBar.Controls.Add(btnUndo);
-        quickAccessBar.Controls.Add(btnRedo);
-        quickAccessBar.Dock = DockStyle.Top;
-        quickAccessBar.FlowDirection = FlowDirection.LeftToRight;
-        quickAccessBar.Location = new Point(6, 6);
-        quickAccessBar.Name = "quickAccessBar";
-        quickAccessBar.Size = new Size(948, 34);
-        quickAccessBar.TabIndex = 1;
-        quickAccessBar.WrapContents = false;
+        quickAccessStrip.BackColor = Color.FromArgb(243, 246, 251);
+        quickAccessStrip.GripStyle = ToolStripGripStyle.Hidden;
+        quickAccessStrip.Items.AddRange(new ToolStripItem[] { btnSave, btnUndo, btnRedo });
+        quickAccessStrip.Location = new Point(4, 4);
+        quickAccessStrip.Name = "quickAccessStrip";
+        quickAccessStrip.Padding = new Padding(2, 1, 1, 1);
+        quickAccessStrip.RenderMode = ToolStripRenderMode.System;
+        quickAccessStrip.Size = new Size(1092, 27);
+        quickAccessStrip.TabIndex = 1;
         // 
         // btnSave
         // 
-        btnSave.Location = new Point(0, 0);
-        btnSave.Margin = new Padding(0, 0, 6, 0);
+        btnSave.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnSave.Name = "btnSave";
-        btnSave.Size = new Size(72, 28);
-        btnSave.TabIndex = 0;
+        btnSave.Size = new Size(36, 24);
         btnSave.Text = "保存";
+        btnSave.ToolTipText = "保存 (Ctrl+S)";
         btnSave.Click += btnSave_Click;
         // 
         // btnUndo
         // 
-        btnUndo.Location = new Point(78, 0);
-        btnUndo.Margin = new Padding(0, 0, 6, 0);
+        btnUndo.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnUndo.Name = "btnUndo";
-        btnUndo.Size = new Size(72, 28);
-        btnUndo.TabIndex = 1;
+        btnUndo.Size = new Size(36, 24);
         btnUndo.Text = "撤销";
+        btnUndo.ToolTipText = "撤销 (Ctrl+Z)";
         btnUndo.Click += btnUndo_Click;
         // 
         // btnRedo
         // 
-        btnRedo.Location = new Point(156, 0);
-        btnRedo.Margin = new Padding(0, 0, 6, 0);
+        btnRedo.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnRedo.Name = "btnRedo";
-        btnRedo.Size = new Size(72, 28);
-        btnRedo.TabIndex = 2;
+        btnRedo.Size = new Size(36, 24);
         btnRedo.Text = "重做";
+        btnRedo.ToolTipText = "重做 (Ctrl+Y)";
         btnRedo.Click += btnRedo_Click;
         // 
         // ribbonTabs
@@ -136,310 +129,322 @@ partial class MarkdownEditorControl
         ribbonTabs.Controls.Add(tabInsert);
         ribbonTabs.Controls.Add(tabView);
         ribbonTabs.Dock = DockStyle.Fill;
-        ribbonTabs.Location = new Point(6, 40);
-        ribbonTabs.Multiline = false;
+        ribbonTabs.Location = new Point(4, 31);
         ribbonTabs.Name = "ribbonTabs";
         ribbonTabs.SelectedIndex = 0;
-        ribbonTabs.Size = new Size(948, 128);
+        ribbonTabs.Size = new Size(1092, 65);
         ribbonTabs.TabIndex = 0;
         // 
         // tabStart
         // 
-        tabStart.Controls.Add(flowStart);
+        tabStart.Controls.Add(stripStart);
         tabStart.Location = new Point(4, 26);
         tabStart.Name = "tabStart";
-        tabStart.Padding = new Padding(3);
-        tabStart.Size = new Size(940, 98);
+        tabStart.Padding = new Padding(0);
+        tabStart.Size = new Size(1084, 35);
         tabStart.TabIndex = 0;
         tabStart.Text = "开始";
         tabStart.UseVisualStyleBackColor = true;
         // 
-        // flowStart
+        // stripStart
         // 
-        flowStart.AutoScroll = true;
-        flowStart.Controls.Add(grpFont);
-        flowStart.Controls.Add(grpParagraph);
-        flowStart.Dock = DockStyle.Fill;
-        flowStart.FlowDirection = FlowDirection.LeftToRight;
-        flowStart.Location = new Point(3, 3);
-        flowStart.Name = "flowStart";
-        flowStart.Padding = new Padding(8, 6, 8, 6);
-        flowStart.Size = new Size(934, 92);
-        flowStart.TabIndex = 0;
-        flowStart.WrapContents = false;
+        stripStart.CanOverflow = true;
+        stripStart.Dock = DockStyle.Fill;
+        stripStart.GripStyle = ToolStripGripStyle.Hidden;
+        stripStart.Items.AddRange(new ToolStripItem[]
+        {
+            lblFont, btnBold, btnItalic, btnStrike, btnInlineCode,
+            sepFont,
+            lblParagraph, btnHeading1, btnHeading2, btnHeading3, btnQuote,
+            sepParagraph,
+            lblLists, btnBulletList, btnOrderedList, btnTaskList
+        });
+        stripStart.Location = new Point(0, 0);
+        stripStart.Name = "stripStart";
+        stripStart.Padding = new Padding(4, 2, 1, 2);
+        stripStart.RenderMode = ToolStripRenderMode.System;
+        stripStart.Size = new Size(1084, 35);
+        stripStart.TabIndex = 0;
         // 
-        // grpFont
+        // lblFont
         // 
-        grpFont.Controls.Add(flowFont);
-        grpFont.Location = new Point(14, 6);
-        grpFont.Margin = new Padding(6, 0, 6, 0);
-        grpFont.Name = "grpFont";
-        grpFont.Size = new Size(330, 72);
-        grpFont.TabIndex = 0;
-        grpFont.TabStop = false;
-        grpFont.Text = "字体";
-        // 
-        // flowFont
-        // 
-        flowFont.Controls.Add(btnBold);
-        flowFont.Controls.Add(btnItalic);
-        flowFont.Controls.Add(btnInlineCode);
-        flowFont.Dock = DockStyle.Fill;
-        flowFont.FlowDirection = FlowDirection.LeftToRight;
-        flowFont.Location = new Point(3, 19);
-        flowFont.Name = "flowFont";
-        flowFont.Padding = new Padding(6, 4, 6, 6);
-        flowFont.Size = new Size(324, 50);
-        flowFont.TabIndex = 0;
-        flowFont.WrapContents = false;
+        lblFont.ForeColor = Color.FromArgb(96, 104, 116);
+        lblFont.Name = "lblFont";
+        lblFont.Size = new Size(32, 28);
+        lblFont.Text = "字体";
         // 
         // btnBold
         // 
-        btnBold.Location = new Point(10, 4);
-        btnBold.Margin = new Padding(4);
+        btnBold.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnBold.Name = "btnBold";
-        btnBold.Size = new Size(96, 28);
-        btnBold.TabIndex = 0;
+        btnBold.Size = new Size(36, 28);
         btnBold.Text = "粗体";
+        btnBold.ToolTipText = "粗体 (Ctrl+B)";
         btnBold.Click += btnBold_Click;
         // 
         // btnItalic
         // 
-        btnItalic.Location = new Point(114, 4);
-        btnItalic.Margin = new Padding(4);
+        btnItalic.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnItalic.Name = "btnItalic";
-        btnItalic.Size = new Size(96, 28);
-        btnItalic.TabIndex = 1;
+        btnItalic.Size = new Size(36, 28);
         btnItalic.Text = "斜体";
+        btnItalic.ToolTipText = "斜体 (Ctrl+I)";
         btnItalic.Click += btnItalic_Click;
+        // 
+        // btnStrike
+        // 
+        btnStrike.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        btnStrike.Name = "btnStrike";
+        btnStrike.Size = new Size(48, 28);
+        btnStrike.Text = "删除线";
+        btnStrike.ToolTipText = "删除线 (Ctrl+Shift+X)";
+        btnStrike.Click += btnStrike_Click;
         // 
         // btnInlineCode
         // 
-        btnInlineCode.Location = new Point(218, 4);
-        btnInlineCode.Margin = new Padding(4);
+        btnInlineCode.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnInlineCode.Name = "btnInlineCode";
-        btnInlineCode.Size = new Size(96, 28);
-        btnInlineCode.TabIndex = 2;
+        btnInlineCode.Size = new Size(60, 28);
         btnInlineCode.Text = "行内代码";
+        btnInlineCode.ToolTipText = "行内代码 (Ctrl+`)";
         btnInlineCode.Click += btnInlineCode_Click;
         // 
-        // grpParagraph
+        // sepFont
         // 
-        grpParagraph.Controls.Add(flowParagraph);
-        grpParagraph.Location = new Point(356, 6);
-        grpParagraph.Margin = new Padding(6, 0, 6, 0);
-        grpParagraph.Name = "grpParagraph";
-        grpParagraph.Size = new Size(330, 72);
-        grpParagraph.TabIndex = 1;
-        grpParagraph.TabStop = false;
-        grpParagraph.Text = "段落";
+        sepFont.Name = "sepFont";
+        sepFont.Size = new Size(6, 31);
         // 
-        // flowParagraph
+        // lblParagraph
         // 
-        flowParagraph.Controls.Add(btnHeading);
-        flowParagraph.Controls.Add(btnQuote);
-        flowParagraph.Controls.Add(btnList);
-        flowParagraph.Dock = DockStyle.Fill;
-        flowParagraph.FlowDirection = FlowDirection.LeftToRight;
-        flowParagraph.Location = new Point(3, 19);
-        flowParagraph.Name = "flowParagraph";
-        flowParagraph.Padding = new Padding(6, 4, 6, 6);
-        flowParagraph.Size = new Size(324, 50);
-        flowParagraph.TabIndex = 0;
-        flowParagraph.WrapContents = false;
+        lblParagraph.ForeColor = Color.FromArgb(96, 104, 116);
+        lblParagraph.Name = "lblParagraph";
+        lblParagraph.Size = new Size(32, 28);
+        lblParagraph.Text = "段落";
         // 
-        // btnHeading
+        // btnHeading1
         // 
-        btnHeading.Location = new Point(10, 4);
-        btnHeading.Margin = new Padding(4);
-        btnHeading.Name = "btnHeading";
-        btnHeading.Size = new Size(96, 28);
-        btnHeading.TabIndex = 0;
-        btnHeading.Text = "标题";
-        btnHeading.Click += btnHeading_Click;
+        btnHeading1.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        btnHeading1.Name = "btnHeading1";
+        btnHeading1.Size = new Size(29, 28);
+        btnHeading1.Text = "H1";
+        btnHeading1.ToolTipText = "一级标题 (Ctrl+1)";
+        btnHeading1.Click += btnHeading1_Click;
+        // 
+        // btnHeading2
+        // 
+        btnHeading2.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        btnHeading2.Name = "btnHeading2";
+        btnHeading2.Size = new Size(29, 28);
+        btnHeading2.Text = "H2";
+        btnHeading2.ToolTipText = "二级标题 (Ctrl+2)";
+        btnHeading2.Click += btnHeading2_Click;
+        // 
+        // btnHeading3
+        // 
+        btnHeading3.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        btnHeading3.Name = "btnHeading3";
+        btnHeading3.Size = new Size(29, 28);
+        btnHeading3.Text = "H3";
+        btnHeading3.ToolTipText = "三级标题 (Ctrl+3)";
+        btnHeading3.Click += btnHeading3_Click;
         // 
         // btnQuote
         // 
-        btnQuote.Location = new Point(114, 4);
-        btnQuote.Margin = new Padding(4);
+        btnQuote.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnQuote.Name = "btnQuote";
-        btnQuote.Size = new Size(96, 28);
-        btnQuote.TabIndex = 1;
+        btnQuote.Size = new Size(36, 28);
         btnQuote.Text = "引用";
+        btnQuote.ToolTipText = "引用（支持多行，再次点击取消）";
         btnQuote.Click += btnQuote_Click;
         // 
-        // btnList
+        // sepParagraph
         // 
-        btnList.Location = new Point(218, 4);
-        btnList.Margin = new Padding(4);
-        btnList.Name = "btnList";
-        btnList.Size = new Size(96, 28);
-        btnList.TabIndex = 2;
-        btnList.Text = "列表";
-        btnList.Click += btnList_Click;
+        sepParagraph.Name = "sepParagraph";
+        sepParagraph.Size = new Size(6, 31);
+        // 
+        // lblLists
+        // 
+        lblLists.ForeColor = Color.FromArgb(96, 104, 116);
+        lblLists.Name = "lblLists";
+        lblLists.Size = new Size(32, 28);
+        lblLists.Text = "列表";
+        // 
+        // btnBulletList
+        // 
+        btnBulletList.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        btnBulletList.Name = "btnBulletList";
+        btnBulletList.Size = new Size(36, 28);
+        btnBulletList.Text = "无序";
+        btnBulletList.ToolTipText = "无序列表 (Ctrl+Shift+8)";
+        btnBulletList.Click += btnBulletList_Click;
+        // 
+        // btnOrderedList
+        // 
+        btnOrderedList.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        btnOrderedList.Name = "btnOrderedList";
+        btnOrderedList.Size = new Size(36, 28);
+        btnOrderedList.Text = "有序";
+        btnOrderedList.ToolTipText = "有序列表 (Ctrl+Shift+7)";
+        btnOrderedList.Click += btnOrderedList_Click;
+        // 
+        // btnTaskList
+        // 
+        btnTaskList.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        btnTaskList.Name = "btnTaskList";
+        btnTaskList.Size = new Size(36, 28);
+        btnTaskList.Text = "任务";
+        btnTaskList.ToolTipText = "任务列表";
+        btnTaskList.Click += btnTaskList_Click;
         // 
         // tabInsert
         // 
-        tabInsert.Controls.Add(flowInsert);
+        tabInsert.Controls.Add(stripInsert);
         tabInsert.Location = new Point(4, 26);
         tabInsert.Name = "tabInsert";
-        tabInsert.Padding = new Padding(3);
-        tabInsert.Size = new Size(940, 98);
+        tabInsert.Padding = new Padding(0);
+        tabInsert.Size = new Size(1084, 35);
         tabInsert.TabIndex = 1;
         tabInsert.Text = "插入";
         tabInsert.UseVisualStyleBackColor = true;
         // 
-        // flowInsert
+        // stripInsert
         // 
-        flowInsert.AutoScroll = true;
-        flowInsert.Controls.Add(grpCommon);
-        flowInsert.Dock = DockStyle.Fill;
-        flowInsert.FlowDirection = FlowDirection.LeftToRight;
-        flowInsert.Location = new Point(3, 3);
-        flowInsert.Name = "flowInsert";
-        flowInsert.Padding = new Padding(8, 6, 8, 6);
-        flowInsert.Size = new Size(934, 92);
-        flowInsert.TabIndex = 0;
-        flowInsert.WrapContents = false;
+        stripInsert.CanOverflow = true;
+        stripInsert.Dock = DockStyle.Fill;
+        stripInsert.GripStyle = ToolStripGripStyle.Hidden;
+        stripInsert.Items.AddRange(new ToolStripItem[]
+        {
+            lblInsert, btnLink, btnImage, btnCodeBlock, btnTable, btnHr
+        });
+        stripInsert.Location = new Point(0, 0);
+        stripInsert.Name = "stripInsert";
+        stripInsert.Padding = new Padding(4, 2, 1, 2);
+        stripInsert.RenderMode = ToolStripRenderMode.System;
+        stripInsert.Size = new Size(1084, 35);
+        stripInsert.TabIndex = 0;
         // 
-        // grpCommon
+        // lblInsert
         // 
-        grpCommon.Controls.Add(flowCommon);
-        grpCommon.Location = new Point(14, 6);
-        grpCommon.Margin = new Padding(6, 0, 6, 0);
-        grpCommon.Name = "grpCommon";
-        grpCommon.Size = new Size(330, 72);
-        grpCommon.TabIndex = 0;
-        grpCommon.TabStop = false;
-        grpCommon.Text = "常用";
-        // 
-        // flowCommon
-        // 
-        flowCommon.Controls.Add(btnLink);
-        flowCommon.Controls.Add(btnImage);
-        flowCommon.Controls.Add(btnCodeBlock);
-        flowCommon.Dock = DockStyle.Fill;
-        flowCommon.FlowDirection = FlowDirection.LeftToRight;
-        flowCommon.Location = new Point(3, 19);
-        flowCommon.Name = "flowCommon";
-        flowCommon.Padding = new Padding(6, 4, 6, 6);
-        flowCommon.Size = new Size(324, 50);
-        flowCommon.TabIndex = 0;
-        flowCommon.WrapContents = false;
+        lblInsert.ForeColor = Color.FromArgb(96, 104, 116);
+        lblInsert.Name = "lblInsert";
+        lblInsert.Size = new Size(32, 28);
+        lblInsert.Text = "常用";
         // 
         // btnLink
         // 
-        btnLink.Location = new Point(10, 4);
-        btnLink.Margin = new Padding(4);
+        btnLink.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnLink.Name = "btnLink";
-        btnLink.Size = new Size(96, 28);
-        btnLink.TabIndex = 0;
+        btnLink.Size = new Size(36, 28);
         btnLink.Text = "链接";
+        btnLink.ToolTipText = "链接 (Ctrl+K)，选中文本将作为链接文字";
         btnLink.Click += btnLink_Click;
         // 
         // btnImage
         // 
-        btnImage.Location = new Point(114, 4);
-        btnImage.Margin = new Padding(4);
+        btnImage.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnImage.Name = "btnImage";
-        btnImage.Size = new Size(96, 28);
-        btnImage.TabIndex = 1;
+        btnImage.Size = new Size(36, 28);
         btnImage.Text = "图片";
+        btnImage.ToolTipText = "图片";
         btnImage.Click += btnImage_Click;
         // 
         // btnCodeBlock
         // 
-        btnCodeBlock.Location = new Point(218, 4);
-        btnCodeBlock.Margin = new Padding(4);
+        btnCodeBlock.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnCodeBlock.Name = "btnCodeBlock";
-        btnCodeBlock.Size = new Size(96, 28);
-        btnCodeBlock.TabIndex = 2;
+        btnCodeBlock.Size = new Size(48, 28);
         btnCodeBlock.Text = "代码块";
+        btnCodeBlock.ToolTipText = "代码块 (Ctrl+Shift+K)";
         btnCodeBlock.Click += btnCodeBlock_Click;
+        // 
+        // btnTable
+        // 
+        btnTable.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        btnTable.Name = "btnTable";
+        btnTable.Size = new Size(36, 28);
+        btnTable.Text = "表格";
+        btnTable.ToolTipText = "插入表格";
+        btnTable.Click += btnTable_Click;
+        // 
+        // btnHr
+        // 
+        btnHr.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        btnHr.Name = "btnHr";
+        btnHr.Size = new Size(48, 28);
+        btnHr.Text = "分隔线";
+        btnHr.ToolTipText = "分隔线";
+        btnHr.Click += btnHr_Click;
         // 
         // tabView
         // 
-        tabView.Controls.Add(flowView);
+        tabView.Controls.Add(stripView);
         tabView.Location = new Point(4, 26);
         tabView.Name = "tabView";
-        tabView.Padding = new Padding(3);
-        tabView.Size = new Size(940, 98);
+        tabView.Padding = new Padding(0);
+        tabView.Size = new Size(1084, 35);
         tabView.TabIndex = 2;
         tabView.Text = "视图";
         tabView.UseVisualStyleBackColor = true;
         // 
-        // flowView
+        // stripView
         // 
-        flowView.AutoScroll = true;
-        flowView.Controls.Add(grpLayout);
-        flowView.Dock = DockStyle.Fill;
-        flowView.FlowDirection = FlowDirection.LeftToRight;
-        flowView.Location = new Point(3, 3);
-        flowView.Name = "flowView";
-        flowView.Padding = new Padding(8, 6, 8, 6);
-        flowView.Size = new Size(934, 92);
-        flowView.TabIndex = 0;
-        flowView.WrapContents = false;
+        stripView.CanOverflow = true;
+        stripView.Dock = DockStyle.Fill;
+        stripView.GripStyle = ToolStripGripStyle.Hidden;
+        stripView.Items.AddRange(new ToolStripItem[]
+        {
+            lblLayout, btnEditorOnly, btnPreviewOnly, btnSplit
+        });
+        stripView.Location = new Point(0, 0);
+        stripView.Name = "stripView";
+        stripView.Padding = new Padding(4, 2, 1, 2);
+        stripView.RenderMode = ToolStripRenderMode.System;
+        stripView.Size = new Size(1084, 35);
+        stripView.TabIndex = 0;
         // 
-        // grpLayout
+        // lblLayout
         // 
-        grpLayout.Controls.Add(flowLayout);
-        grpLayout.Location = new Point(14, 6);
-        grpLayout.Margin = new Padding(6, 0, 6, 0);
-        grpLayout.Name = "grpLayout";
-        grpLayout.Size = new Size(330, 72);
-        grpLayout.TabIndex = 0;
-        grpLayout.TabStop = false;
-        grpLayout.Text = "布局";
-        // 
-        // flowLayout
-        // 
-        flowLayout.Controls.Add(btnEditorOnly);
-        flowLayout.Controls.Add(btnPreviewOnly);
-        flowLayout.Controls.Add(btnSplit);
-        flowLayout.Dock = DockStyle.Fill;
-        flowLayout.FlowDirection = FlowDirection.LeftToRight;
-        flowLayout.Location = new Point(3, 19);
-        flowLayout.Name = "flowLayout";
-        flowLayout.Padding = new Padding(6, 4, 6, 6);
-        flowLayout.Size = new Size(324, 50);
-        flowLayout.TabIndex = 0;
-        flowLayout.WrapContents = false;
+        lblLayout.ForeColor = Color.FromArgb(96, 104, 116);
+        lblLayout.Name = "lblLayout";
+        lblLayout.Size = new Size(32, 28);
+        lblLayout.Text = "布局";
         // 
         // btnEditorOnly
         // 
-        btnEditorOnly.Location = new Point(10, 4);
-        btnEditorOnly.Margin = new Padding(4);
+        btnEditorOnly.CheckOnClick = true;
+        btnEditorOnly.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnEditorOnly.Name = "btnEditorOnly";
-        btnEditorOnly.Size = new Size(96, 28);
-        btnEditorOnly.TabIndex = 0;
+        btnEditorOnly.Size = new Size(48, 28);
         btnEditorOnly.Text = "仅编辑";
+        btnEditorOnly.ToolTipText = "仅编辑";
         btnEditorOnly.Click += btnEditorOnly_Click;
         // 
         // btnPreviewOnly
         // 
-        btnPreviewOnly.Location = new Point(114, 4);
-        btnPreviewOnly.Margin = new Padding(4);
+        btnPreviewOnly.CheckOnClick = true;
+        btnPreviewOnly.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnPreviewOnly.Name = "btnPreviewOnly";
-        btnPreviewOnly.Size = new Size(96, 28);
-        btnPreviewOnly.TabIndex = 1;
+        btnPreviewOnly.Size = new Size(48, 28);
         btnPreviewOnly.Text = "仅预览";
+        btnPreviewOnly.ToolTipText = "仅预览";
         btnPreviewOnly.Click += btnPreviewOnly_Click;
         // 
         // btnSplit
         // 
-        btnSplit.Location = new Point(218, 4);
-        btnSplit.Margin = new Padding(4);
+        btnSplit.Checked = true;
+        btnSplit.CheckOnClick = true;
+        btnSplit.CheckState = CheckState.Checked;
+        btnSplit.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnSplit.Name = "btnSplit";
-        btnSplit.Size = new Size(96, 28);
-        btnSplit.TabIndex = 2;
+        btnSplit.Size = new Size(36, 28);
         btnSplit.Text = "分栏";
+        btnSplit.ToolTipText = "编辑/预览分栏";
         btnSplit.Click += btnSplit_Click;
         // 
         // mainSplit
         // 
         mainSplit.Dock = DockStyle.Fill;
-        mainSplit.Location = new Point(0, 168);
+        mainSplit.Location = new Point(0, 96);
         mainSplit.Name = "mainSplit";
         mainSplit.Orientation = Orientation.Vertical;
         // 
@@ -451,8 +456,8 @@ partial class MarkdownEditorControl
         // 
         mainSplit.Panel2.Controls.Add(winFormsPreview);
         mainSplit.Panel2.Controls.Add(preview);
-        mainSplit.Size = new Size(960, 472);
-        mainSplit.SplitterDistance = 480;
+        mainSplit.Size = new Size(1100, 544);
+        mainSplit.SplitterDistance = 550;
         mainSplit.TabIndex = 0;
         // 
         // editor
@@ -461,10 +466,11 @@ partial class MarkdownEditorControl
         editor.DetectUrls = false;
         editor.Dock = DockStyle.Fill;
         editor.Font = new Font("Consolas", 11F);
+        editor.HideSelection = false;
         editor.Location = new Point(0, 0);
         editor.Name = "editor";
         editor.ScrollBars = RichTextBoxScrollBars.Both;
-        editor.Size = new Size(480, 472);
+        editor.Size = new Size(550, 544);
         editor.TabIndex = 0;
         editor.Text = "";
         editor.WordWrap = false;
@@ -478,7 +484,7 @@ partial class MarkdownEditorControl
         preview.MinimumSize = new Size(20, 20);
         preview.Name = "preview";
         preview.ScriptErrorsSuppressed = true;
-        preview.Size = new Size(476, 472);
+        preview.Size = new Size(546, 544);
         preview.TabIndex = 1;
         // 
         // winFormsPreview
@@ -486,7 +492,7 @@ partial class MarkdownEditorControl
         winFormsPreview.Dock = DockStyle.Fill;
         winFormsPreview.Location = new Point(0, 0);
         winFormsPreview.Name = "winFormsPreview";
-        winFormsPreview.Size = new Size(476, 472);
+        winFormsPreview.Size = new Size(546, 544);
         winFormsPreview.TabIndex = 0;
         winFormsPreview.Visible = false;
         // 
@@ -497,24 +503,24 @@ partial class MarkdownEditorControl
         Controls.Add(mainSplit);
         Controls.Add(ribbonHost);
         Name = "MarkdownEditorControl";
-        Size = new Size(960, 640);
+        Size = new Size(1100, 640);
         ribbonHost.ResumeLayout(false);
-        quickAccessBar.ResumeLayout(false);
+        ribbonHost.PerformLayout();
+        quickAccessStrip.ResumeLayout(false);
+        quickAccessStrip.PerformLayout();
         ribbonTabs.ResumeLayout(false);
         tabStart.ResumeLayout(false);
-        flowStart.ResumeLayout(false);
-        grpFont.ResumeLayout(false);
-        flowFont.ResumeLayout(false);
-        grpParagraph.ResumeLayout(false);
-        flowParagraph.ResumeLayout(false);
+        tabStart.PerformLayout();
+        stripStart.ResumeLayout(false);
+        stripStart.PerformLayout();
         tabInsert.ResumeLayout(false);
-        flowInsert.ResumeLayout(false);
-        grpCommon.ResumeLayout(false);
-        flowCommon.ResumeLayout(false);
+        tabInsert.PerformLayout();
+        stripInsert.ResumeLayout(false);
+        stripInsert.PerformLayout();
         tabView.ResumeLayout(false);
-        flowView.ResumeLayout(false);
-        grpLayout.ResumeLayout(false);
-        flowLayout.ResumeLayout(false);
+        tabView.PerformLayout();
+        stripView.ResumeLayout(false);
+        stripView.PerformLayout();
         mainSplit.Panel1.ResumeLayout(false);
         mainSplit.Panel2.ResumeLayout(false);
         ((System.ComponentModel.ISupportInitialize)mainSplit).EndInit();
@@ -523,37 +529,43 @@ partial class MarkdownEditorControl
     }
 
     private Panel ribbonHost = null!;
-    private FlowLayoutPanel quickAccessBar = null!;
-    private Button btnSave = null!;
-    private Button btnUndo = null!;
-    private Button btnRedo = null!;
+    private ToolStrip quickAccessStrip = null!;
+    private ToolStripButton btnSave = null!;
+    private ToolStripButton btnUndo = null!;
+    private ToolStripButton btnRedo = null!;
     private TabControl ribbonTabs = null!;
     private TabPage tabStart = null!;
-    private FlowLayoutPanel flowStart = null!;
-    private GroupBox grpFont = null!;
-    private FlowLayoutPanel flowFont = null!;
-    private Button btnBold = null!;
-    private Button btnItalic = null!;
-    private Button btnInlineCode = null!;
-    private GroupBox grpParagraph = null!;
-    private FlowLayoutPanel flowParagraph = null!;
-    private Button btnHeading = null!;
-    private Button btnQuote = null!;
-    private Button btnList = null!;
+    private ToolStrip stripStart = null!;
+    private ToolStripLabel lblFont = null!;
+    private ToolStripButton btnBold = null!;
+    private ToolStripButton btnItalic = null!;
+    private ToolStripButton btnStrike = null!;
+    private ToolStripButton btnInlineCode = null!;
+    private ToolStripSeparator sepFont = null!;
+    private ToolStripLabel lblParagraph = null!;
+    private ToolStripButton btnHeading1 = null!;
+    private ToolStripButton btnHeading2 = null!;
+    private ToolStripButton btnHeading3 = null!;
+    private ToolStripButton btnQuote = null!;
+    private ToolStripSeparator sepParagraph = null!;
+    private ToolStripLabel lblLists = null!;
+    private ToolStripButton btnBulletList = null!;
+    private ToolStripButton btnOrderedList = null!;
+    private ToolStripButton btnTaskList = null!;
     private TabPage tabInsert = null!;
-    private FlowLayoutPanel flowInsert = null!;
-    private GroupBox grpCommon = null!;
-    private FlowLayoutPanel flowCommon = null!;
-    private Button btnLink = null!;
-    private Button btnImage = null!;
-    private Button btnCodeBlock = null!;
+    private ToolStrip stripInsert = null!;
+    private ToolStripLabel lblInsert = null!;
+    private ToolStripButton btnLink = null!;
+    private ToolStripButton btnImage = null!;
+    private ToolStripButton btnCodeBlock = null!;
+    private ToolStripButton btnTable = null!;
+    private ToolStripButton btnHr = null!;
     private TabPage tabView = null!;
-    private FlowLayoutPanel flowView = null!;
-    private GroupBox grpLayout = null!;
-    private FlowLayoutPanel flowLayout = null!;
-    private Button btnEditorOnly = null!;
-    private Button btnPreviewOnly = null!;
-    private Button btnSplit = null!;
+    private ToolStrip stripView = null!;
+    private ToolStripLabel lblLayout = null!;
+    private ToolStripButton btnEditorOnly = null!;
+    private ToolStripButton btnPreviewOnly = null!;
+    private ToolStripButton btnSplit = null!;
     private SplitContainer mainSplit = null!;
     private RichTextBox editor = null!;
     private WebBrowser preview = null!;
