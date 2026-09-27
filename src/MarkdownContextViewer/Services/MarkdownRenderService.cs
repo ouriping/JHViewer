@@ -15,6 +15,7 @@ public sealed class MarkdownRenderService
         return $@"
 <html>
 <head>
+  <meta charset=""utf-8"" />
   <meta http-equiv=""X-UA-Compatible"" content=""IE=edge"" />
   <style>
     body {{ font-family: ""Segoe UI"", ""Microsoft YaHei"", sans-serif; margin: 18px; line-height: 1.6; }}

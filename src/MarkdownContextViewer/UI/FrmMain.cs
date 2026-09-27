@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using MarkdownPreview.Shell;
 
 namespace MarkdownContextViewer;
@@ -8,18 +9,25 @@ public partial class FrmMain : Form
 
     private readonly List<string> _history = [];
     private readonly string[] _startupArgs;
-    private readonly HistoryService _historyService;
-    private readonly ExplorerIntegrationService _explorerService;
-    private readonly MarkdownRenderService _markdownRenderService;
-    private readonly SiteExportService _siteExportService;
-    private readonly DirectorySiteExportService _directorySiteExportService;
-    private readonly LocalWebHostService _localWebHostService;
+    private readonly HistoryService _historyService = null!;
+    private readonly ExplorerIntegrationService _explorerService = null!;
+    private readonly MarkdownRenderService _markdownRenderService = null!;
+    private readonly SiteExportService _siteExportService = null!;
+    private readonly DirectorySiteExportService _directorySiteExportService = null!;
+    private readonly LocalWebHostService _localWebHostService = null!;
 
-    private bool _isLoadingPreviewSwitch;
+    private PreviewEngineKind _previewEngine = PreviewEngineKind.WebView;
 
     public FrmMain(string[]? args = null)
     {
         _startupArgs = args ?? [];
+        InitializeComponent();
+
+        // 设计器只需要界面布局，避免在构造阶段读写文件/注册表导致无法打开设计器。
+        if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
+        {
+            return;
+        }
 
         var historyFilePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -33,10 +41,11 @@ public partial class FrmMain : Form
         _directorySiteExportService = new DirectorySiteExportService(_markdownRenderService);
         _localWebHostService = new LocalWebHostService();
 
-        InitializeComponent();
         WireEvents();
 
-        LoadExplorerPreviewSwitchState();
+        _previewEngine = PreviewEngineSetting.Load();
+        ApplyEngineToOpenEditors();
+        RefreshStatus();
         LoadHistory();
         OpenFilesFromArgs();
     }
@@ -45,7 +54,6 @@ public partial class FrmMain : Form
     {
         lstHistory.DoubleClick += (_, _) => OpenFromHistory();
         tabsMarkdown.MouseClick += TabsMarkdown_MouseClick;
-        chkExplorerPreview.CheckedChanged += ChkExplorerPreview_CheckedChanged;
     }
 
     private void OpenFilesFromArgs()
@@ -114,6 +122,7 @@ public partial class FrmMain : Form
             MarkdownText = markdown
         };
 
+        editorControl.UsePreviewEngine(_previewEngine);
         editorControl.SaveRequested += (_, _) => SaveCurrentTab();
 
         var tab = new TabPage(Path.GetFileName(filePath))
@@ -218,54 +227,74 @@ public partial class FrmMain : Form
         lstHistory.EndUpdate();
     }
 
-    private void LoadExplorerPreviewSwitchState()
+    private void EnableExplorerPreview()
     {
-        _isLoadingPreviewSwitch = true;
-        chkExplorerPreview.Checked = _explorerService.IsPreviewEnabled();
-        _isLoadingPreviewSwitch = false;
-    }
-
-    private void ChkExplorerPreview_CheckedChanged(object? sender, EventArgs e)
-    {
-        if (_isLoadingPreviewSwitch)
-        {
-            return;
-        }
-
         try
         {
-            if (chkExplorerPreview.Checked)
-            {
-                _explorerService.EnablePreview();
-                var deployDir = ExplorerIntegrationService.GetDeployDirectory();
-                var mediumIl = _explorerService.IsMediumIntegrityOptOutEnabled();
-                MessageBox.Show(
-                    "已启用 .md 渲染预览（SharpShell + WebView2）。\n\n" +
-                    "说明：资源管理器通过 prevhost 加载预览 DLL，不启动主程序。\n" +
-                    $"预览组件已部署到：\n{deployDir}\n\n" +
-                    (mediumIl
-                        ? "已写入 HKLM DisableLowIL（中等完整性 prevhost）。\n"
-                        : "注意：若取消了 UAC，Win11 仍可能用低完整性 prevhost；请再次勾选并同意提权。\n") +
-                    "请打开“查看 → 预览窗格”（Alt+P），重新选中 .md 文件。\n" +
-                    "需已安装 Microsoft Edge WebView2 Runtime。\n" +
-                    "若仍无法预览，请点“结束预览宿主”后再选文件，或查看“预览诊断”。",
-                    "提示",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
-            }
-            else
-            {
-                _explorerService.DisablePreview();
-                MessageBox.Show("已禁用预览，并已结束预览宿主进程。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
+            _explorerService.EnablePreview();
+            var deployDir = ExplorerIntegrationService.GetDeployDirectory();
+            var mediumIl = _explorerService.IsMediumIntegrityOptOutEnabled();
+            var engine = _previewEngine == PreviewEngineKind.WinForms ? "WinForms" : "WebView2";
+            RefreshStatus();
+            MessageBox.Show(
+                $"已启用 .md 预览窗格，渲染引擎：{engine}。\n\n" +
+                "资源管理器通过 prevhost 加载预览 DLL，不启动主程序。\n" +
+                $"预览组件已部署到：\n{deployDir}\n\n" +
+                (mediumIl
+                    ? "已写入 HKLM DisableLowIL（中等完整性 prevhost）。\n"
+                    : "若取消了 UAC，Win11 仍可能用低完整性 prevhost；请再次启用并同意提权。\n") +
+                "请打开“查看 → 预览窗格”（Alt+P），重新选中 .md 文件。\n" +
+                "切换引擎后需要结束预览宿主，再重新选中文件。",
+                "提示",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
         catch (Exception ex)
         {
-            _isLoadingPreviewSwitch = true;
-            chkExplorerPreview.Checked = !chkExplorerPreview.Checked;
-            _isLoadingPreviewSwitch = false;
-            MessageBox.Show($"操作失败：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show($"启用预览失败：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    }
+
+    private void DisableExplorerPreview()
+    {
+        try
+        {
+            _explorerService.DisablePreview();
+            RefreshStatus();
+            MessageBox.Show("已取消预览窗格渲染，并已结束预览宿主进程。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"取消预览失败：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
+    private void SetPreviewEngine(PreviewEngineKind kind)
+    {
+        _previewEngine = kind;
+        PreviewEngineSetting.Save(kind);
+        ApplyEngineToOpenEditors();
+        RefreshStatus();
+    }
+
+    private void ApplyEngineToOpenEditors()
+    {
+        foreach (TabPage page in tabsMarkdown.TabPages)
+        {
+            var editor = page.Controls.OfType<MarkdownEditorControl>().FirstOrDefault();
+            editor?.UsePreviewEngine(_previewEngine);
+        }
+
+        mnuEngineWebView.Checked = _previewEngine == PreviewEngineKind.WebView;
+        mnuEngineWinForms.Checked = _previewEngine == PreviewEngineKind.WinForms;
+        lblEngine.Text = _previewEngine == PreviewEngineKind.WinForms ? "引擎：WinForms" : "引擎：WebView";
+    }
+
+    private void RefreshStatus()
+    {
+        lblStatus.Text = _explorerService.IsPreviewEnabled()
+            ? "资源管理器预览：已启用"
+            : "资源管理器预览：未启用";
     }
 
     private void RegisterContextMenu()
@@ -383,15 +412,20 @@ public partial class FrmMain : Form
         }
     }
 
-    private void btnRegisterContext_Click(object sender, EventArgs e) => RegisterContextMenu();
-    private void btnUnregisterContext_Click_1(object sender, EventArgs e) => UnregisterContextMenu();
-    private void btnOpen_Click(object sender, EventArgs e) => OpenFilesByDialog();
-    private void btnSaveCurrent_Click(object sender, EventArgs e) => SaveCurrentTab();
-    private void btnExportWeb_Click(object sender, EventArgs e) => OpenPublishCenter();
-    private void btnMarkdownPreview_Click(object sender, EventArgs e) => OpenMarkdownPreviewWindow();
-    private void btnKillPrevhost_Click(object sender, EventArgs e) => KillPrevhost();
-    private void btnRestartExplorer_Click(object sender, EventArgs e) => RestartExplorer();
-    private void btnDiagnosePreview_Click(object sender, EventArgs e) => DiagnosePreview();
+    private void mnuOpen_Click(object sender, EventArgs e) => OpenFilesByDialog();
+    private void mnuSave_Click(object sender, EventArgs e) => SaveCurrentTab();
+    private void mnuPublish_Click(object sender, EventArgs e) => OpenPublishCenter();
+    private void mnuExit_Click(object sender, EventArgs e) => Close();
+    private void mnuRegisterContext_Click(object sender, EventArgs e) => RegisterContextMenu();
+    private void mnuUnregisterContext_Click(object sender, EventArgs e) => UnregisterContextMenu();
+    private void mnuEnablePreview_Click(object sender, EventArgs e) => EnableExplorerPreview();
+    private void mnuDisablePreview_Click(object sender, EventArgs e) => DisableExplorerPreview();
+    private void mnuKillPrevhost_Click(object sender, EventArgs e) => KillPrevhost();
+    private void mnuRestartExplorer_Click(object sender, EventArgs e) => RestartExplorer();
+    private void mnuDiagnosePreview_Click(object sender, EventArgs e) => DiagnosePreview();
+    private void mnuEngineWebView_Click(object sender, EventArgs e) => SetPreviewEngine(PreviewEngineKind.WebView);
+    private void mnuEngineWinForms_Click(object sender, EventArgs e) => SetPreviewEngine(PreviewEngineKind.WinForms);
+    private void mnuPreviewWindow_Click(object sender, EventArgs e) => OpenMarkdownPreviewWindow();
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {

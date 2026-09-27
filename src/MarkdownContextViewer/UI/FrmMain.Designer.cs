@@ -6,251 +6,340 @@ partial class FrmMain
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing && (components != null))
+        if (disposing && components != null)
         {
             components.Dispose();
         }
+
         base.Dispose(disposing);
     }
 
     private void InitializeComponent()
     {
-        btnOpen = new Button();
-        btnSaveCurrent = new Button();
-        btnExportWeb = new Button();
-        btnRegisterContext = new Button();
-        btnUnregisterContext = new Button();
-        chkExplorerPreview = new CheckBox();
-        btnMarkdownPreview = new Button();
-        btnKillPrevhost = new Button();
-        btnRestartExplorer = new Button();
-        btnDiagnosePreview = new Button();
-        mainSplitContainer = new SplitContainer();
-        lstHistory = new ListBox();
+        menuStrip = new MenuStrip();
+        mnuFile = new ToolStripMenuItem();
+        mnuOpen = new ToolStripMenuItem();
+        mnuSave = new ToolStripMenuItem();
+        mnuPublish = new ToolStripMenuItem();
+        mnuExit = new ToolStripMenuItem();
+        mnuExplorer = new ToolStripMenuItem();
+        mnuRegisterContext = new ToolStripMenuItem();
+        mnuUnregisterContext = new ToolStripMenuItem();
+        mnuEnablePreview = new ToolStripMenuItem();
+        mnuDisablePreview = new ToolStripMenuItem();
+        mnuKillPrevhost = new ToolStripMenuItem();
+        mnuRestartExplorer = new ToolStripMenuItem();
+        mnuDiagnosePreview = new ToolStripMenuItem();
+        mnuView = new ToolStripMenuItem();
+        mnuEngineWebView = new ToolStripMenuItem();
+        mnuEngineWinForms = new ToolStripMenuItem();
+        mnuPreviewWindow = new ToolStripMenuItem();
+        toolStrip = new ToolStrip();
+        btnOpen = new ToolStripButton();
+        btnSaveCurrent = new ToolStripButton();
+        btnExportWeb = new ToolStripButton();
+        statusStrip = new StatusStrip();
+        lblStatus = new ToolStripStatusLabel();
+        lblEngine = new ToolStripStatusLabel();
+        splitMain = new SplitContainer();
         lblHistory = new Label();
+        lstHistory = new ListBox();
         tabsMarkdown = new TabControl();
-        topPanel = new Panel();
-        ((System.ComponentModel.ISupportInitialize)mainSplitContainer).BeginInit();
-        mainSplitContainer.Panel1.SuspendLayout();
-        mainSplitContainer.Panel2.SuspendLayout();
-        mainSplitContainer.SuspendLayout();
-        topPanel.SuspendLayout();
+        menuStrip.SuspendLayout();
+        toolStrip.SuspendLayout();
+        statusStrip.SuspendLayout();
+        ((System.ComponentModel.ISupportInitialize)splitMain).BeginInit();
+        splitMain.Panel1.SuspendLayout();
+        splitMain.Panel2.SuspendLayout();
+        splitMain.SuspendLayout();
         SuspendLayout();
+        // 
+        // menuStrip
+        // 
+        menuStrip.Items.AddRange(new ToolStripItem[] { mnuFile, mnuExplorer, mnuView });
+        menuStrip.Location = new Point(0, 0);
+        menuStrip.Name = "menuStrip";
+        menuStrip.Size = new Size(1100, 25);
+        menuStrip.TabIndex = 0;
+        menuStrip.Text = "menuStrip";
+        // 
+        // mnuFile
+        // 
+        mnuFile.DropDownItems.AddRange(new ToolStripItem[] { mnuOpen, mnuSave, mnuPublish, new ToolStripSeparator(), mnuExit });
+        mnuFile.Name = "mnuFile";
+        mnuFile.Size = new Size(44, 21);
+        mnuFile.Text = "文件";
+        // 
+        // mnuOpen
+        // 
+        mnuOpen.Name = "mnuOpen";
+        mnuOpen.ShortcutKeys = Keys.Control | Keys.O;
+        mnuOpen.Size = new Size(180, 22);
+        mnuOpen.Text = "打开...";
+        mnuOpen.Click += mnuOpen_Click;
+        // 
+        // mnuSave
+        // 
+        mnuSave.Name = "mnuSave";
+        mnuSave.ShortcutKeys = Keys.Control | Keys.S;
+        mnuSave.Size = new Size(180, 22);
+        mnuSave.Text = "保存";
+        mnuSave.Click += mnuSave_Click;
+        // 
+        // mnuPublish
+        // 
+        mnuPublish.Name = "mnuPublish";
+        mnuPublish.Size = new Size(180, 22);
+        mnuPublish.Text = "发布中心";
+        mnuPublish.Click += mnuPublish_Click;
+        // 
+        // mnuExit
+        // 
+        mnuExit.Name = "mnuExit";
+        mnuExit.Size = new Size(180, 22);
+        mnuExit.Text = "退出";
+        mnuExit.Click += mnuExit_Click;
+        // 
+        // mnuExplorer
+        // 
+        mnuExplorer.DropDownItems.AddRange(new ToolStripItem[] { mnuRegisterContext, mnuUnregisterContext, new ToolStripSeparator(), mnuEnablePreview, mnuDisablePreview, mnuKillPrevhost, mnuRestartExplorer, mnuDiagnosePreview });
+        mnuExplorer.Name = "mnuExplorer";
+        mnuExplorer.Size = new Size(80, 21);
+        mnuExplorer.Text = "资源管理器";
+        // 
+        // mnuRegisterContext
+        // 
+        mnuRegisterContext.Name = "mnuRegisterContext";
+        mnuRegisterContext.Size = new Size(220, 22);
+        mnuRegisterContext.Text = "注册右键菜单";
+        mnuRegisterContext.Click += mnuRegisterContext_Click;
+        // 
+        // mnuUnregisterContext
+        // 
+        mnuUnregisterContext.Name = "mnuUnregisterContext";
+        mnuUnregisterContext.Size = new Size(220, 22);
+        mnuUnregisterContext.Text = "取消右键菜单";
+        mnuUnregisterContext.Click += mnuUnregisterContext_Click;
+        // 
+        // mnuEnablePreview
+        // 
+        mnuEnablePreview.Name = "mnuEnablePreview";
+        mnuEnablePreview.Size = new Size(220, 22);
+        mnuEnablePreview.Text = "启用预览窗格渲染 .md";
+        mnuEnablePreview.Click += mnuEnablePreview_Click;
+        // 
+        // mnuDisablePreview
+        // 
+        mnuDisablePreview.Name = "mnuDisablePreview";
+        mnuDisablePreview.Size = new Size(220, 22);
+        mnuDisablePreview.Text = "取消预览窗格渲染 .md";
+        mnuDisablePreview.Click += mnuDisablePreview_Click;
+        // 
+        // mnuKillPrevhost
+        // 
+        mnuKillPrevhost.Name = "mnuKillPrevhost";
+        mnuKillPrevhost.Size = new Size(220, 22);
+        mnuKillPrevhost.Text = "结束预览宿主";
+        mnuKillPrevhost.Click += mnuKillPrevhost_Click;
+        // 
+        // mnuRestartExplorer
+        // 
+        mnuRestartExplorer.Name = "mnuRestartExplorer";
+        mnuRestartExplorer.Size = new Size(220, 22);
+        mnuRestartExplorer.Text = "重启资源管理器";
+        mnuRestartExplorer.Click += mnuRestartExplorer_Click;
+        // 
+        // mnuDiagnosePreview
+        // 
+        mnuDiagnosePreview.Name = "mnuDiagnosePreview";
+        mnuDiagnosePreview.Size = new Size(220, 22);
+        mnuDiagnosePreview.Text = "预览诊断";
+        mnuDiagnosePreview.Click += mnuDiagnosePreview_Click;
+        // 
+        // mnuView
+        // 
+        mnuView.DropDownItems.AddRange(new ToolStripItem[] { mnuEngineWebView, mnuEngineWinForms, new ToolStripSeparator(), mnuPreviewWindow });
+        mnuView.Name = "mnuView";
+        mnuView.Size = new Size(44, 21);
+        mnuView.Text = "视图";
+        // 
+        // mnuEngineWebView
+        // 
+        mnuEngineWebView.Name = "mnuEngineWebView";
+        mnuEngineWebView.Size = new Size(220, 22);
+        mnuEngineWebView.Text = "预览引擎：WebView";
+        mnuEngineWebView.Click += mnuEngineWebView_Click;
+        // 
+        // mnuEngineWinForms
+        // 
+        mnuEngineWinForms.Name = "mnuEngineWinForms";
+        mnuEngineWinForms.Size = new Size(220, 22);
+        mnuEngineWinForms.Text = "预览引擎：WinForms";
+        mnuEngineWinForms.Click += mnuEngineWinForms_Click;
+        // 
+        // mnuPreviewWindow
+        // 
+        mnuPreviewWindow.Name = "mnuPreviewWindow";
+        mnuPreviewWindow.Size = new Size(220, 22);
+        mnuPreviewWindow.Text = "独立预览窗体";
+        mnuPreviewWindow.Click += mnuPreviewWindow_Click;
+        // 
+        // toolStrip
+        // 
+        toolStrip.Items.AddRange(new ToolStripItem[] { btnOpen, btnSaveCurrent, btnExportWeb });
+        toolStrip.Location = new Point(0, 25);
+        toolStrip.Name = "toolStrip";
+        toolStrip.Size = new Size(1100, 25);
+        toolStrip.TabIndex = 1;
+        toolStrip.Text = "toolStrip";
         // 
         // btnOpen
         // 
-        btnOpen.Location = new Point(13, 12);
-        btnOpen.Margin = new Padding(4);
+        btnOpen.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnOpen.Name = "btnOpen";
-        btnOpen.Size = new Size(129, 35);
-        btnOpen.TabIndex = 0;
-        btnOpen.Text = "打开 .md";
-        btnOpen.UseVisualStyleBackColor = true;
-        btnOpen.Click += btnOpen_Click;
+        btnOpen.Size = new Size(36, 22);
+        btnOpen.Text = "打开";
+        btnOpen.Click += mnuOpen_Click;
         // 
         // btnSaveCurrent
         // 
-        btnSaveCurrent.Location = new Point(154, 12);
-        btnSaveCurrent.Margin = new Padding(4);
+        btnSaveCurrent.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnSaveCurrent.Name = "btnSaveCurrent";
-        btnSaveCurrent.Size = new Size(129, 35);
-        btnSaveCurrent.TabIndex = 1;
-        btnSaveCurrent.Text = "保存当前";
-        btnSaveCurrent.UseVisualStyleBackColor = true;
-        btnSaveCurrent.Click += btnSaveCurrent_Click;
+        btnSaveCurrent.Size = new Size(36, 22);
+        btnSaveCurrent.Text = "保存";
+        btnSaveCurrent.Click += mnuSave_Click;
         // 
         // btnExportWeb
         // 
-        btnExportWeb.Location = new Point(296, 12);
-        btnExportWeb.Margin = new Padding(4);
+        btnExportWeb.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnExportWeb.Name = "btnExportWeb";
-        btnExportWeb.Size = new Size(190, 35);
-        btnExportWeb.TabIndex = 2;
+        btnExportWeb.Size = new Size(60, 22);
         btnExportWeb.Text = "发布中心";
-        btnExportWeb.UseVisualStyleBackColor = true;
-        btnExportWeb.Click += btnExportWeb_Click;
+        btnExportWeb.Click += mnuPublish_Click;
         // 
-        // btnRegisterContext
+        // statusStrip
         // 
-        btnRegisterContext.Location = new Point(496, 12);
-        btnRegisterContext.Margin = new Padding(4);
-        btnRegisterContext.Name = "btnRegisterContext";
-        btnRegisterContext.Size = new Size(167, 35);
-        btnRegisterContext.TabIndex = 2;
-        btnRegisterContext.Text = "注册右键菜单";
-        btnRegisterContext.UseVisualStyleBackColor = true;
-        btnRegisterContext.Click += btnRegisterContext_Click;
+        statusStrip.Items.AddRange(new ToolStripItem[] { lblStatus, lblEngine });
+        statusStrip.Location = new Point(0, 628);
+        statusStrip.Name = "statusStrip";
+        statusStrip.Size = new Size(1100, 22);
+        statusStrip.TabIndex = 2;
+        statusStrip.Text = "statusStrip";
         // 
-        // btnUnregisterContext
+        // lblStatus
         // 
-        btnUnregisterContext.Location = new Point(676, 12);
-        btnUnregisterContext.Margin = new Padding(4);
-        btnUnregisterContext.Name = "btnUnregisterContext";
-        btnUnregisterContext.Size = new Size(167, 35);
-        btnUnregisterContext.TabIndex = 3;
-        btnUnregisterContext.Text = "卸载右键菜单";
-        btnUnregisterContext.UseVisualStyleBackColor = true;
-        btnUnregisterContext.Click += btnUnregisterContext_Click_1;
+        lblStatus.Name = "lblStatus";
+        lblStatus.Size = new Size(68, 17);
+        lblStatus.Spring = true;
+        lblStatus.Text = "就绪";
+        lblStatus.TextAlign = ContentAlignment.MiddleLeft;
         // 
-        // chkExplorerPreview
+        // lblEngine
         // 
-        chkExplorerPreview.AutoSize = true;
-        chkExplorerPreview.Location = new Point(860, 18);
-        chkExplorerPreview.Margin = new Padding(4);
-        chkExplorerPreview.Name = "chkExplorerPreview";
-        chkExplorerPreview.Size = new Size(252, 24);
-        chkExplorerPreview.TabIndex = 4;
-        chkExplorerPreview.Text = "资源管理器预览窗格渲染 .md";
-        chkExplorerPreview.UseVisualStyleBackColor = true;
-        chkExplorerPreview.CheckedChanged += ChkExplorerPreview_CheckedChanged;
+        lblEngine.Name = "lblEngine";
+        lblEngine.Size = new Size(80, 17);
+        lblEngine.Text = "引擎：WebView";
         // 
-        // btnMarkdownPreview
+        // splitMain
         // 
-        btnMarkdownPreview.Location = new Point(1120, 12);
-        btnMarkdownPreview.Margin = new Padding(4);
-        btnMarkdownPreview.Name = "btnMarkdownPreview";
-        btnMarkdownPreview.Size = new Size(150, 35);
-        btnMarkdownPreview.TabIndex = 5;
-        btnMarkdownPreview.Text = "预览窗体";
-        btnMarkdownPreview.UseVisualStyleBackColor = true;
-        btnMarkdownPreview.Click += btnMarkdownPreview_Click;
+        splitMain.Dock = DockStyle.Fill;
+        splitMain.Location = new Point(0, 50);
+        splitMain.Name = "splitMain";
         // 
-        // btnKillPrevhost
+        // splitMain.Panel1
         // 
-        btnKillPrevhost.Location = new Point(13, 52);
-        btnKillPrevhost.Margin = new Padding(4);
-        btnKillPrevhost.Name = "btnKillPrevhost";
-        btnKillPrevhost.Size = new Size(170, 32);
-        btnKillPrevhost.TabIndex = 6;
-        btnKillPrevhost.Text = "结束预览宿主";
-        btnKillPrevhost.UseVisualStyleBackColor = true;
-        btnKillPrevhost.Click += btnKillPrevhost_Click;
+        splitMain.Panel1.Controls.Add(lstHistory);
+        splitMain.Panel1.Controls.Add(lblHistory);
         // 
-        // btnRestartExplorer
+        // splitMain.Panel2
         // 
-        btnRestartExplorer.Location = new Point(195, 52);
-        btnRestartExplorer.Margin = new Padding(4);
-        btnRestartExplorer.Name = "btnRestartExplorer";
-        btnRestartExplorer.Size = new Size(170, 32);
-        btnRestartExplorer.TabIndex = 7;
-        btnRestartExplorer.Text = "重启资源管理器";
-        btnRestartExplorer.UseVisualStyleBackColor = true;
-        btnRestartExplorer.Click += btnRestartExplorer_Click;
+        splitMain.Panel2.Controls.Add(tabsMarkdown);
+        splitMain.Size = new Size(1100, 578);
+        splitMain.SplitterDistance = 260;
+        splitMain.TabIndex = 3;
         // 
-        // btnDiagnosePreview
+        // lblHistory
         // 
-        btnDiagnosePreview.Location = new Point(377, 52);
-        btnDiagnosePreview.Margin = new Padding(4);
-        btnDiagnosePreview.Name = "btnDiagnosePreview";
-        btnDiagnosePreview.Size = new Size(170, 32);
-        btnDiagnosePreview.TabIndex = 8;
-        btnDiagnosePreview.Text = "预览诊断";
-        btnDiagnosePreview.UseVisualStyleBackColor = true;
-        btnDiagnosePreview.Click += btnDiagnosePreview_Click;
-        // 
-        // mainSplitContainer
-        // 
-        mainSplitContainer.Dock = DockStyle.Fill;
-        mainSplitContainer.Location = new Point(0, 96);
-        mainSplitContainer.Margin = new Padding(4);
-        mainSplitContainer.Name = "mainSplitContainer";
-        // 
-        // mainSplitContainer.Panel1
-        // 
-        mainSplitContainer.Panel1.Controls.Add(lstHistory);
-        mainSplitContainer.Panel1.Controls.Add(lblHistory);
-        // 
-        // mainSplitContainer.Panel2
-        // 
-        mainSplitContainer.Panel2.Controls.Add(tabsMarkdown);
-        mainSplitContainer.Size = new Size(1290, 635);
-        mainSplitContainer.SplitterDistance = 247;
-        mainSplitContainer.SplitterWidth = 5;
-        mainSplitContainer.TabIndex = 1;
+        lblHistory.Dock = DockStyle.Top;
+        lblHistory.Location = new Point(0, 0);
+        lblHistory.Name = "lblHistory";
+        lblHistory.Size = new Size(260, 24);
+        lblHistory.TabIndex = 0;
+        lblHistory.Text = "最近文件（双击打开）";
+        lblHistory.TextAlign = ContentAlignment.MiddleLeft;
         // 
         // lstHistory
         // 
         lstHistory.Dock = DockStyle.Fill;
         lstHistory.FormattingEnabled = true;
         lstHistory.HorizontalScrollbar = true;
-        lstHistory.Location = new Point(0, 20);
-        lstHistory.Margin = new Padding(4);
+        lstHistory.Location = new Point(0, 24);
         lstHistory.Name = "lstHistory";
-        lstHistory.Size = new Size(247, 615);
+        lstHistory.Size = new Size(260, 554);
         lstHistory.TabIndex = 1;
-        // 
-        // lblHistory
-        // 
-        lblHistory.Dock = DockStyle.Top;
-        lblHistory.Location = new Point(0, 0);
-        lblHistory.Margin = new Padding(4, 0, 4, 0);
-        lblHistory.Name = "lblHistory";
-        lblHistory.Size = new Size(247, 20);
-        lblHistory.TabIndex = 0;
-        lblHistory.Text = "历史打开文件（双击可打开）";
         // 
         // tabsMarkdown
         // 
         tabsMarkdown.Dock = DockStyle.Fill;
         tabsMarkdown.Location = new Point(0, 0);
-        tabsMarkdown.Margin = new Padding(4);
         tabsMarkdown.Name = "tabsMarkdown";
         tabsMarkdown.SelectedIndex = 0;
-        tabsMarkdown.Size = new Size(894, 635);
+        tabsMarkdown.Size = new Size(836, 578);
         tabsMarkdown.TabIndex = 0;
-        // 
-        // topPanel
-        // 
-        topPanel.Controls.Add(btnOpen);
-        topPanel.Controls.Add(btnSaveCurrent);
-        topPanel.Controls.Add(btnExportWeb);
-        topPanel.Controls.Add(btnRegisterContext);
-        topPanel.Controls.Add(btnUnregisterContext);
-        topPanel.Controls.Add(chkExplorerPreview);
-        topPanel.Controls.Add(btnMarkdownPreview);
-        topPanel.Controls.Add(btnKillPrevhost);
-        topPanel.Controls.Add(btnRestartExplorer);
-        topPanel.Controls.Add(btnDiagnosePreview);
-        topPanel.Dock = DockStyle.Top;
-        topPanel.Location = new Point(0, 0);
-        topPanel.Margin = new Padding(4);
-        topPanel.Name = "topPanel";
-        topPanel.Padding = new Padding(13, 12, 13, 0);
-        topPanel.Size = new Size(1290, 96);
-        topPanel.TabIndex = 2;
         // 
         // FrmMain
         // 
-        AutoScaleDimensions = new SizeF(9F, 20F);
+        AutoScaleDimensions = new SizeF(7F, 17F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(1290, 694);
-        Controls.Add(mainSplitContainer);
-        Controls.Add(topPanel);
-        Margin = new Padding(4);
+        ClientSize = new Size(1100, 650);
+        Controls.Add(splitMain);
+        Controls.Add(statusStrip);
+        Controls.Add(toolStrip);
+        Controls.Add(menuStrip);
+        MainMenuStrip = menuStrip;
         Name = "FrmMain";
-        Text = "Markdown 浏览器与编辑器";
-        mainSplitContainer.Panel1.ResumeLayout(false);
-        mainSplitContainer.Panel2.ResumeLayout(false);
-        ((System.ComponentModel.ISupportInitialize)mainSplitContainer).EndInit();
-        mainSplitContainer.ResumeLayout(false);
-        topPanel.ResumeLayout(false);
-        topPanel.PerformLayout();
+        Text = "Markdown 文件管理器";
+        menuStrip.ResumeLayout(false);
+        menuStrip.PerformLayout();
+        toolStrip.ResumeLayout(false);
+        toolStrip.PerformLayout();
+        statusStrip.ResumeLayout(false);
+        statusStrip.PerformLayout();
+        splitMain.Panel1.ResumeLayout(false);
+        splitMain.Panel2.ResumeLayout(false);
+        ((System.ComponentModel.ISupportInitialize)splitMain).EndInit();
+        splitMain.ResumeLayout(false);
         ResumeLayout(false);
+        PerformLayout();
     }
 
-    private Button btnOpen = null!;
-    private Button btnSaveCurrent = null!;
-    private Button btnExportWeb = null!;
-    private Button btnRegisterContext = null!;
-    private Button btnUnregisterContext = null!;
-    private CheckBox chkExplorerPreview = null!;
-    private Button btnMarkdownPreview = null!;
-    private Button btnKillPrevhost = null!;
-    private Button btnRestartExplorer = null!;
-    private Button btnDiagnosePreview = null!;
-    private SplitContainer mainSplitContainer = null!;
+    private MenuStrip menuStrip = null!;
+    private ToolStripMenuItem mnuFile = null!;
+    private ToolStripMenuItem mnuOpen = null!;
+    private ToolStripMenuItem mnuSave = null!;
+    private ToolStripMenuItem mnuPublish = null!;
+    private ToolStripMenuItem mnuExit = null!;
+    private ToolStripMenuItem mnuExplorer = null!;
+    private ToolStripMenuItem mnuRegisterContext = null!;
+    private ToolStripMenuItem mnuUnregisterContext = null!;
+    private ToolStripMenuItem mnuEnablePreview = null!;
+    private ToolStripMenuItem mnuDisablePreview = null!;
+    private ToolStripMenuItem mnuKillPrevhost = null!;
+    private ToolStripMenuItem mnuRestartExplorer = null!;
+    private ToolStripMenuItem mnuDiagnosePreview = null!;
+    private ToolStripMenuItem mnuView = null!;
+    private ToolStripMenuItem mnuEngineWebView = null!;
+    private ToolStripMenuItem mnuEngineWinForms = null!;
+    private ToolStripMenuItem mnuPreviewWindow = null!;
+    private ToolStrip toolStrip = null!;
+    private ToolStripButton btnOpen = null!;
+    private ToolStripButton btnSaveCurrent = null!;
+    private ToolStripButton btnExportWeb = null!;
+    private StatusStrip statusStrip = null!;
+    private ToolStripStatusLabel lblStatus = null!;
+    private ToolStripStatusLabel lblEngine = null!;
+    private SplitContainer splitMain = null!;
     private Label lblHistory = null!;
     private ListBox lstHistory = null!;
     private TabControl tabsMarkdown = null!;
-    private Panel topPanel = null!;
 }

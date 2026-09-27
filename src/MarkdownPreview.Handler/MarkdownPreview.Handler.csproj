@@ -27,6 +27,15 @@
     <EmbeddedResource Update="MarkdownPreviewControl.resx">
       <DependentUpon>MarkdownPreviewControl.cs</DependentUpon>
     </EmbeddedResource>
+    <Compile Update="PreviewHistoryForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="PreviewHistoryForm.Designer.cs">
+      <DependentUpon>PreviewHistoryForm.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="PreviewHistoryForm.resx">
+      <DependentUpon>PreviewHistoryForm.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

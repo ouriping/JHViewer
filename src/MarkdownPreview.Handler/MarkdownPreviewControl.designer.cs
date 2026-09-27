@@ -62,7 +62,7 @@ namespace MarkdownPreview.Handler
             this.panelToolbar.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelToolbar.Location = new System.Drawing.Point(0, 0);
             this.panelToolbar.Name = "panelToolbar";
-            this.panelToolbar.Size = new System.Drawing.Size(720, 52);
+            this.panelToolbar.Size = new System.Drawing.Size(720, 62);
             this.panelToolbar.TabIndex = 0;
             // 
             // infoStrip
@@ -75,10 +75,10 @@ namespace MarkdownPreview.Handler
             this.lblUpdate,
             this.lblVersion,
             this.lblAuthor});
-            this.infoStrip.Location = new System.Drawing.Point(0, 27);
+            this.infoStrip.Location = new System.Drawing.Point(0, 31);
             this.infoStrip.Name = "infoStrip";
             this.infoStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.infoStrip.Size = new System.Drawing.Size(720, 25);
+            this.infoStrip.Size = new System.Drawing.Size(720, 31);
             this.infoStrip.TabIndex = 1;
             this.infoStrip.Text = "infoStrip";
             // 
@@ -134,7 +134,7 @@ namespace MarkdownPreview.Handler
             this.actionStrip.Location = new System.Drawing.Point(0, 0);
             this.actionStrip.Name = "actionStrip";
             this.actionStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.actionStrip.Size = new System.Drawing.Size(720, 27);
+            this.actionStrip.Size = new System.Drawing.Size(720, 31);
             this.actionStrip.TabIndex = 0;
             this.actionStrip.Text = "actionStrip";
             this.actionStrip.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.actionStrip_ItemClicked);
@@ -251,9 +251,9 @@ namespace MarkdownPreview.Handler
             // panelPreview
             // 
             this.panelPreview.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panelPreview.Location = new System.Drawing.Point(0, 52);
+            this.panelPreview.Location = new System.Drawing.Point(0, 62);
             this.panelPreview.Name = "panelPreview";
-            this.panelPreview.Size = new System.Drawing.Size(720, 428);
+            this.panelPreview.Size = new System.Drawing.Size(720, 418);
             this.panelPreview.TabIndex = 1;
             // 
             // toolStripSeparator1

@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -24,6 +25,8 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
     private readonly CancellationTokenSource _updateCts = new CancellationTokenSource();
 
     private WebView2 _webView;
+    private RichTextBox _winFormsView;
+    private string _currentMarkdown = "";
     private System.Windows.Forms.Timer _reloadTimer;
     private FileSystemWatcher _watcher;
     private string _pendingHtml;
@@ -70,7 +73,7 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
     {
         _currentPath = null;
         StopWatching();
-        ShowHtml(MarkdownHtmlRenderer.Render(markdown));
+        Present(markdown);
         lblFile.Text = "未打开文件";
         lblFile.ToolTipText = "";
         UpdateActions();
@@ -225,7 +228,7 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
         {
             var markdown = ReadAllTextShared(path);
             _currentPath = path;
-            ShowHtml(MarkdownHtmlRenderer.Render(markdown));
+            Present(markdown);
             lblFile.Text = Path.GetFileName(path);
             lblFile.ToolTipText = path;
             if (recordHistory)
@@ -254,7 +257,7 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
         try
         {
             var markdown = ReadAllTextShared(_currentPath);
-            ShowHtml(MarkdownHtmlRenderer.Render(markdown));
+            Present(markdown);
             HandlerLog.Info("操作: 刷新完成 | " + _currentPath);
         }
         catch (IOException)
@@ -274,6 +277,57 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
         {
             return reader.ReadToEnd();
         }
+    }
+
+    private void Present(string markdown)
+    {
+        _currentMarkdown = markdown ?? "";
+        _currentHtml = MarkdownHtmlRenderer.Render(_currentMarkdown);
+        if (PreviewEngineChoice.UseWinForms())
+        {
+            EnsureWinFormsView();
+            _winFormsView.Visible = true;
+            if (_webView != null)
+            {
+                _webView.Visible = false;
+            }
+
+            WinFormsMarkdownRenderer.Render(_winFormsView, _currentMarkdown);
+            HandlerLog.Info("渲染引擎=WinForms length=" + _currentMarkdown.Length);
+            return;
+        }
+
+        if (_winFormsView != null)
+        {
+            _winFormsView.Visible = false;
+        }
+
+        if (_webView != null)
+        {
+            _webView.Visible = true;
+        }
+
+        HandlerLog.Info("渲染引擎=WebView length=" + _currentMarkdown.Length);
+        ShowHtml(_currentHtml);
+    }
+
+    private void EnsureWinFormsView()
+    {
+        if (_winFormsView != null)
+        {
+            return;
+        }
+
+        _winFormsView = new RichTextBox
+        {
+            Dock = DockStyle.Fill,
+            Name = "winFormsPreview",
+            ReadOnly = true,
+            BorderStyle = BorderStyle.None,
+            BackColor = Color.White,
+            Font = new Font("Microsoft YaHei UI", 10.5f)
+        };
+        panelPreview.Controls.Add(_winFormsView);
     }
 
     private void ShowHtml(string html)
