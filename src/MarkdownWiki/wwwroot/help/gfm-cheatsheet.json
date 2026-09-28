@@ -1,0 +1,110 @@
+[
+  {
+    "id": "heading",
+    "title": "标题",
+    "category": "基础",
+    "tags": ["#", "标题", "heading"],
+    "syntax": "# 一级标题\n## 二级标题\n### 三级标题",
+    "example": "## 快速开始\n\n正文从这里开始。",
+    "description": "行首使用 1～6 个 # 表示标题层级（CommonMark）。"
+  },
+  {
+    "id": "bold-italic",
+    "title": "粗体 / 斜体",
+    "category": "基础",
+    "tags": ["**", "*", "粗体", "斜体"],
+    "syntax": "**粗体**  *斜体*  ***粗斜体***",
+    "example": "请阅读 **重要说明**，并留意 *可选参数*。",
+    "description": "用星号包裹文字；GFM/CommonMark 通用。"
+  },
+  {
+    "id": "link",
+    "title": "链接",
+    "category": "基础",
+    "tags": ["[]()", "链接", "link"],
+    "syntax": "[显示文字](https://example.com)",
+    "example": "详见 [安装说明](getting-started/install.md)。",
+    "description": "相对路径可指向同仓库内其他 .md 文档。"
+  },
+  {
+    "id": "image",
+    "title": "图片",
+    "category": "媒体",
+    "tags": ["![]()", "图片", "image"],
+    "syntax": "![替代文字](assets/demo.png)",
+    "example": "![架构示意](assets/architecture.png)",
+    "description": "编辑器支持上传或 Ctrl+V 粘贴图片，自动保存到文档旁 assets/ 并插入相对路径（GFM）。"
+  },
+  {
+    "id": "list",
+    "title": "列表",
+    "category": "基础",
+    "tags": ["-", "1.", "列表", "list"],
+    "syntax": "- 无序项\n- 无序项\n\n1. 有序项\n2. 有序项",
+    "example": "- 安装 SDK\n- 启动服务\n\n1. 打开浏览器\n2. 编辑文档",
+    "description": "无序用 -/*/+，有序用数字+点。"
+  },
+  {
+    "id": "task-list",
+    "title": "任务列表",
+    "category": "GFM",
+    "tags": ["- [ ]", "任务", "checkbox"],
+    "syntax": "- [ ] 未完成\n- [x] 已完成",
+    "example": "- [x] 写文档\n- [ ] 发布站点",
+    "description": "GitHub Flavored Markdown 扩展。"
+  },
+  {
+    "id": "quote",
+    "title": "引用",
+    "category": "基础",
+    "tags": [">", "引用", "blockquote"],
+    "syntax": "> 引用内容",
+    "example": "> 提示：保存后刷新即可看到最新内容。",
+    "description": "行首 > 表示引用块。"
+  },
+  {
+    "id": "code",
+    "title": "行内代码 / 代码块",
+    "category": "基础",
+    "tags": ["`", "```", "代码", "code"],
+    "syntax": "行内 `code`\n\n```csharp\nConsole.WriteLine(\"Hi\");\n```",
+    "example": "运行 `dotnet run`：\n\n```powershell\ndotnet run --project .\\src\\MarkdownWiki\\MarkdownWiki.csproj\n```",
+    "description": "围栏代码块可标注语言，便于高亮（GFM）。"
+  },
+  {
+    "id": "table",
+    "title": "表格",
+    "category": "GFM",
+    "tags": ["|", "表格", "table"],
+    "syntax": "| 列1 | 列2 |\n| --- | --- |\n| A | B |",
+    "example": "| 功能 | 说明 |\n| --- | --- |\n| 阅读 | 树导航浏览 |\n| 编辑 | 在线改 md |",
+    "description": "GFM 表格；分隔行至少三个 -。"
+  },
+  {
+    "id": "hr",
+    "title": "分隔线",
+    "category": "基础",
+    "tags": ["---", "分隔线", "hr"],
+    "syntax": "---",
+    "example": "上文\n\n---\n\n下文",
+    "description": "单独一行三个及以上 -/*/_。"
+  },
+  {
+    "id": "strikethrough",
+    "title": "删除线",
+    "category": "GFM",
+    "tags": ["~~", "删除线"],
+    "syntax": "~~已废弃内容~~",
+    "example": "旧接口 ~~GetFoo~~ 已替换为 GetBar。",
+    "description": "GFM 扩展语法。"
+  },
+  {
+    "id": "footnote-note",
+    "title": "提示块（引用约定）",
+    "category": "写作建议",
+    "tags": ["提示", "注意", "NOTE"],
+    "syntax": "> **提示**\n> 内容说明",
+    "example": "> **注意**\n> 默认仅本机访问（127.0.0.1）。",
+    "description": "CommonMark 无官方 admonition；用加粗标题的引用块是可移植写法。"
+  }
+]

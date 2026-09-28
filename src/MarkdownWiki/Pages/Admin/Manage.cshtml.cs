@@ -3,7 +3,7 @@ using MarkdownWiki.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace MarkdownWiki.Pages;
+namespace MarkdownWiki.Pages.Admin;
 
 public class ManageModel : PageModel
 {
@@ -38,45 +38,33 @@ public class ManageModel : PageModel
             return RedirectToPage("/Index");
         }
 
-        ViewData["Title"] = "管理";
+        ViewData["Title"] = "文档管理";
         return Page();
     }
 
-    public IActionResult OnPostCreateDoc()
+    public IActionResult OnPostCreateDoc() => Run(() =>
     {
-        return Run(() =>
-        {
-            var path = _docs.CreateDocument(Parent, Name ?? "new");
-            Message = $"已创建文档：{path}";
-        });
-    }
+        var path = _docs.CreateDocument(Parent, Name ?? "new");
+        Message = $"已创建文档：{path}";
+    });
 
-    public IActionResult OnPostCreateFolder()
+    public IActionResult OnPostCreateFolder() => Run(() =>
     {
-        return Run(() =>
-        {
-            var path = _docs.CreateFolder(Parent, Name ?? "folder");
-            Message = $"已创建文件夹：{path}";
-        });
-    }
+        var path = _docs.CreateFolder(Parent, Name ?? "folder");
+        Message = $"已创建文件夹：{path}";
+    });
 
-    public IActionResult OnPostRename()
+    public IActionResult OnPostRename() => Run(() =>
     {
-        return Run(() =>
-        {
-            var path = _docs.Rename(TargetPath ?? string.Empty, NewName ?? string.Empty);
-            Message = $"已重命名为：{path}";
-        });
-    }
+        var path = _docs.Rename(TargetPath ?? string.Empty, NewName ?? string.Empty);
+        Message = $"已重命名为：{path}";
+    });
 
-    public IActionResult OnPostDelete()
+    public IActionResult OnPostDelete() => Run(() =>
     {
-        return Run(() =>
-        {
-            _docs.Delete(TargetPath ?? string.Empty);
-            Message = $"已删除：{TargetPath}";
-        });
-    }
+        _docs.Delete(TargetPath ?? string.Empty);
+        Message = $"已删除：{TargetPath}";
+    });
 
     private IActionResult Run(Action action)
     {
@@ -94,7 +82,7 @@ public class ManageModel : PageModel
             ErrorMessage = ex.Message;
         }
 
-        ViewData["Title"] = "管理";
+        ViewData["Title"] = "文档管理";
         return Page();
     }
 }

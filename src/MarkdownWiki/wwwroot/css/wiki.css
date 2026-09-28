@@ -37,6 +37,103 @@ a:hover { text-decoration: underline; }
   backdrop-filter: blur(8px);
 }
 
+.site-admin {
+  background: linear-gradient(180deg, #e8eef8 0%, var(--bg) 220px);
+}
+
+.admin-topbar {
+  background: #1f2a37;
+  border-bottom-color: #314155;
+}
+
+.admin-topbar .brand,
+.admin-topbar .nav a {
+  color: #e5eef7;
+}
+
+.admin-topbar .nav a.active,
+.admin-topbar .nav a:hover {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+}
+
+.admin-badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #0b6e4f;
+  color: #fff;
+}
+
+.admin-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-actions .inline-form { display: inline; margin: 0; }
+.admin-entry { white-space: nowrap; }
+.topbar .search-box { margin-left: auto; }
+.site-admin .topbar .search-box { margin-left: 0; }
+
+.login-page {
+  display: flex;
+  justify-content: center;
+  padding-top: 48px;
+}
+
+.login-card {
+  width: min(420px, 100%);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: var(--shadow);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--muted);
+}
+
+.login-form input {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: inherit;
+}
+
+a.card.link-card {
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+a.card.link-card:hover {
+  border-color: #0b6e4f;
+  transform: translateY(-1px);
+}
+
+.help-page { max-width: 880px; }
+.help-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 20px; }
+.help-toc { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; }
+.help-toc ul { margin: 8px 0 0; padding-left: 18px; }
+.help-card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 12px 0; }
+.help-card.active { border-color: #0b6e4f; box-shadow: 0 0 0 2px #e3f5ee; }
+.help-card h3 { margin-top: 0; }
+.help-card pre { background: #0f1720; color: #e5eef7; padding: 12px; border-radius: 8px; overflow: auto; white-space: pre-wrap; }
+.button-link.secondary { background: #334e68; }
+
 .brand {
   font-weight: 700;
   color: var(--ink);
@@ -168,8 +265,9 @@ a:hover { text-decoration: underline; }
   font-weight: 600;
 }
 
-.editor-pane { max-width: none; }
+.editor-pane { max-width: none; width: 100%; }
 .edit-form { display: flex; flex-direction: column; gap: 10px; }
+.content.editor-pane { max-width: none; }
 .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .path-label { color: var(--muted); font-family: var(--mono); font-size: 0.85rem; margin-right: auto; }
 .editor {

@@ -43,7 +43,9 @@ dotnet run --project .\src\MarkdownContextViewer\MarkdownContextViewer.csproj
 dotnet run --project .\src\MarkdownWiki\MarkdownWiki.csproj
 ```
 
-默认地址：`http://127.0.0.1:5099/`
+默认地址：`http://127.0.0.1:5099/`（阅读站）
+
+管理后台：`http://127.0.0.1:5099/Admin`（需登录，默认密码 `123456`，可在 `Wiki:AdminPassword` 修改）
 
 常用参数：
 

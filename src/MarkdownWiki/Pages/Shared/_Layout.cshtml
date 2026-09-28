@@ -8,21 +8,20 @@
     <title>@ViewData["Title"] - @WikiOptions.SiteTitle</title>
     <link rel="stylesheet" href="~/css/wiki.css" />
 </head>
-<body>
+<body class="site-reader">
     <header class="topbar">
         <a class="brand" href="/">@WikiOptions.SiteTitle</a>
         <nav class="nav">
-            <a href="/" class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Index" || ViewContext.RouteData.Values["page"]?.ToString() == "/Wiki" ? "active" : null)">阅读</a>
-            @if (WikiOptions.EnableEdit)
-            {
-                <a href="/Edit" class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Edit" ? "active" : null)">编辑</a>
-                <a href="/Manage" class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Manage" ? "active" : null)">管理</a>
-            }
-            <a href="/Search" class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Search" ? "active" : null)">搜索</a>
+            <a href="/" class="@(IsActive("/Index") ? "active" : null)">阅读</a>
+            <a href="/Search" class="@(IsActive("/Search") ? "active" : null)">搜索</a>
         </nav>
         <form class="search-box" action="/Search" method="get">
             <input type="search" name="q" placeholder="搜索文档…" value="@ViewData["Query"]" />
         </form>
+        @if (WikiOptions.EnableEdit)
+        {
+            <a class="button-link admin-entry" href="/Admin">管理后台</a>
+        }
     </header>
     <main class="shell">
         @RenderBody()
@@ -31,3 +30,7 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+@functions {
+    bool IsActive(string page) =>
+        string.Equals(ViewContext.RouteData.Values["page"]?.ToString(), page, StringComparison.OrdinalIgnoreCase);
+}

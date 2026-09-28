@@ -20,7 +20,7 @@
         @if (Model.EnableEdit && !string.IsNullOrEmpty(Model.CurrentPath))
         {
             <p class="meta">
-                <a href="/Edit?path=@Uri.EscapeDataString(Model.CurrentPath)">编辑本文</a>
+                <a href="/Admin/Edit?path=@Uri.EscapeDataString(Model.CurrentPath)">管理员编辑本文</a>
                 <span>·</span>
                 <code>@Model.CurrentPath</code>
             </p>

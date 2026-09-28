@@ -1,7 +1,7 @@
 (function () {
   function linkFor(path, mode) {
-    if (mode === "edit") {
-      return "/Edit?path=" + encodeURIComponent(path);
+    if (mode === "edit" || mode === "manage") {
+      return "/Admin/Edit?path=" + encodeURIComponent(path);
     }
     return "/?path=" + encodeURIComponent(path);
   }

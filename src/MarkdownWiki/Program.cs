@@ -1,6 +1,7 @@
 using System.Text.Json;
 using MarkdownWiki.Core.Models;
 using MarkdownWiki.Core.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,8 +19,27 @@ builder.Services.AddSingleton(sp => new WikiPathGuard(sp.GetRequiredService<Wiki
 builder.Services.AddSingleton<WikiTreeService>();
 builder.Services.AddSingleton<WikiDocumentService>();
 builder.Services.AddSingleton<WikiRenderService>();
+builder.Services.AddSingleton<WikiMediaService>();
 builder.Services.AddSingleton<WikiContentWatcher>();
-builder.Services.AddRazorPages();
+
+builder.Services
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Admin/Login";
+        options.AccessDeniedPath = "/Admin/Login";
+        options.Cookie.Name = "MarkdownWiki.Admin";
+        options.SlidingExpiration = true;
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    });
+builder.Services.AddAuthorization();
+
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.AuthorizeFolder("/Admin");
+    options.Conventions.AllowAnonymousToPage("/Admin/Login");
+    options.Conventions.AllowAnonymousToPage("/Admin/Logout");
+});
 builder.Services.ConfigureHttpJsonOptions(o =>
 {
     o.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
@@ -41,7 +61,22 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapRazorPages();
+
+// 旧路径兼容跳转
+app.MapGet("/Edit", (string? path, string? help) =>
+{
+    var target = "/Admin/Edit";
+    var q = new List<string>();
+    if (!string.IsNullOrWhiteSpace(path)) q.Add("path=" + Uri.EscapeDataString(path));
+    if (!string.IsNullOrWhiteSpace(help)) q.Add("help=" + Uri.EscapeDataString(help));
+    if (q.Count > 0) target += "?" + string.Join("&", q);
+    return Results.Redirect(target);
+});
+app.MapGet("/Manage", () => Results.Redirect("/Admin/Manage"));
+app.MapGet("/Help", () => Results.Redirect("/Admin/Help"));
 
 MapWikiApi(app);
 
@@ -95,11 +130,52 @@ static void MapWikiApi(WebApplication app)
     api.MapGet("/search", (string? q, WikiDocumentService docs) =>
         Results.Json(new { ok = true, data = docs.Search(q ?? string.Empty) }, JsonOptions()));
 
-    api.MapPut("/docs/{**path}", async (string path, HttpRequest request, WikiDocumentService docs, WikiOptions options) =>
+    var adminApi = api.MapGroup("").RequireAuthorization();
+
+    adminApi.MapPost("/preview", async (HttpRequest request, WikiRenderService render) =>
+    {
+        var body = await JsonSerializer.DeserializeAsync<PreviewBody>(request.Body, JsonOptions());
+        var html = render.RenderFragment(body?.Markdown ?? string.Empty, body?.Path);
+        return Results.Json(new { ok = true, data = html }, JsonOptions());
+    });
+
+    adminApi.MapPost("/media", async (HttpRequest request, WikiMediaService media, WikiOptions options) =>
     {
         if (!options.EnableEdit)
         {
-            return Results.Json(new { ok = false, error = "当前为只读模式。" }, statusCode: 403);
+            return Results.Json(new { ok = false, error = "当前为只读模式。" }, JsonOptions(), statusCode: 403);
+        }
+
+        if (!request.HasFormContentType)
+        {
+            return Results.Json(new { ok = false, error = "需要 multipart/form-data。" }, JsonOptions(), statusCode: 400);
+        }
+
+        var form = await request.ReadFormAsync();
+        var documentPath = form["documentPath"].ToString();
+        var file = form.Files.GetFile("file");
+        if (string.IsNullOrWhiteSpace(documentPath) || file is null || file.Length == 0)
+        {
+            return Results.Json(new { ok = false, error = "缺少 documentPath 或 file。" }, JsonOptions(), statusCode: 400);
+        }
+
+        try
+        {
+            await using var stream = file.OpenReadStream();
+            var result = await media.SaveImageAsync(documentPath, stream, file.FileName, file.ContentType);
+            return Results.Json(new { ok = true, data = result }, JsonOptions());
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or FileNotFoundException or DirectoryNotFoundException)
+        {
+            return Results.Json(new { ok = false, error = ex.Message }, JsonOptions(), statusCode: 400);
+        }
+    });
+
+    adminApi.MapPut("/docs/{**path}", async (string path, HttpRequest request, WikiDocumentService docs, WikiOptions options) =>
+    {
+        if (!options.EnableEdit)
+        {
+            return Results.Json(new { ok = false, error = "当前为只读模式。" }, JsonOptions(), statusCode: 403);
         }
 
         using var reader = new StreamReader(request.Body);
@@ -107,73 +183,73 @@ static void MapWikiApi(WebApplication app)
         try
         {
             docs.Save(path, content);
-            return Results.Json(new { ok = true });
+            return Results.Json(new { ok = true }, JsonOptions());
         }
         catch (Exception ex) when (ex is InvalidOperationException or FileNotFoundException or DirectoryNotFoundException)
         {
-            return Results.Json(new { ok = false, error = ex.Message }, statusCode: 400);
+            return Results.Json(new { ok = false, error = ex.Message }, JsonOptions(), statusCode: 400);
         }
     });
 
-    api.MapPost("/docs", async (HttpRequest request, WikiDocumentService docs, WikiOptions options) =>
+    adminApi.MapPost("/docs", async (HttpRequest request, WikiDocumentService docs, WikiOptions options) =>
     {
         if (!options.EnableEdit)
         {
-            return Results.Json(new { ok = false, error = "当前为只读模式。" }, statusCode: 403);
+            return Results.Json(new { ok = false, error = "当前为只读模式。" }, JsonOptions(), statusCode: 403);
         }
 
         var body = await JsonSerializer.DeserializeAsync<CreateBody>(request.Body, JsonOptions());
         if (body is null || string.IsNullOrWhiteSpace(body.Name))
         {
-            return Results.Json(new { ok = false, error = "缺少 name。" }, statusCode: 400);
+            return Results.Json(new { ok = false, error = "缺少 name。" }, JsonOptions(), statusCode: 400);
         }
 
         try
         {
             var path = docs.CreateDocument(body.Parent, body.Name);
-            return Results.Json(new { ok = true, data = path });
+            return Results.Json(new { ok = true, data = path }, JsonOptions());
         }
         catch (Exception ex) when (ex is InvalidOperationException or DirectoryNotFoundException)
         {
-            return Results.Json(new { ok = false, error = ex.Message }, statusCode: 400);
+            return Results.Json(new { ok = false, error = ex.Message }, JsonOptions(), statusCode: 400);
         }
     });
 
-    api.MapPost("/folders", async (HttpRequest request, WikiDocumentService docs, WikiOptions options) =>
+    adminApi.MapPost("/folders", async (HttpRequest request, WikiDocumentService docs, WikiOptions options) =>
     {
         if (!options.EnableEdit)
         {
-            return Results.Json(new { ok = false, error = "当前为只读模式。" }, statusCode: 403);
+            return Results.Json(new { ok = false, error = "当前为只读模式。" }, JsonOptions(), statusCode: 403);
         }
 
         var body = await JsonSerializer.DeserializeAsync<CreateBody>(request.Body, JsonOptions());
         if (body is null || string.IsNullOrWhiteSpace(body.Name))
         {
-            return Results.Json(new { ok = false, error = "缺少 name。" }, statusCode: 400);
+            return Results.Json(new { ok = false, error = "缺少 name。" }, JsonOptions(), statusCode: 400);
         }
 
         try
         {
             var path = docs.CreateFolder(body.Parent, body.Name);
-            return Results.Json(new { ok = true, data = path });
+            return Results.Json(new { ok = true, data = path }, JsonOptions());
         }
         catch (Exception ex) when (ex is InvalidOperationException or DirectoryNotFoundException)
         {
-            return Results.Json(new { ok = false, error = ex.Message }, statusCode: 400);
+            return Results.Json(new { ok = false, error = ex.Message }, JsonOptions(), statusCode: 400);
         }
     });
 
-    api.MapPatch("/nodes", async (HttpRequest request, WikiDocumentService docs, WikiOptions options) =>
+    adminApi.MapPatch("/nodes", async (HttpRequest request, WikiDocumentService docs, WikiOptions options) =>
     {
         if (!options.EnableEdit)
         {
-            return Results.Json(new { ok = false, error = "当前为只读模式。" }, statusCode: 403);
+            return Results.Json(new { ok = false, error = "当前为只读模式。" }, JsonOptions(), statusCode: 403);
         }
 
         var body = await JsonSerializer.DeserializeAsync<PatchBody>(request.Body, JsonOptions());
         if (body is null || string.IsNullOrWhiteSpace(body.Path))
         {
-            return Results.Json(new { ok = false, error = "缺少 path。" }, statusCode: 400);
+            return Results.Json(new { ok = false, error = "缺少 path。" }, JsonOptions(), statusCode: 400);
         }
 
         try
@@ -189,32 +265,32 @@ static void MapWikiApi(WebApplication app)
             }
             else
             {
-                return Results.Json(new { ok = false, error = "需要 newName 或 toParent。" }, statusCode: 400);
+                return Results.Json(new { ok = false, error = "需要 newName 或 toParent。" }, JsonOptions(), statusCode: 400);
             }
 
-            return Results.Json(new { ok = true, data = result });
+            return Results.Json(new { ok = true, data = result }, JsonOptions());
         }
         catch (Exception ex) when (ex is InvalidOperationException or FileNotFoundException or DirectoryNotFoundException)
         {
-            return Results.Json(new { ok = false, error = ex.Message }, statusCode: 400);
+            return Results.Json(new { ok = false, error = ex.Message }, JsonOptions(), statusCode: 400);
         }
     });
 
-    api.MapDelete("/nodes/{**path}", (string path, WikiDocumentService docs, WikiOptions options) =>
+    adminApi.MapDelete("/nodes/{**path}", (string path, WikiDocumentService docs, WikiOptions options) =>
     {
         if (!options.EnableEdit)
         {
-            return Results.Json(new { ok = false, error = "当前为只读模式。" }, statusCode: 403);
+            return Results.Json(new { ok = false, error = "当前为只读模式。" }, JsonOptions(), statusCode: 403);
         }
 
         try
         {
             docs.Delete(path);
-            return Results.Json(new { ok = true });
+            return Results.Json(new { ok = true }, JsonOptions());
         }
         catch (Exception ex) when (ex is InvalidOperationException or FileNotFoundException)
         {
-            return Results.Json(new { ok = false, error = ex.Message }, statusCode: 400);
+            return Results.Json(new { ok = false, error = ex.Message }, JsonOptions(), statusCode: 400);
         }
     });
 }
@@ -278,4 +354,10 @@ file sealed class PatchBody
     public string? Path { get; set; }
     public string? NewName { get; set; }
     public string? ToParent { get; set; }
+}
+
+file sealed class PreviewBody
+{
+    public string? Path { get; set; }
+    public string? Markdown { get; set; }
 }

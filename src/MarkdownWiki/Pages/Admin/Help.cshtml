@@ -1,0 +1,50 @@
+@page
+@model MarkdownWiki.Pages.Admin.HelpModel
+@{
+    ViewData["Title"] = "Markdown 编辑帮助（GFM）";
+    var groups = Model.Items.GroupBy(i => i.Category);
+    var focus = Model.Tag?.Trim().ToLowerInvariant();
+}
+<section class="content full help-page">
+    <h1>Markdown 编辑帮助</h1>
+    <p class="meta">
+        规范：<strong>CommonMark + GitHub Flavored Markdown（GFM）</strong>。
+        与 GitHub、多数静态文档站写法一致。编辑页右侧也提供可搜索的语法面板。
+    </p>
+
+    <div class="help-actions">
+        <a class="button-link" href="/Admin/Edit?help=image">打开编辑器（图片示例）</a>
+        <a class="button-link secondary" href="/help/gfm-cheatsheet.json" target="_blank">查看 JSON 数据源</a>
+    </div>
+
+    <nav class="help-toc">
+        <strong>目录</strong>
+        <ul>
+            @foreach (var item in Model.Items)
+            {
+                <li><a href="#@item.Id">@item.Title</a> <span class="meta">@item.Category</span></li>
+            }
+        </ul>
+    </nav>
+
+    @foreach (var group in groups)
+    {
+        <h2>@group.Key</h2>
+        @foreach (var item in group)
+        {
+            var active = !string.IsNullOrEmpty(focus) &&
+                         (item.Id.Equals(focus, StringComparison.OrdinalIgnoreCase) ||
+                          item.Tags.Any(t => t.Contains(focus, StringComparison.OrdinalIgnoreCase)));
+            <article id="@item.Id" class="help-card @(active ? "active" : null)">
+                <h3>@item.Title</h3>
+                <p>@item.Description</p>
+                <p class="meta">标签：@string.Join(" · ", item.Tags)</p>
+                <h4>语法</h4>
+                <pre>@item.Syntax</pre>
+                <h4>示例</h4>
+                <pre>@item.Example</pre>
+                <p><a href="/Admin/Edit?help=@Uri.EscapeDataString(item.Id)">在编辑器中打开并定位</a></p>
+            </article>
+        }
+    }
+</section>

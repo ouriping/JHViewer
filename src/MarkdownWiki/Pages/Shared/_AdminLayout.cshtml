@@ -1,0 +1,38 @@
+@using MarkdownWiki.Core.Models
+@inject WikiOptions WikiOptions
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - 管理 · @WikiOptions.SiteTitle</title>
+    <link rel="stylesheet" href="~/css/wiki.css" />
+</head>
+<body class="site-admin">
+    <header class="topbar admin-topbar">
+        <a class="brand" href="/Admin">管理后台</a>
+        <span class="admin-badge">管理员</span>
+        <nav class="nav">
+            <a href="/Admin" class="@(IsActive("/Admin/Index") ? "active" : null)">工作台</a>
+            <a href="/Admin/Edit" class="@(IsActive("/Admin/Edit") ? "active" : null)">编辑文档</a>
+            <a href="/Admin/Manage" class="@(IsActive("/Admin/Manage") ? "active" : null)">文档管理</a>
+            <a href="/Admin/Help" class="@(IsActive("/Admin/Help") ? "active" : null)">编辑帮助</a>
+        </nav>
+        <div class="admin-actions">
+            <a class="button-link secondary" href="/">返回阅读站</a>
+            <form method="post" asp-page="/Admin/Logout" class="inline-form">
+                <button type="submit" class="secondary">退出登录</button>
+            </form>
+        </div>
+    </header>
+    <main class="shell admin-shell">
+        @RenderBody()
+    </main>
+    <script src="~/js/wiki-tree.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+@functions {
+    bool IsActive(string page) =>
+        string.Equals(ViewContext.RouteData.Values["page"]?.ToString(), page, StringComparison.OrdinalIgnoreCase);
+}

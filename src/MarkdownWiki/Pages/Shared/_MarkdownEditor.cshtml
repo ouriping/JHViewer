@@ -1,0 +1,65 @@
+@* 可复用的 Markdown 编辑器（工具栏 / 粘贴上传 / GFM 帮助） *@
+@model MarkdownWiki.Pages.Shared.MarkdownEditorViewModel
+
+<link rel="stylesheet" href="~/css/markdown-editor.css" />
+
+<div class="md-editor"
+     data-markdown-editor
+     data-doc-path="@Model.DocumentPath"
+     data-help-focus="@Model.HelpFocusId">
+    <div class="md-editor-main">
+        <div class="md-toolbar" role="toolbar" aria-label="Markdown 工具栏">
+            <div class="group">
+                <button type="button" data-md-cmd="bold" title="粗体">B</button>
+                <button type="button" data-md-cmd="italic" title="斜体"><em>I</em></button>
+                <button type="button" data-md-cmd="heading" title="标题">H</button>
+                <button type="button" data-md-cmd="link" title="链接">链接</button>
+            </div>
+            <div class="group">
+                <button type="button" data-md-cmd="ul" title="无序列表">• 列表</button>
+                <button type="button" data-md-cmd="ol" title="有序列表">1. 列表</button>
+                <button type="button" data-md-cmd="quote" title="引用">引用</button>
+                <button type="button" data-md-cmd="code" title="行内代码">`code`</button>
+                <button type="button" data-md-cmd="codeblock" title="代码块">```</button>
+                <button type="button" data-md-cmd="table" title="表格">表格</button>
+                <button type="button" data-md-cmd="hr" title="分隔线">—</button>
+            </div>
+            <div class="group">
+                <label class="file-btn" title="上传图片">
+                    上传图片
+                    <input type="file" accept="image/*" data-md-upload />
+                </label>
+                <button type="button" data-md-cmd="image-placeholder" title="插入图片语法">图片语法</button>
+            </div>
+            <div class="group">
+                <button type="button" data-md-toggle-preview title="切换预览">预览</button>
+                <button type="button" data-md-toggle-help title="语法帮助">帮助</button>
+            </div>
+        </div>
+
+        <div class="md-editor-body">
+            <textarea name="@Model.TextAreaName"
+                      id="@Model.TextAreaId"
+                      class="editor"
+                      data-md-textarea
+                      spellcheck="false"
+                      placeholder="在此编写 Markdown… 支持 Ctrl+V 粘贴图片">@Model.Markdown</textarea>
+            <div class="md-live-preview markdown-body" data-md-preview>
+                <p class="preview-placeholder">预览加载中…</p>
+            </div>
+        </div>
+        <div class="md-status" data-md-status>提示：可从剪贴板 Ctrl+V 粘贴图片，将自动上传到 assets/ 并插入链接。</div>
+    </div>
+
+    <aside class="md-help-panel" aria-label="Markdown 语法帮助">
+        <header>
+            <h3>GFM 语法帮助</h3>
+            <a href="/Admin/Help" target="_blank" rel="noopener">完整帮助页</a>
+        </header>
+        <input class="md-help-filter" type="search" data-md-help-filter placeholder="筛选：标题、表格、图片…" />
+        <ul class="md-help-list" data-md-help-list></ul>
+        <div class="md-help-detail" data-md-help-detail hidden></div>
+    </aside>
+</div>
+
+<script src="~/js/markdown-editor.js"></script>

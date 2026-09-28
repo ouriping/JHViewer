@@ -1,0 +1,28 @@
+@page
+@model MarkdownWiki.Pages.Admin.IndexModel
+@{
+    ViewData["Title"] = "管理后台";
+}
+<section class="content full admin-home">
+    <h1>管理后台工作台</h1>
+    <p class="meta">当前为管理员主界面。在此编辑与管理 Wiki 文档；读者请使用阅读站浏览。</p>
+
+    <div class="cards">
+        <a class="card link-card" href="/Admin/Edit">
+            <h2>编辑文档</h2>
+            <p>打开 Markdown 编辑器，支持工具栏、图片上传与 Ctrl+V 粘贴。</p>
+        </a>
+        <a class="card link-card" href="/Admin/Manage">
+            <h2>文档管理</h2>
+            <p>新建、重命名、删除文档与文件夹。</p>
+        </a>
+        <a class="card link-card" href="/Admin/Help">
+            <h2>编辑帮助（GFM）</h2>
+            <p>查看常用语法标签与插入示例。</p>
+        </a>
+        <a class="card link-card" href="/">
+            <h2>返回阅读站</h2>
+            <p>切换到公开阅读主界面。</p>
+        </a>
+    </div>
+</section>

@@ -399,6 +399,7 @@ public enum WikiNodeKind { Folder, Document }
 | 2 编辑管理 | ✅ | Edit / Manage 页面 + REST API + `EnableEdit` |
 | 3 体验增强 | ✅ | 图片 `/files`、Watcher、搜索、树折叠记忆、样式 |
 | 4 集成 | ✅ | 发布中心「MarkdownWiki」页签；README 已更新 |
+| 5 增强编辑器 | ✅ | 独立 `_MarkdownEditor` 组件；上传/Ctrl+V 图片；GFM 帮助页 `/Help` |
 
 ### 启动
 

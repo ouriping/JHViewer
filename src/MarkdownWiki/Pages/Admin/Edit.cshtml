@@ -1,0 +1,42 @@
+@page
+@model MarkdownWiki.Pages.Admin.EditModel
+@using MarkdownWiki.Pages.Shared
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "编辑文档";
+}
+<aside class="sidebar">
+    <div class="sidebar-title">目录</div>
+    <div id="wiki-tree" data-current="@Model.Path" data-mode="edit"></div>
+</aside>
+<section class="content editor-pane">
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert">@Model.ErrorMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.Message))
+    {
+        <div class="ok">@Model.Message</div>
+    }
+    <form method="post" class="edit-form" id="edit-form">
+        <input type="hidden" asp-for="Path" />
+        <div class="toolbar">
+            <span class="path-label">@Model.Path</span>
+            <button type="submit" asp-page-handler="Save">保存文档</button>
+            <a class="button-link secondary" href="/Admin/Help">编辑帮助</a>
+            <a class="button-link" href="/?path=@Uri.EscapeDataString(Model.Path ?? "")">查看阅读页</a>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Path) && string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <partial name="Shared/_MarkdownEditor" model="new MarkdownEditorViewModel {
+                DocumentPath = Model.Path!,
+                Markdown = Model.Markdown,
+                HelpFocusId = Model.HelpFocus
+            }" />
+        }
+        else if (string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <p class="meta">请从左侧选择要编辑的文档。</p>
+        }
+    </form>
+</section>
