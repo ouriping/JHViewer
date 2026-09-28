@@ -28,18 +28,30 @@ partial class PublishCenterForm
         txtDirectory = new TextBox();
         btnBrowse = new Button();
         lblDirectory = new Label();
+        tabWiki = new TabPage();
+        panelWiki = new Panel();
+        btnOpenWiki = new Button();
+        btnStartWiki = new Button();
+        panelWikiRow = new Panel();
+        txtWikiDirectory = new TextBox();
+        btnWikiBrowse = new Button();
+        lblWiki = new Label();
         tabs.SuspendLayout();
         tabSingle.SuspendLayout();
         panelSingle.SuspendLayout();
         tabDirectory.SuspendLayout();
         panelDirectory.SuspendLayout();
         panelDirectoryRow.SuspendLayout();
+        tabWiki.SuspendLayout();
+        panelWiki.SuspendLayout();
+        panelWikiRow.SuspendLayout();
         SuspendLayout();
         // 
         // tabs
         // 
         tabs.Controls.Add(tabSingle);
         tabs.Controls.Add(tabDirectory);
+        tabs.Controls.Add(tabWiki);
         tabs.Dock = DockStyle.Fill;
         tabs.Location = new Point(0, 0);
         tabs.Margin = new Padding(4, 4, 4, 4);
@@ -170,6 +182,96 @@ partial class PublishCenterForm
         lblDirectory.TabIndex = 2;
         lblDirectory.Text = "选择一个包含 .md 的目录，按目录结构导出站点并访问。";
         // 
+        // tabWiki
+        // 
+        tabWiki.Controls.Add(panelWiki);
+        tabWiki.Location = new Point(4, 29);
+        tabWiki.Margin = new Padding(4, 4, 4, 4);
+        tabWiki.Name = "tabWiki";
+        tabWiki.Padding = new Padding(4, 4, 4, 4);
+        tabWiki.Size = new Size(949, 415);
+        tabWiki.TabIndex = 2;
+        tabWiki.Text = "MarkdownWiki";
+        tabWiki.UseVisualStyleBackColor = true;
+        // 
+        // panelWiki
+        // 
+        panelWiki.Controls.Add(btnOpenWiki);
+        panelWiki.Controls.Add(btnStartWiki);
+        panelWiki.Controls.Add(panelWikiRow);
+        panelWiki.Controls.Add(lblWiki);
+        panelWiki.Dock = DockStyle.Fill;
+        panelWiki.Location = new Point(4, 4);
+        panelWiki.Margin = new Padding(4, 4, 4, 4);
+        panelWiki.Name = "panelWiki";
+        panelWiki.Padding = new Padding(21, 19, 21, 19);
+        panelWiki.Size = new Size(941, 407);
+        panelWiki.TabIndex = 0;
+        // 
+        // btnOpenWiki
+        // 
+        btnOpenWiki.Dock = DockStyle.Top;
+        btnOpenWiki.Location = new Point(21, 170);
+        btnOpenWiki.Margin = new Padding(4, 4, 4, 4);
+        btnOpenWiki.Name = "btnOpenWiki";
+        btnOpenWiki.Size = new Size(899, 45);
+        btnOpenWiki.TabIndex = 0;
+        btnOpenWiki.Text = "打开 Wiki 浏览器（http://127.0.0.1:5099）";
+        btnOpenWiki.Click += btnOpenWiki_Click;
+        // 
+        // btnStartWiki
+        // 
+        btnStartWiki.Dock = DockStyle.Top;
+        btnStartWiki.Location = new Point(21, 125);
+        btnStartWiki.Margin = new Padding(4, 4, 4, 4);
+        btnStartWiki.Name = "btnStartWiki";
+        btnStartWiki.Size = new Size(899, 45);
+        btnStartWiki.TabIndex = 1;
+        btnStartWiki.Text = "启动 MarkdownWiki（可编辑帮助站）";
+        btnStartWiki.Click += btnStartWiki_Click;
+        // 
+        // panelWikiRow
+        // 
+        panelWikiRow.Controls.Add(txtWikiDirectory);
+        panelWikiRow.Controls.Add(btnWikiBrowse);
+        panelWikiRow.Dock = DockStyle.Top;
+        panelWikiRow.Location = new Point(21, 78);
+        panelWikiRow.Margin = new Padding(4, 4, 4, 4);
+        panelWikiRow.Name = "panelWikiRow";
+        panelWikiRow.Size = new Size(899, 47);
+        panelWikiRow.TabIndex = 2;
+        // 
+        // txtWikiDirectory
+        // 
+        txtWikiDirectory.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        txtWikiDirectory.Location = new Point(4, 9);
+        txtWikiDirectory.Margin = new Padding(4, 4, 4, 4);
+        txtWikiDirectory.Name = "txtWikiDirectory";
+        txtWikiDirectory.PlaceholderText = "可选：文档根目录（留空使用 Wiki 默认示例）";
+        txtWikiDirectory.Size = new Size(717, 27);
+        txtWikiDirectory.TabIndex = 0;
+        // 
+        // btnWikiBrowse
+        // 
+        btnWikiBrowse.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnWikiBrowse.Location = new Point(735, 7);
+        btnWikiBrowse.Margin = new Padding(4, 4, 4, 4);
+        btnWikiBrowse.Name = "btnWikiBrowse";
+        btnWikiBrowse.Size = new Size(154, 33);
+        btnWikiBrowse.TabIndex = 1;
+        btnWikiBrowse.Text = "选择目录";
+        btnWikiBrowse.Click += btnWikiBrowse_Click;
+        // 
+        // lblWiki
+        // 
+        lblWiki.Dock = DockStyle.Top;
+        lblWiki.Location = new Point(21, 19);
+        lblWiki.Margin = new Padding(4, 0, 4, 0);
+        lblWiki.Name = "lblWiki";
+        lblWiki.Size = new Size(899, 59);
+        lblWiki.TabIndex = 3;
+        lblWiki.Text = "启动独立 MarkdownWiki：多 md 树导航、Web 阅读/编辑，保存后立即更新网页。默认端口 5099。";
+        // 
         // PublishCenterForm
         // 
         AutoScaleDimensions = new SizeF(9F, 20F);
@@ -187,6 +289,10 @@ partial class PublishCenterForm
         panelDirectory.ResumeLayout(false);
         panelDirectoryRow.ResumeLayout(false);
         panelDirectoryRow.PerformLayout();
+        tabWiki.ResumeLayout(false);
+        panelWiki.ResumeLayout(false);
+        panelWikiRow.ResumeLayout(false);
+        panelWikiRow.PerformLayout();
         ResumeLayout(false);
     }
 
@@ -202,4 +308,12 @@ partial class PublishCenterForm
     private TextBox txtDirectory = null!;
     private Button btnBrowse = null!;
     private Button btnExportDirectory = null!;
+    private TabPage tabWiki = null!;
+    private Panel panelWiki = null!;
+    private Label lblWiki = null!;
+    private Panel panelWikiRow = null!;
+    private TextBox txtWikiDirectory = null!;
+    private Button btnWikiBrowse = null!;
+    private Button btnStartWiki = null!;
+    private Button btnOpenWiki = null!;
 }

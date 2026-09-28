@@ -271,6 +271,10 @@ internal sealed class ExplorerIntegrationService
 
         using var commandKey = Registry.CurrentUser.CreateSubKey($"{ContextMenuKey}\\command");
         commandKey?.SetValue("", $"\"{exePath}\" \"%1\"");
+
+        // 供预览 Handler 在未装右键菜单时也能定位主程序
+        using var appKey = Registry.CurrentUser.CreateSubKey(@"Software\MarkdownContextViewer");
+        appKey?.SetValue("EditorExe", exePath);
     }
 
     public void UnregisterContextMenu()

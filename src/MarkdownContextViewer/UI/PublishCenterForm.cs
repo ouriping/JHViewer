@@ -33,6 +33,39 @@ public partial class PublishCenterForm : Form
 
     private void btnExportDirectory_Click(object sender, EventArgs e) => ExportDirectorySite();
 
+    private void btnStartWiki_Click(object sender, EventArgs e) => StartMarkdownWiki();
+
+    private void btnOpenWiki_Click(object sender, EventArgs e) => MarkdownWikiLauncher.OpenBrowser();
+
+    private void btnWikiBrowse_Click(object sender, EventArgs e)
+    {
+        using var dialog = new FolderBrowserDialog
+        {
+            Description = "选择 MarkdownWiki 文档根目录"
+        };
+
+        if (dialog.ShowDialog() == DialogResult.OK)
+        {
+            txtWikiDirectory.Text = dialog.SelectedPath;
+        }
+    }
+
+    private void StartMarkdownWiki()
+    {
+        try
+        {
+            var content = txtWikiDirectory.Text.Trim();
+            MarkdownWikiLauncher.Start(string.IsNullOrWhiteSpace(content) ? null : content);
+            Thread.Sleep(1200);
+            MarkdownWikiLauncher.OpenBrowser();
+            MessageBox.Show("已尝试启动 MarkdownWiki。\n访问地址：http://127.0.0.1:5099/\n若首次启动请稍等编译完成后再刷新。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "启动失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+    }
+
     private void ExportCurrentDocument()
     {
         var doc = _currentDocumentProvider();

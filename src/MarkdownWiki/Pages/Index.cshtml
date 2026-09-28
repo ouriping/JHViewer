@@ -1,0 +1,29 @@
+@page
+@model MarkdownWiki.Pages.IndexModel
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "阅读";
+}
+<aside class="sidebar">
+    <div class="sidebar-title">目录</div>
+    <div id="wiki-tree" data-current="@Model.CurrentPath"></div>
+</aside>
+<section class="content">
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert">@Model.ErrorMessage</div>
+    }
+    else
+    {
+        <article class="markdown-body">
+            @Html.Raw(Model.HtmlContent)
+        </article>
+        @if (Model.EnableEdit && !string.IsNullOrEmpty(Model.CurrentPath))
+        {
+            <p class="meta">
+                <a href="/Edit?path=@Uri.EscapeDataString(Model.CurrentPath)">编辑本文</a>
+                <span>·</span>
+                <code>@Model.CurrentPath</code>
+            </p>
+        }
+    }
+</section>

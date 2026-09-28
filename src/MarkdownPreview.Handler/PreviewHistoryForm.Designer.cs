@@ -80,7 +80,7 @@ namespace MarkdownPreview.Handler
             this.btnEditor.Name = "btnEditor";
             this.btnEditor.Size = new System.Drawing.Size(88, 30);
             this.btnEditor.TabIndex = 4;
-            this.btnEditor.Text = "编辑器";
+            this.btnEditor.Text = "编辑";
             this.btnEditor.Click += new System.EventHandler(this.btnEditor_Click);
             // 
             // btnRemove

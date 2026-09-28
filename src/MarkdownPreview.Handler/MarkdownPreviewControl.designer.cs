@@ -171,8 +171,8 @@ namespace MarkdownPreview.Handler
             this.btnEditor.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.btnEditor.Name = "btnEditor";
             this.btnEditor.Size = new System.Drawing.Size(58, 24);
-            this.btnEditor.Text = "编辑器";
-            this.btnEditor.ToolTipText = "用 Markdown 编辑器打开当前文件";
+            this.btnEditor.Text = "编辑";
+            this.btnEditor.ToolTipText = "在主程序中打开当前文件进行编辑（单实例复用）";
             this.btnEditor.Click += new System.EventHandler(this.btnEditor_Click);
             // 
             // btnExport

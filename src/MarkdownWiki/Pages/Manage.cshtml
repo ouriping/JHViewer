@@ -1,0 +1,49 @@
+@page
+@model MarkdownWiki.Pages.ManageModel
+@{
+    ViewData["Title"] = "管理";
+}
+<aside class="sidebar">
+    <div class="sidebar-title">目录</div>
+    <div id="wiki-tree" data-mode="manage"></div>
+</aside>
+<section class="content">
+    <h1>文档管理</h1>
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert">@Model.ErrorMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.Message))
+    {
+        <div class="ok">@Model.Message</div>
+    }
+
+    <div class="cards">
+        <form method="post" asp-page-handler="CreateDoc" class="card">
+            <h2>新建文档</h2>
+            <label>父目录（留空=根）<input asp-for="Parent" placeholder="getting-started" /></label>
+            <label>文件名<input asp-for="Name" placeholder="new-page" required /></label>
+            <button type="submit">创建 .md</button>
+        </form>
+
+        <form method="post" asp-page-handler="CreateFolder" class="card">
+            <h2>新建文件夹</h2>
+            <label>父目录（留空=根）<input name="Parent" value="@Model.Parent" placeholder="guide" /></label>
+            <label>文件夹名<input name="Name" placeholder="advanced" required /></label>
+            <button type="submit">创建文件夹</button>
+        </form>
+
+        <form method="post" asp-page-handler="Rename" class="card">
+            <h2>重命名</h2>
+            <label>原路径<input asp-for="TargetPath" placeholder="guide/faq.md" required /></label>
+            <label>新名称<input asp-for="NewName" placeholder="faq-zh.md" required /></label>
+            <button type="submit">重命名</button>
+        </form>
+
+        <form method="post" asp-page-handler="Delete" class="card" onsubmit="return confirm('确认删除？空文件夹或文档将被删除。');">
+            <h2>删除</h2>
+            <label>路径<input name="TargetPath" placeholder="guide/old.md" required /></label>
+            <button type="submit" class="danger">删除</button>
+        </form>
+    </div>
+</section>

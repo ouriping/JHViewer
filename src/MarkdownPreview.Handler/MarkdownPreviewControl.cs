@@ -142,7 +142,7 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
 
     private void btnEditor_Click(object sender, EventArgs e)
     {
-        LogOperation("打开编辑器");
+        LogOperation("在主程序中编辑");
         OpenEditor(_currentPath);
     }
 

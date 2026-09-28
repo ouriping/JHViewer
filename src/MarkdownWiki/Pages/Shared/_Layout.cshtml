@@ -1,0 +1,33 @@
+@using MarkdownWiki.Core.Models
+@inject WikiOptions WikiOptions
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - @WikiOptions.SiteTitle</title>
+    <link rel="stylesheet" href="~/css/wiki.css" />
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="/">@WikiOptions.SiteTitle</a>
+        <nav class="nav">
+            <a href="/" class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Index" || ViewContext.RouteData.Values["page"]?.ToString() == "/Wiki" ? "active" : null)">阅读</a>
+            @if (WikiOptions.EnableEdit)
+            {
+                <a href="/Edit" class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Edit" ? "active" : null)">编辑</a>
+                <a href="/Manage" class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Manage" ? "active" : null)">管理</a>
+            }
+            <a href="/Search" class="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Search" ? "active" : null)">搜索</a>
+        </nav>
+        <form class="search-box" action="/Search" method="get">
+            <input type="search" name="q" placeholder="搜索文档…" value="@ViewData["Query"]" />
+        </form>
+    </header>
+    <main class="shell">
+        @RenderBody()
+    </main>
+    <script src="~/js/wiki-tree.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

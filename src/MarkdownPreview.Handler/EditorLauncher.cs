@@ -1,20 +1,27 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using Microsoft.Win32;
 
 namespace MarkdownPreview.Handler;
 
 /// <summary>
-/// 从右键菜单注册项找到主程序并打开当前 Markdown。
+/// 定位 MarkdownContextViewer.exe 并用路径打开当前 Markdown。
+/// 查找顺序：注册表右键菜单 → EditorExe → 旁路/部署目录 → 向上搜索。
+/// 单实例由主程序 Mutex + Named Pipe 处理，此处只需 Process.Start。
 /// </summary>
 internal static class EditorLauncher
 {
-    private const string CommandKey =
+    private const string ContextCommandKey =
         @"Software\Classes\SystemFileAssociations\.md\shell\MarkdownContextViewer\command";
 
-    private const string IconKey =
+    private const string ContextShellKey =
         @"Software\Classes\SystemFileAssociations\.md\shell\MarkdownContextViewer";
+
+    private const string AppRegistryKey = @"Software\MarkdownContextViewer";
+    private const string EditorExeValue = "EditorExe";
+    private const string ExeName = "MarkdownContextViewer.exe";
 
     public static bool TryLaunch(string markdownPath, out string error)
     {
@@ -28,7 +35,7 @@ internal static class EditorLauncher
         var exe = FindExecutable();
         if (exe == null)
         {
-            error = "未找到编辑器。请先在主程序中点击「注册右键菜单」。";
+            error = "未找到编辑器（MarkdownContextViewer.exe）。\n请先运行主程序，或在主程序中点击「注册右键菜单」。";
             return false;
         }
 
@@ -53,14 +60,79 @@ internal static class EditorLauncher
 
     private static string FindExecutable()
     {
-        var fromCommand = ParseExecutable(ReadRegistry(CommandKey, ""));
-        if (File.Exists(fromCommand))
+        foreach (var candidate in EnumerateCandidates())
         {
-            return fromCommand;
+            if (!string.IsNullOrWhiteSpace(candidate) && File.Exists(candidate))
+            {
+                HandlerLog.Info("定位编辑器: " + candidate);
+                return candidate;
+            }
         }
 
-        var fromIcon = ReadRegistry(IconKey, "Icon");
-        return File.Exists(fromIcon) ? fromIcon : null;
+        return null;
+    }
+
+    private static System.Collections.Generic.IEnumerable<string> EnumerateCandidates()
+    {
+        yield return ParseExecutable(ReadRegistry(ContextCommandKey, ""));
+        yield return ReadRegistry(ContextShellKey, "Icon");
+        yield return ReadRegistry(AppRegistryKey, EditorExeValue);
+
+        string assemblyDir = null;
+        try
+        {
+            assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        }
+        catch (Exception ex)
+        {
+            HandlerLog.Error("读取 Handler 目录失败。", ex);
+        }
+
+        if (!string.IsNullOrEmpty(assemblyDir))
+        {
+            yield return Path.Combine(assemblyDir, ExeName);
+
+            // 部署目录为 %LocalAppData%\MarkdownContextViewer\PreviewHandler
+            var parent = Directory.GetParent(assemblyDir)?.FullName;
+            if (!string.IsNullOrEmpty(parent))
+            {
+                yield return Path.Combine(parent, ExeName);
+            }
+
+            // 开发布局：Handler\bin\...\net48 → ContextViewer\bin\...\net8.0-windows
+            yield return Path.GetFullPath(Path.Combine(
+                assemblyDir,
+                "..", "..", "..", "..",
+                "MarkdownContextViewer", "bin", "Debug", "net8.0-windows", ExeName));
+            yield return Path.GetFullPath(Path.Combine(
+                assemblyDir,
+                "..", "..", "..", "..",
+                "MarkdownContextViewer", "bin", "Release", "net8.0-windows", ExeName));
+
+            foreach (var found in SearchUpward(assemblyDir, ExeName, maxLevels: 6))
+            {
+                yield return found;
+            }
+        }
+
+        var localApp = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        yield return Path.Combine(localApp, "MarkdownContextViewer", ExeName);
+    }
+
+    private static System.Collections.Generic.IEnumerable<string> SearchUpward(
+        string startDir, string fileName, int maxLevels)
+    {
+        var dir = startDir;
+        for (var i = 0; i < maxLevels && !string.IsNullOrEmpty(dir); i++)
+        {
+            var candidate = Path.Combine(dir, fileName);
+            if (File.Exists(candidate))
+            {
+                yield return candidate;
+            }
+
+            dir = Directory.GetParent(dir)?.FullName;
+        }
     }
 
     private static string ReadRegistry(string subKey, string name)

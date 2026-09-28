@@ -1,0 +1,26 @@
+@page
+@model MarkdownWiki.Pages.SearchModel
+@{
+    ViewData["Title"] = "搜索";
+}
+<section class="content full">
+    <h1>搜索</h1>
+    <form method="get" class="search-form">
+        <input type="search" name="q" value="@Model.Q" placeholder="输入关键词…" autofocus />
+        <button type="submit">搜索</button>
+    </form>
+    @if (!string.IsNullOrWhiteSpace(Model.Q))
+    {
+        <p class="meta">共 @Model.Hits.Count 条结果</p>
+        <ul class="search-results">
+            @foreach (var hit in Model.Hits)
+            {
+                <li>
+                    <a href="/?path=@Uri.EscapeDataString(hit.RelativePath)">@hit.Title</a>
+                    <code>@hit.RelativePath</code>
+                    <p>@hit.Snippet</p>
+                </li>
+            }
+        </ul>
+    }
+</section>

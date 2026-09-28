@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using MarkdownPreview.Shell;
 
 namespace MarkdownContextViewer;
@@ -17,6 +18,14 @@ public partial class FrmMain : Form
     private readonly LocalWebHostService _localWebHostService = null!;
 
     private PreviewEngineKind _previewEngine = PreviewEngineKind.WebView;
+
+    [DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    private const int SwRestore = 9;
 
     public FrmMain(string[]? args = null)
     {
@@ -48,6 +57,30 @@ public partial class FrmMain : Form
         RefreshStatus();
         LoadHistory();
         OpenFilesFromArgs();
+    }
+
+    /// <summary>
+    /// 单实例 IPC：已有窗口收到后续启动传入的路径（可为空，仅置前）。
+    /// </summary>
+    public void OpenExternalFiles(IEnumerable<string> paths)
+    {
+        foreach (var path in paths)
+        {
+            var normalized = path.Trim().Trim('"');
+            if (normalized.Length == 0
+                || string.Equals(normalized, SingleInstanceService.ActivateToken, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (File.Exists(normalized)
+                && Path.GetExtension(normalized).Equals(".md", StringComparison.OrdinalIgnoreCase))
+            {
+                OpenMarkdownFile(normalized);
+            }
+        }
+
+        ActivateMainWindow();
     }
 
     private void WireEvents()
@@ -301,6 +334,7 @@ public partial class FrmMain : Form
     {
         try
         {
+            EditorPathStore.Save(Application.ExecutablePath);
             _explorerService.RegisterContextMenu(Application.ExecutablePath);
             MessageBox.Show("右键菜单注册成功（当前用户）。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -308,6 +342,19 @@ public partial class FrmMain : Form
         {
             MessageBox.Show($"注册失败：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    }
+
+    private void ActivateMainWindow()
+    {
+        if (WindowState == FormWindowState.Minimized)
+        {
+            ShowWindow(Handle, SwRestore);
+        }
+
+        Show();
+        Activate();
+        BringToFront();
+        SetForegroundWindow(Handle);
     }
 
     private void UnregisterContextMenu()
