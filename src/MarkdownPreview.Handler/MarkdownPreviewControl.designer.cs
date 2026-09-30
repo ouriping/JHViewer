@@ -27,10 +27,11 @@ namespace MarkdownPreview.Handler
             this.panelToolbar = new System.Windows.Forms.Panel();
             this.infoStrip = new MarkdownPreview.Handler.PreviewToolStrip();
             this.lblFile = new System.Windows.Forms.ToolStripLabel();
-            this.lblHelp = new System.Windows.Forms.ToolStripLabel();
-            this.lblUpdate = new System.Windows.Forms.ToolStripLabel();
-            this.lblVersion = new System.Windows.Forms.ToolStripLabel();
             this.lblAuthor = new System.Windows.Forms.ToolStripLabel();
+            this.btnAbout = new System.Windows.Forms.ToolStripDropDownButton();
+            this.mnuHelp = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuRelease = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuCurrentVersion = new System.Windows.Forms.ToolStripMenuItem();
             this.actionStrip = new MarkdownPreview.Handler.PreviewToolStrip();
             this.btnRecent = new System.Windows.Forms.ToolStripDropDownButton();
             this.btnHistory = new System.Windows.Forms.ToolStripButton();
@@ -75,9 +76,6 @@ namespace MarkdownPreview.Handler
             this.infoStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.infoStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.lblFile,
-            this.lblHelp,
-            this.lblUpdate,
-            this.lblVersion,
             this.lblAuthor});
             this.infoStrip.Location = new System.Drawing.Point(0, 31);
             this.infoStrip.Name = "infoStrip";
@@ -93,28 +91,6 @@ namespace MarkdownPreview.Handler
             this.lblFile.Size = new System.Drawing.Size(180, 22);
             this.lblFile.Text = "未打开文件";
             this.lblFile.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblHelp
-            // 
-            this.lblHelp.IsLink = true;
-            this.lblHelp.Name = "lblHelp";
-            this.lblHelp.Size = new System.Drawing.Size(69, 22);
-            this.lblHelp.Text = "帮助文档";
-            this.lblHelp.Click += new System.EventHandler(this.lblHelp_Click);
-            // 
-            // lblUpdate
-            // 
-            this.lblUpdate.IsLink = true;
-            this.lblUpdate.Name = "lblUpdate";
-            this.lblUpdate.Size = new System.Drawing.Size(81, 22);
-            this.lblUpdate.Text = "检查更新…";
-            this.lblUpdate.Click += new System.EventHandler(this.lblUpdate_Click);
-            // 
-            // lblVersion
-            // 
-            this.lblVersion.Name = "lblVersion";
-            this.lblVersion.Size = new System.Drawing.Size(39, 22);
-            this.lblVersion.Text = "v1.0";
             // 
             // lblAuthor
             // 
@@ -136,6 +112,7 @@ namespace MarkdownPreview.Handler
             this.btnEditor,
             this.btnExport,
             this.toolStripSeparator2,
+            this.btnAbout,
             this.btnMore});
             this.actionStrip.Location = new System.Drawing.Point(0, 0);
             this.actionStrip.Name = "actionStrip";
@@ -222,6 +199,38 @@ namespace MarkdownPreview.Handler
             this.btnExport.Text = "导出";
             this.btnExport.ToolTipText = "导出为内嵌样式和本地图片的 HTML 单文件";
             this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
+            // 
+            // btnAbout
+            // 
+            this.btnAbout.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnAbout.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mnuHelp,
+            this.mnuRelease,
+            this.mnuCurrentVersion});
+            this.btnAbout.Name = "btnAbout";
+            this.btnAbout.Size = new System.Drawing.Size(53, 24);
+            this.btnAbout.Text = "关于";
+            this.btnAbout.ToolTipText = "帮助文档、发布版本和当前版本";
+            // 
+            // mnuHelp
+            // 
+            this.mnuHelp.Name = "mnuHelp";
+            this.mnuHelp.Size = new System.Drawing.Size(220, 26);
+            this.mnuHelp.Text = "帮助文档";
+            this.mnuHelp.Click += new System.EventHandler(this.lblHelp_Click);
+            // 
+            // mnuRelease
+            // 
+            this.mnuRelease.Name = "mnuRelease";
+            this.mnuRelease.Size = new System.Drawing.Size(220, 26);
+            this.mnuRelease.Text = "发布版本：检查更新…";
+            this.mnuRelease.Click += new System.EventHandler(this.lblUpdate_Click);
+            // 
+            // mnuCurrentVersion
+            // 
+            this.mnuCurrentVersion.Name = "mnuCurrentVersion";
+            this.mnuCurrentVersion.Size = new System.Drawing.Size(220, 26);
+            this.mnuCurrentVersion.Text = "当前版本 v1.0";
             // 
             // btnMore
             // 
@@ -328,10 +337,11 @@ namespace MarkdownPreview.Handler
         private Panel panelToolbar;
         private PreviewToolStrip infoStrip;
         private ToolStripLabel lblFile;
-        private ToolStripLabel lblHelp;
-        private ToolStripLabel lblUpdate;
-        private ToolStripLabel lblVersion;
         private ToolStripLabel lblAuthor;
+        private ToolStripDropDownButton btnAbout;
+        private ToolStripMenuItem mnuHelp;
+        private ToolStripMenuItem mnuRelease;
+        private ToolStripMenuItem mnuCurrentVersion;
         private PreviewToolStrip actionStrip;
         private ToolStripDropDownButton btnRecent;
         private ToolStripButton btnHistory;

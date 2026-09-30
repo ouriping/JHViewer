@@ -276,9 +276,11 @@ internal sealed class PreviewRegistrationForm : Form
         }
 
         PreviewRegistrationSetting.Save(new PreviewRegistrationOptions { Extensions = selected });
+        // 必须在 UI 线程创建 Progress，才能捕获 WinForms 同步上下文
+        var progress = CreateProgress();
         await RunOperationAsync(
             "正在注册并启用预览窗格…",
-            () => _explorerService.EnablePreview(selected, CreateProgress()));
+            () => _explorerService.EnablePreview(selected, progress));
     }
 
     private async Task RunDisableAsync()
@@ -299,9 +301,10 @@ internal sealed class PreviewRegistrationForm : Form
             return;
         }
 
+        var progress = CreateProgress();
         await RunOperationAsync(
             "正在取消预览窗格…",
-            () => _explorerService.DisablePreview(CreateProgress()));
+            () => _explorerService.DisablePreview(progress));
     }
 
     private async Task RunOperationAsync(string startMessage, Action work)
@@ -339,27 +342,43 @@ internal sealed class PreviewRegistrationForm : Form
 
     private IProgress<PreviewRegistrationProgress> CreateProgress()
     {
-        return new Progress<PreviewRegistrationProgress>(p =>
+        return new Progress<PreviewRegistrationProgress>(ApplyProgress);
+    }
+
+    private void ApplyProgress(PreviewRegistrationProgress p)
+    {
+        if (IsDisposed)
         {
-            if (IsDisposed)
+            return;
+        }
+
+        if (InvokeRequired)
+        {
+            try
             {
-                return;
+                BeginInvoke(() => ApplyProgress(p));
+            }
+            catch (ObjectDisposedException)
+            {
+                // ignore
             }
 
+            return;
+        }
+
+        if (p.Percent >= 0)
+        {
+            _progressBar.Value = Math.Clamp(p.Percent, 0, 100);
+        }
+
+        if (!string.IsNullOrWhiteSpace(p.Message))
+        {
+            AppendLog(p.Message);
             if (p.Percent >= 0)
             {
-                _progressBar.Value = Math.Clamp(p.Percent, 0, 100);
+                _lblStatus.Text = p.Message;
             }
-
-            if (!string.IsNullOrWhiteSpace(p.Message))
-            {
-                AppendLog(p.Message);
-                if (p.Percent >= 0)
-                {
-                    _lblStatus.Text = p.Message;
-                }
-            }
-        });
+        }
     }
 
     private void AppendLog(string message)

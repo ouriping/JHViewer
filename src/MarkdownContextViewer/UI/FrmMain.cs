@@ -443,18 +443,30 @@ public partial class FrmMain : Form
         form.ShowDialog(this);
     }
 
-    private void KillPrevhost()
+    private async void KillPrevhost()
     {
+        using var dlg = new OperationProgressForm("结束预览宿主", "正在结束 prevhost…", enableCancelAfterMs: 2000);
+        var killed = 0;
         try
         {
-            var count = _explorerService.KillPrevhost();
+            var task = dlg.RunAsync((progress, token) =>
+            {
+                killed = _explorerService.KillPrevhost(progress, token);
+            });
+            dlg.ShowDialog(this);
+            await task;
             MessageBox.Show(
-                count > 0
-                    ? $"已结束 {count} 个 prevhost.exe 进程。\n请回到资源管理器重新选中 .md 文件。"
+                killed > 0
+                    ? $"已结束 {killed} 个 prevhost.exe 进程。\n请回到资源管理器重新选中文件。"
                     : "当前没有运行中的 prevhost.exe。",
                 "提示",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
+        }
+        catch (OperationCanceledException)
+        {
+            MessageBox.Show("已取消等待。部分 prevhost 可能仍在运行。", "提示",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         catch (Exception ex)
         {
@@ -462,10 +474,11 @@ public partial class FrmMain : Form
         }
     }
 
-    private void RestartExplorer()
+    private async void RestartExplorer()
     {
         var confirm = MessageBox.Show(
-            "将结束预览宿主并重启资源管理器（任务栏会短暂消失后恢复）。\n是否继续？",
+            "将结束预览宿主并重启资源管理器（任务栏会短暂消失后恢复）。\n" +
+            "操作约数秒；若卡住可点「取消等待」。\n是否继续？",
             "确认",
             MessageBoxButtons.YesNo,
             MessageBoxIcon.Question);
@@ -475,23 +488,60 @@ public partial class FrmMain : Form
             return;
         }
 
+        using var dlg = new OperationProgressForm("重启资源管理器", "正在重启…", enableCancelAfterMs: 2500);
         try
         {
-            _explorerService.RestartExplorer();
-            MessageBox.Show("资源管理器已重启。请重新打开预览窗格并选中 .md 文件。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            var task = dlg.RunAsync((progress, token) =>
+                _explorerService.RestartExplorer(progress, token, timeoutMs: 8000));
+            dlg.ShowDialog(this);
+            await task;
+            MessageBox.Show(
+                "资源管理器已重启。请重新打开预览窗格并选中文件。",
+                "提示",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+        catch (OperationCanceledException)
+        {
+            MessageBox.Show(
+                "已取消等待。若任务栏未恢复，请按 Ctrl+Shift+Esc，运行新任务：explorer.exe",
+                "提示",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"重启失败：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(
+                $"重启失败：{ex.Message}\n\n若任务栏消失，请按 Ctrl+Shift+Esc，运行新任务：explorer.exe",
+                "错误",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
         }
     }
 
-    private void DiagnosePreview()
+    private async void DiagnosePreview()
     {
+        using var dlg = new OperationProgressForm("预览诊断", "正在收集诊断信息…", enableCancelAfterMs: 2000);
+        string? report = null;
         try
         {
-            var report = _explorerService.DiagnosePreview();
-            MessageBox.Show(report, "预览诊断", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            var task = dlg.RunAsync((progress, token) =>
+            {
+                progress.Report(new PreviewRegistrationProgress(20, "读取注册表与进程…"));
+                token.ThrowIfCancellationRequested();
+                report = _explorerService.DiagnosePreview();
+                progress.Report(new PreviewRegistrationProgress(100, "诊断完成"));
+            });
+            dlg.ShowDialog(this);
+            await task;
+            if (!string.IsNullOrWhiteSpace(report))
+            {
+                MessageBox.Show(report, "预览诊断", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            MessageBox.Show("诊断已取消。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         catch (Exception ex)
         {

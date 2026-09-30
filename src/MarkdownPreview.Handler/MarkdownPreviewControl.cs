@@ -50,7 +50,7 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
             return;
         }
 
-        lblVersion.Text = PreviewAbout.VersionText;
+        mnuCurrentVersion.Text = "当前版本 " + PreviewAbout.VersionText;
         lblAuthor.Text = PreviewAbout.Author;
         _webView = new WebView2 { Dock = DockStyle.Fill, Name = "webViewPreview" };
         panelPreview.Controls.Add(_webView);
@@ -817,16 +817,16 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
             switch (result.State)
             {
                 case UpdateState.UpdateAvailable:
-                    lblUpdate.Text = "可更新 " + result.RemoteTag;
+                    mnuRelease.Text = "发布版本：可更新 " + result.RemoteTag;
                     break;
                 case UpdateState.UpToDate:
-                    lblUpdate.Text = "已是最新";
+                    mnuRelease.Text = "发布版本：已是最新";
                     break;
                 case UpdateState.NoRelease:
-                    lblUpdate.Text = "暂无发布";
+                    mnuRelease.Text = "发布版本：暂无发布";
                     break;
                 default:
-                    lblUpdate.Text = "检查失败";
+                    mnuRelease.Text = "发布版本：检查失败";
                     break;
             }
 
@@ -841,7 +841,7 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
             if (!IsDisposed)
             {
                 _updateState = UpdateState.Failed;
-                lblUpdate.Text = "检查失败";
+                mnuRelease.Text = "发布版本：检查失败";
             }
         }
     }
@@ -851,7 +851,7 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
         if (_updateState == UpdateState.Failed)
         {
             _updateState = UpdateState.Checking;
-            lblUpdate.Text = "检查更新…";
+            mnuRelease.Text = "发布版本：检查更新…";
             BeginUpdateCheck();
             return;
         }

@@ -302,20 +302,39 @@ internal sealed class ExplorerIntegrationService
         }
     }
 
-    public int KillPrevhost()
+    public int KillPrevhost() => KillPrevhost(progress: null, CancellationToken.None);
+
+    public int KillPrevhost(IProgress<PreviewRegistrationProgress>? progress, CancellationToken cancellationToken)
     {
-        var killed = 0;
-        foreach (var process in Process.GetProcessesByName("prevhost"))
+        Report(progress, 15, "查找 prevhost.exe…");
+        var processes = Process.GetProcessesByName("prevhost");
+        if (processes.Length == 0)
         {
+            Report(progress, 100, "没有运行中的 prevhost。");
+            return 0;
+        }
+
+        var killed = 0;
+        for (var i = 0; i < processes.Length; i++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var process = processes[i];
+            Report(progress, 20 + (60 * i / processes.Length), $"结束 prevhost PID {process.Id}…");
             try
             {
                 process.Kill(entireProcessTree: true);
-                process.WaitForExit(3000);
-                killed++;
+                if (!process.WaitForExit(1500))
+                {
+                    Report(progress, -1, $"prevhost PID {process.Id} 未在 1.5s 内退出，跳过等待。");
+                }
+                else
+                {
+                    killed++;
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                // ignore
+                Report(progress, -1, $"结束 prevhost PID {process.Id} 失败：{ex.Message}");
             }
             finally
             {
@@ -323,22 +342,55 @@ internal sealed class ExplorerIntegrationService
             }
         }
 
+        Report(progress, 100, $"已结束 {killed}/{processes.Length} 个 prevhost。");
         return killed;
     }
 
-    public void RestartExplorer()
+    public void RestartExplorer() =>
+        RestartExplorer(progress: null, CancellationToken.None, timeoutMs: 8000);
+
+    /// <summary>
+    /// 重启资源管理器。不提权；带总超时，避免 Kill/WaitForExit 卡住 UI。
+    /// </summary>
+    public void RestartExplorer(
+        IProgress<PreviewRegistrationProgress>? progress,
+        CancellationToken cancellationToken,
+        int timeoutMs = 8000)
     {
-        KillPrevhost();
-        foreach (var process in Process.GetProcessesByName("explorer"))
+        if (timeoutMs < 2000)
         {
+            timeoutMs = 2000;
+        }
+
+        var sw = Stopwatch.StartNew();
+        Report(progress, 5, "结束预览宿主 prevhost…");
+        KillPrevhost(progress, cancellationToken);
+
+        cancellationToken.ThrowIfCancellationRequested();
+        Report(progress, 35, "结束资源管理器 explorer.exe…");
+        var explorers = Process.GetProcessesByName("explorer");
+        foreach (var process in explorers)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var remain = timeoutMs - (int)sw.ElapsedMilliseconds;
+            if (remain <= 0)
+            {
+                break;
+            }
+
             try
             {
+                Report(progress, 40, $"结束 explorer PID {process.Id}…");
                 process.Kill(entireProcessTree: true);
-                process.WaitForExit(5000);
+                var wait = Math.Min(1500, remain);
+                if (!process.WaitForExit(wait))
+                {
+                    Report(progress, -1, $"explorer PID {process.Id} 未在 {wait}ms 内退出。");
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                // ignore
+                Report(progress, -1, $"结束 explorer PID {process.Id} 失败：{ex.Message}");
             }
             finally
             {
@@ -346,14 +398,96 @@ internal sealed class ExplorerIntegrationService
             }
         }
 
-        Thread.Sleep(800);
-        if (Process.GetProcessesByName("explorer").Length == 0)
+        // 若仍有残留，用 taskkill 再扫一遍（仍不提权）
+        if (Process.GetProcessesByName("explorer").Length > 0
+            && sw.ElapsedMilliseconds < timeoutMs
+            && !cancellationToken.IsCancellationRequested)
         {
+            Report(progress, 55, "尝试 taskkill /IM explorer.exe…");
+            TryTaskKill("explorer.exe", Math.Min(3000, timeoutMs - (int)sw.ElapsedMilliseconds), progress);
+        }
+
+        Report(progress, 70, "等待 explorer 退出…");
+        while (sw.ElapsedMilliseconds < timeoutMs
+               && !cancellationToken.IsCancellationRequested
+               && Process.GetProcessesByName("explorer").Length > 0)
+        {
+            Thread.Sleep(200);
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (Process.GetProcessesByName("explorer").Length > 0)
+        {
+            Report(progress, 85, "部分 explorer 仍在运行（可能由系统自动拉起）。");
+        }
+        else
+        {
+            Report(progress, 85, "启动 explorer.exe…");
             Process.Start(new ProcessStartInfo
             {
                 FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe"),
                 UseShellExecute = true
             });
+        }
+
+        // 最多再等 2 秒确认任务栏回来，不再长时间阻塞
+        var confirmUntil = Math.Min(timeoutMs, (int)sw.ElapsedMilliseconds + 2000);
+        while (sw.ElapsedMilliseconds < confirmUntil
+               && !cancellationToken.IsCancellationRequested
+               && Process.GetProcessesByName("explorer").Length == 0)
+        {
+            Thread.Sleep(200);
+        }
+
+        if (Process.GetProcessesByName("explorer").Length == 0)
+        {
+            throw new TimeoutException(
+                $"重启资源管理器超时（{timeoutMs}ms）。请按 Ctrl+Shift+Esc 打开任务管理器，运行新任务 explorer.exe。");
+        }
+
+        Report(progress, 100, "资源管理器已恢复。");
+    }
+
+    private static void TryTaskKill(string imageName, int timeoutMs, IProgress<PreviewRegistrationProgress>? progress)
+    {
+        if (timeoutMs < 500)
+        {
+            return;
+        }
+
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo
+            {
+                FileName = "taskkill",
+                Arguments = $"/F /IM {imageName}",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            });
+            if (process is null)
+            {
+                return;
+            }
+
+            if (!process.WaitForExit(timeoutMs))
+            {
+                try { process.Kill(); } catch { /* ignore */ }
+                Report(progress, -1, $"taskkill {imageName} 超时已中止。");
+                return;
+            }
+
+            var output = (process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd()).Trim();
+            if (!string.IsNullOrWhiteSpace(output))
+            {
+                Report(progress, -1, output.Split('\n')[0].Trim());
+            }
+        }
+        catch (Exception ex)
+        {
+            Report(progress, -1, "taskkill 失败：" + ex.Message);
         }
     }
 
@@ -616,10 +750,12 @@ internal sealed class ExplorerIntegrationService
             stderr = process.StandardError.ReadToEnd();
         }
 
-        if (!process.WaitForExit(60000))
+        if (!process.WaitForExit(elevate ? 30000 : 20000))
         {
             try { process.Kill(); } catch { /* ignore */ }
-            throw new TimeoutException("注册工具超时。");
+            throw new TimeoutException(elevate
+                ? "提权注册超时（30 秒）。若 UAC 窗口仍开着请先关闭，或同意后重试。"
+                : "注册工具超时（20 秒）。");
         }
 
         if (process.ExitCode != 0)
@@ -711,7 +847,11 @@ internal sealed class ExplorerIntegrationService
                 Verb = "runas",
                 WindowStyle = ProcessWindowStyle.Hidden
             });
-            process?.WaitForExit(15000);
+            process?.WaitForExit(12000);
+            if (process is { HasExited: false })
+            {
+                try { process.Kill(); } catch { /* ignore */ }
+            }
         }
         catch
         {
@@ -759,7 +899,11 @@ internal sealed class ExplorerIntegrationService
                     Verb = "runas",
                     WindowStyle = ProcessWindowStyle.Hidden
                 });
-                process?.WaitForExit(15000);
+                process?.WaitForExit(12000);
+            if (process is { HasExited: false })
+            {
+                try { process.Kill(); } catch { /* ignore */ }
+            }
             }
             catch
             {

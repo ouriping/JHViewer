@@ -40,9 +40,23 @@ public sealed class DocumentPreviewDemoForm : Form
     {
         Text = "未打开文件",
         AutoSize = false,
-        Width = 520
+        Width = 420
     };
 
+    private readonly ToolStripDropDownButton _layoutButton = new("显示：树和文件")
+    {
+        DisplayStyle = ToolStripItemDisplayStyle.Text,
+        ToolTipText = "切换只看树、只看文件，或两边都显示"
+    };
+
+    private enum LayoutMode
+    {
+        Both,
+        TreeOnly,
+        FileOnly
+    }
+
+    private LayoutMode _layout = LayoutMode.Both;
     private string? _currentPath;
 
     public DocumentPreviewDemoForm()
@@ -68,7 +82,14 @@ public sealed class DocumentPreviewDemoForm : Form
         btnDemoJson.Click += (_, _) => OpenDemo("book-catalog.json");
         btnDemoXml.Click += (_, _) => OpenDemo("library.xml");
         btnFolder.Click += (_, _) => OpenDemoFolder();
-        strip.Items.AddRange([btnOpen, btnRefresh, new ToolStripSeparator(), btnDemoJson, btnDemoXml, btnFolder, new ToolStripSeparator(), _lblPath]);
+        var treeOnly = new ToolStripMenuItem("只显示树结构");
+        var fileOnly = new ToolStripMenuItem("只显示文件");
+        var both = new ToolStripMenuItem("都显示") { Checked = true };
+        treeOnly.Click += (_, _) => SetLayout(LayoutMode.TreeOnly);
+        fileOnly.Click += (_, _) => SetLayout(LayoutMode.FileOnly);
+        both.Click += (_, _) => SetLayout(LayoutMode.Both);
+        _layoutButton.DropDownItems.AddRange([treeOnly, fileOnly, both]);
+        strip.Items.AddRange([btnOpen, btnRefresh, new ToolStripSeparator(), btnDemoJson, btnDemoXml, btnFolder, new ToolStripSeparator(), _layoutButton, _lblPath]);
 
         _split.Panel1.Controls.Add(_tree);
         _split.Panel2.Controls.Add(_raw);
@@ -166,6 +187,36 @@ public sealed class DocumentPreviewDemoForm : Form
             FileName = dir,
             UseShellExecute = true
         });
+    }
+
+    private void SetLayout(LayoutMode layout)
+    {
+        _layout = layout;
+        _layoutButton.Text = layout switch
+        {
+            LayoutMode.TreeOnly => "显示：只看树",
+            LayoutMode.FileOnly => "显示：只看文件",
+            _ => "显示：树和文件"
+        };
+        foreach (ToolStripMenuItem item in _layoutButton.DropDownItems)
+        {
+            item.Checked = (item.Text == "只显示树结构" && layout == LayoutMode.TreeOnly)
+                || (item.Text == "只显示文件" && layout == LayoutMode.FileOnly)
+                || (item.Text == "都显示" && layout == LayoutMode.Both);
+        }
+
+        _split.Panel1Collapsed = layout == LayoutMode.FileOnly;
+        _split.Panel2Collapsed = layout == LayoutMode.TreeOnly;
+        if (layout == LayoutMode.Both && _split.Width > 160)
+        {
+            try
+            {
+                _split.SplitterDistance = Math.Max(80, _split.Width / 2);
+            }
+            catch (InvalidOperationException)
+            {
+            }
+        }
     }
 
     private void FillJson(string text)
