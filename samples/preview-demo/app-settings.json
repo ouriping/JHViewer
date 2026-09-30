@@ -1,0 +1,17 @@
+{
+  "appId": "jinghua-markdown-viewer",
+  "features": {
+    "explorerPreview": true,
+    "wiki": true,
+    "chmExport": true
+  },
+  "paths": {
+    "history": "%LocalAppData%/MarkdownContextViewer/history.json",
+    "engine": "%LocalAppData%/MarkdownContextViewer/preview-engine.txt"
+  },
+  "recentFiles": [
+    "docs/说明文档.md",
+    "samples/preview-demo/book-catalog.json",
+    "samples/preview-demo/library.xml"
+  ]
+}

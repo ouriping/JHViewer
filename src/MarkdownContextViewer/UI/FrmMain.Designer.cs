@@ -34,6 +34,10 @@ partial class FrmMain
         mnuEngineWebView = new ToolStripMenuItem();
         mnuEngineWinForms = new ToolStripMenuItem();
         mnuPreviewWindow = new ToolStripMenuItem();
+        mnuPreviewDemo = new ToolStripMenuItem();
+        mnuOpenDemoJson = new ToolStripMenuItem();
+        mnuOpenDemoXml = new ToolStripMenuItem();
+        mnuOpenDemoFolder = new ToolStripMenuItem();
         toolStrip = new ToolStrip();
         btnOpen = new ToolStripButton();
         btnSaveCurrent = new ToolStripButton();
@@ -125,14 +129,14 @@ partial class FrmMain
         // 
         mnuEnablePreview.Name = "mnuEnablePreview";
         mnuEnablePreview.Size = new Size(220, 22);
-        mnuEnablePreview.Text = "启用预览窗格渲染 .md";
+        mnuEnablePreview.Text = "启用预览窗格…";
         mnuEnablePreview.Click += mnuEnablePreview_Click;
         // 
         // mnuDisablePreview
         // 
         mnuDisablePreview.Name = "mnuDisablePreview";
-        mnuDisablePreview.Size = new Size(220, 22);
-        mnuDisablePreview.Text = "取消预览窗格渲染 .md";
+        mnuDisablePreview.Size = new Size(280, 22);
+        mnuDisablePreview.Text = "取消预览窗格…";
         mnuDisablePreview.Click += mnuDisablePreview_Click;
         // 
         // mnuKillPrevhost
@@ -158,7 +162,7 @@ partial class FrmMain
         // 
         // mnuView
         // 
-        mnuView.DropDownItems.AddRange(new ToolStripItem[] { mnuEngineWebView, mnuEngineWinForms, new ToolStripSeparator(), mnuPreviewWindow });
+        mnuView.DropDownItems.AddRange(new ToolStripItem[] { mnuEngineWebView, mnuEngineWinForms, new ToolStripSeparator(), mnuPreviewWindow, new ToolStripSeparator(), mnuPreviewDemo, mnuOpenDemoJson, mnuOpenDemoXml, mnuOpenDemoFolder });
         mnuView.Name = "mnuView";
         mnuView.Size = new Size(44, 21);
         mnuView.Text = "视图";
@@ -166,23 +170,51 @@ partial class FrmMain
         // mnuEngineWebView
         // 
         mnuEngineWebView.Name = "mnuEngineWebView";
-        mnuEngineWebView.Size = new Size(220, 22);
-        mnuEngineWebView.Text = "预览引擎：WebView";
+        mnuEngineWebView.Size = new Size(280, 22);
+        mnuEngineWebView.Text = "预览引擎：Web（还原度高）";
         mnuEngineWebView.Click += mnuEngineWebView_Click;
         // 
         // mnuEngineWinForms
         // 
         mnuEngineWinForms.Name = "mnuEngineWinForms";
-        mnuEngineWinForms.Size = new Size(220, 22);
-        mnuEngineWinForms.Text = "预览引擎：WinForms";
+        mnuEngineWinForms.Size = new Size(280, 22);
+        mnuEngineWinForms.Text = "预览引擎：WinForms（更快更省）★";
         mnuEngineWinForms.Click += mnuEngineWinForms_Click;
         // 
         // mnuPreviewWindow
         // 
         mnuPreviewWindow.Name = "mnuPreviewWindow";
-        mnuPreviewWindow.Size = new Size(220, 22);
+        mnuPreviewWindow.Size = new Size(280, 22);
         mnuPreviewWindow.Text = "独立预览窗体";
         mnuPreviewWindow.Click += mnuPreviewWindow_Click;
+        // 
+        // mnuPreviewDemo
+        // 
+        mnuPreviewDemo.Name = "mnuPreviewDemo";
+        mnuPreviewDemo.Size = new Size(280, 22);
+        mnuPreviewDemo.Text = "预览演示…（JSON/XML）";
+        mnuPreviewDemo.Click += mnuPreviewDemo_Click;
+        // 
+        // mnuOpenDemoJson
+        // 
+        mnuOpenDemoJson.Name = "mnuOpenDemoJson";
+        mnuOpenDemoJson.Size = new Size(280, 22);
+        mnuOpenDemoJson.Text = "打开 JSON 演示";
+        mnuOpenDemoJson.Click += mnuOpenDemoJson_Click;
+        // 
+        // mnuOpenDemoXml
+        // 
+        mnuOpenDemoXml.Name = "mnuOpenDemoXml";
+        mnuOpenDemoXml.Size = new Size(280, 22);
+        mnuOpenDemoXml.Text = "打开 XML 演示";
+        mnuOpenDemoXml.Click += mnuOpenDemoXml_Click;
+        // 
+        // mnuOpenDemoFolder
+        // 
+        mnuOpenDemoFolder.Name = "mnuOpenDemoFolder";
+        mnuOpenDemoFolder.Size = new Size(280, 22);
+        mnuOpenDemoFolder.Text = "打开演示示例目录";
+        mnuOpenDemoFolder.Click += mnuOpenDemoFolder_Click;
         // 
         // toolStrip
         // 
@@ -331,6 +363,10 @@ partial class FrmMain
     private ToolStripMenuItem mnuEngineWebView = null!;
     private ToolStripMenuItem mnuEngineWinForms = null!;
     private ToolStripMenuItem mnuPreviewWindow = null!;
+    private ToolStripMenuItem mnuPreviewDemo = null!;
+    private ToolStripMenuItem mnuOpenDemoJson = null!;
+    private ToolStripMenuItem mnuOpenDemoXml = null!;
+    private ToolStripMenuItem mnuOpenDemoFolder = null!;
     private ToolStrip toolStrip = null!;
     private ToolStripButton btnOpen = null!;
     private ToolStripButton btnSaveCurrent = null!;

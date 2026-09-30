@@ -94,9 +94,18 @@ public partial class FrmMain : Form
         foreach (var arg in _startupArgs)
         {
             var path = arg.Trim('"');
-            if (File.Exists(path) && Path.GetExtension(path).Equals(".md", StringComparison.OrdinalIgnoreCase))
+            if (File.Exists(path))
             {
-                OpenMarkdownFile(path);
+                var ext = Path.GetExtension(path);
+                if (ext.Equals(".json", StringComparison.OrdinalIgnoreCase)
+                    || ext.Equals(".xml", StringComparison.OrdinalIgnoreCase))
+                {
+                    OpenStructuredPreview(path);
+                }
+                else if (ext.Equals(".md", StringComparison.OrdinalIgnoreCase))
+                {
+                    OpenMarkdownFile(path);
+                }
             }
         }
     }
@@ -105,9 +114,9 @@ public partial class FrmMain : Form
     {
         using var dialog = new OpenFileDialog
         {
-            Filter = "Markdown 文件 (*.md)|*.md",
+            Filter = "文档|*.md;*.json;*.xml|Markdown (*.md)|*.md|JSON (*.json)|*.json|XML (*.xml)|*.xml|所有文件|*.*",
             Multiselect = true,
-            Title = "选择 Markdown 文件"
+            Title = "选择要打开的文件"
         };
 
         if (dialog.ShowDialog() != DialogResult.OK)
@@ -117,8 +126,64 @@ public partial class FrmMain : Form
 
         foreach (var file in dialog.FileNames)
         {
-            OpenMarkdownFile(file);
+            OpenDocumentFile(file);
         }
+    }
+
+    private void OpenDocumentFile(string filePath)
+    {
+        var ext = Path.GetExtension(filePath);
+        if (ext.Equals(".json", StringComparison.OrdinalIgnoreCase)
+            || ext.Equals(".xml", StringComparison.OrdinalIgnoreCase))
+        {
+            OpenStructuredPreview(filePath);
+            return;
+        }
+
+        OpenMarkdownFile(filePath);
+    }
+
+    private void OpenStructuredPreview(string? preferredPath = null)
+    {
+        using var form = new DocumentPreviewDemoForm();
+        if (!string.IsNullOrWhiteSpace(preferredPath) && File.Exists(preferredPath))
+        {
+            form.LoadFile(preferredPath);
+        }
+
+        form.ShowDialog(this);
+    }
+
+    private void OpenDemoStructured(string fileName)
+    {
+        var dir = PreviewDemoPaths.FindDirectory();
+        if (dir is null)
+        {
+            MessageBox.Show(
+                "未找到 samples/preview-demo。请确认仓库中存在该目录，或重新编译以复制示例到输出目录。",
+                "提示",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+            return;
+        }
+
+        OpenStructuredPreview(Path.Combine(dir, fileName));
+    }
+
+    private void OpenDemoFolder()
+    {
+        var dir = PreviewDemoPaths.FindDirectory();
+        if (dir is null)
+        {
+            MessageBox.Show("未找到 samples/preview-demo 目录。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = dir,
+            UseShellExecute = true
+        });
     }
 
     private void OpenMarkdownFile(string filePath)
@@ -157,6 +222,7 @@ public partial class FrmMain : Form
 
         editorControl.UsePreviewEngine(_previewEngine);
         editorControl.SaveRequested += (_, _) => SaveCurrentTab();
+        editorControl.PreviewEngineChanged += (_, kind) => SetPreviewEngine(kind);
 
         var tab = new TabPage(Path.GetFileName(filePath))
         {
@@ -262,44 +328,16 @@ public partial class FrmMain : Form
 
     private void EnableExplorerPreview()
     {
-        try
-        {
-            _explorerService.EnablePreview();
-            var deployDir = ExplorerIntegrationService.GetDeployDirectory();
-            var mediumIl = _explorerService.IsMediumIntegrityOptOutEnabled();
-            var engine = _previewEngine == PreviewEngineKind.WinForms ? "WinForms" : "WebView2";
-            RefreshStatus();
-            MessageBox.Show(
-                $"已启用 .md 预览窗格，渲染引擎：{engine}。\n\n" +
-                "资源管理器通过 prevhost 加载预览 DLL，不启动主程序。\n" +
-                $"预览组件已部署到：\n{deployDir}\n\n" +
-                (mediumIl
-                    ? "已写入 HKLM DisableLowIL（中等完整性 prevhost）。\n"
-                    : "若取消了 UAC，Win11 仍可能用低完整性 prevhost；请再次启用并同意提权。\n") +
-                "请打开“查看 → 预览窗格”（Alt+P），重新选中 .md 文件。\n" +
-                "切换引擎后需要结束预览宿主，再重新选中文件。",
-                "提示",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"启用预览失败：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
+        using var form = new PreviewRegistrationForm(_explorerService);
+        form.ShowDialog(this);
+        RefreshStatus();
     }
 
     private void DisableExplorerPreview()
     {
-        try
-        {
-            _explorerService.DisablePreview();
-            RefreshStatus();
-            MessageBox.Show("已取消预览窗格渲染，并已结束预览宿主进程。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"取消预览失败：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
+        using var form = new PreviewRegistrationForm(_explorerService);
+        form.ShowDialog(this);
+        RefreshStatus();
     }
 
     private void SetPreviewEngine(PreviewEngineKind kind)
@@ -320,7 +358,9 @@ public partial class FrmMain : Form
 
         mnuEngineWebView.Checked = _previewEngine == PreviewEngineKind.WebView;
         mnuEngineWinForms.Checked = _previewEngine == PreviewEngineKind.WinForms;
-        lblEngine.Text = _previewEngine == PreviewEngineKind.WinForms ? "引擎：WinForms" : "引擎：WebView";
+        lblEngine.Text = _previewEngine == PreviewEngineKind.WinForms
+            ? "引擎：WinForms（更快更省）"
+            : "引擎：Web（还原度高）";
     }
 
     private void RefreshStatus()
@@ -473,6 +513,10 @@ public partial class FrmMain : Form
     private void mnuEngineWebView_Click(object sender, EventArgs e) => SetPreviewEngine(PreviewEngineKind.WebView);
     private void mnuEngineWinForms_Click(object sender, EventArgs e) => SetPreviewEngine(PreviewEngineKind.WinForms);
     private void mnuPreviewWindow_Click(object sender, EventArgs e) => OpenMarkdownPreviewWindow();
+    private void mnuPreviewDemo_Click(object sender, EventArgs e) => OpenStructuredPreview();
+    private void mnuOpenDemoJson_Click(object sender, EventArgs e) => OpenDemoStructured("book-catalog.json");
+    private void mnuOpenDemoXml_Click(object sender, EventArgs e) => OpenDemoStructured("library.xml");
+    private void mnuOpenDemoFolder_Click(object sender, EventArgs e) => OpenDemoFolder();
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {

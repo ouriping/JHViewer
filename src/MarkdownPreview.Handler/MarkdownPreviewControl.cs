@@ -26,7 +26,10 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
 
     private WebView2 _webView;
     private RichTextBox _winFormsView;
+    private StructuredPreviewControl _structuredView;
+    private IDocumentPreviewProvider _provider = DocumentPreviewRegistry.Markdown;
     private string _currentMarkdown = "";
+    private string _currentText = "";
     private System.Windows.Forms.Timer _reloadTimer;
     private FileSystemWatcher _watcher;
     private string _pendingHtml;
@@ -59,6 +62,7 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
         };
         HandleCreated += (_, __) => BeginInitWebView();
         UpdateActions();
+        SyncEngineMenu();
         BeginUpdateCheck();
         HandlerLog.Info("预览控件已创建。");
     }
@@ -72,8 +76,10 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
     public void ShowMarkdown(string markdown)
     {
         _currentPath = null;
+        _provider = DocumentPreviewRegistry.Markdown;
         StopWatching();
-        Present(markdown);
+        _currentText = markdown ?? "";
+        RefreshContent();
         lblFile.Text = "未打开文件";
         lblFile.ToolTipText = "";
         UpdateActions();
@@ -138,6 +144,31 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
     {
         LogOperation("刷新");
         ReloadCurrent();
+    }
+
+    private void btnEngine_DropDownOpening(object sender, EventArgs e) => SyncEngineMenu();
+
+    private void mnuEngineWeb_Click(object sender, EventArgs e) => SetPreviewEngine(useWinForms: false);
+
+    private void mnuEngineWinForms_Click(object sender, EventArgs e) => SetPreviewEngine(useWinForms: true);
+
+    private void SetPreviewEngine(bool useWinForms)
+    {
+        PreviewEngineChoice.Save(useWinForms);
+        SyncEngineMenu();
+        RefreshContent();
+        LogOperation("切换引擎", useWinForms ? "WinForms（更快更省）" : "Web（还原度高）");
+    }
+
+    private void SyncEngineMenu()
+    {
+        var winForms = PreviewEngineChoice.UseWinForms();
+        mnuEngineWeb.Checked = !winForms;
+        mnuEngineWinForms.Checked = winForms;
+        btnEngine.Text = winForms ? "引擎·快" : "引擎·Web";
+        btnEngine.ToolTipText = winForms
+            ? "当前：WinForms（更快更省）。可切换为 Web（还原度高）"
+            : "当前：Web（还原度高）。可切换为 WinForms（更快更省）";
     }
 
     private void btnEditor_Click(object sender, EventArgs e)
@@ -220,16 +251,18 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
         if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
         {
             HandlerLog.Info("操作: 文件不存在 | " + path);
-            ShowMarkdown("**无法读取 Markdown 文件。**");
+            ShowMarkdown("**无法读取文件。**");
             return;
         }
 
         try
         {
-            var markdown = ReadAllTextShared(path);
+            var text = ReadAllTextShared(path);
             _currentPath = path;
-            Present(markdown);
-            lblFile.Text = Path.GetFileName(path);
+            _provider = DocumentPreviewRegistry.Resolve(path);
+            _currentText = text;
+            RefreshContent();
+            lblFile.Text = Path.GetFileName(path) + " · " + _provider.DisplayName;
             lblFile.ToolTipText = path;
             if (recordHistory)
             {
@@ -241,7 +274,7 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
         }
         catch (Exception ex)
         {
-            HandlerLog.Error("读取 Markdown 失败。", ex);
+            HandlerLog.Error("读取文件失败。", ex);
             ShowMarkdown("**预览失败：** " + ex.Message);
         }
     }
@@ -256,8 +289,10 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
 
         try
         {
-            var markdown = ReadAllTextShared(_currentPath);
-            Present(markdown);
+            var text = ReadAllTextShared(_currentPath);
+            _provider = DocumentPreviewRegistry.Resolve(_currentPath);
+            _currentText = text;
+            RefreshContent();
             HandlerLog.Info("操作: 刷新完成 | " + _currentPath);
         }
         catch (IOException)
@@ -279,10 +314,72 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
         }
     }
 
+    private void RefreshContent()
+    {
+        if (_provider != null && !_provider.IsMarkdown)
+        {
+            PresentStructured();
+            return;
+        }
+
+        Present(_currentText);
+    }
+
+    private void PresentStructured()
+    {
+        _currentMarkdown = _currentText ?? "";
+        _currentHtml = _provider.ToHtml(_currentText);
+        var useWinForms = PreviewEngineChoice.UseWinForms();
+
+        if (useWinForms)
+        {
+            EnsureStructuredView();
+            _structuredView.Visible = true;
+            if (_webView != null)
+            {
+                _webView.Visible = false;
+            }
+
+            if (_winFormsView != null)
+            {
+                _winFormsView.Visible = false;
+            }
+
+            _structuredView.Bind(_provider, _currentText);
+            HandlerLog.Info("渲染引擎=WinForms structured=" + _provider.Id + " length=" + _currentText.Length);
+            return;
+        }
+
+        if (_structuredView != null)
+        {
+            _structuredView.Visible = false;
+        }
+
+        if (_winFormsView != null)
+        {
+            _winFormsView.Visible = false;
+        }
+
+        if (_webView != null)
+        {
+            _webView.Visible = true;
+        }
+
+        HandlerLog.Info("渲染引擎=Web structured=" + _provider.Id + " length=" + _currentText.Length);
+        ShowHtml(_currentHtml);
+    }
+
     private void Present(string markdown)
     {
         _currentMarkdown = markdown ?? "";
+        _currentText = _currentMarkdown;
         _currentHtml = MarkdownHtmlRenderer.Render(_currentMarkdown);
+
+        if (_structuredView != null)
+        {
+            _structuredView.Visible = false;
+        }
+
         if (PreviewEngineChoice.UseWinForms())
         {
             EnsureWinFormsView();
@@ -309,6 +406,22 @@ public partial class MarkdownPreviewControl : PreviewHandlerControl
 
         HandlerLog.Info("渲染引擎=WebView length=" + _currentMarkdown.Length);
         ShowHtml(_currentHtml);
+    }
+
+    private void EnsureStructuredView()
+    {
+        if (_structuredView != null)
+        {
+            return;
+        }
+
+        _structuredView = new StructuredPreviewControl
+        {
+            Dock = DockStyle.Fill,
+            Name = "structuredPreview"
+        };
+        panelPreview.Controls.Add(_structuredView);
+        _structuredView.BringToFront();
     }
 
     private void EnsureWinFormsView()

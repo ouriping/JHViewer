@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<library name="菁华示例书库" updated="2026-09-30">
+  <meta>
+    <owner>大白菜</owner>
+    <tags>
+      <tag>Markdown</tag>
+      <tag>预览窗格</tag>
+      <tag>演示</tag>
+    </tags>
+  </meta>
+  <books>
+    <book id="b1" lang="zh-CN">
+      <title>Markdown 入门</title>
+      <author>示例作者</author>
+      <chapters>
+        <chapter no="1">基础语法</chapter>
+        <chapter no="2">表格与代码块</chapter>
+        <chapter no="3">资源管理器预览</chapter>
+      </chapters>
+    </book>
+    <book id="b2" lang="zh-CN">
+      <title>JSON 与 XML 预览</title>
+      <author>示例作者</author>
+      <notes>在预览窗格切换 WinForms（更快更省）可看树形结构。</notes>
+    </book>
+  </books>
+</library>

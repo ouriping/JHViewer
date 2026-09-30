@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config env="demo">
+  <database host="127.0.0.1" port="5432" name="wiki" />
+  <cache enabled="true" ttlSeconds="300" />
+  <preview>
+    <engine prefer="WinForms" reason="更快更省" />
+    <formats>
+      <format ext=".json" />
+      <format ext=".xml" />
+    </formats>
+  </preview>
+</config>

@@ -12,12 +12,17 @@ public static class HandlerRegistration
 {
     public static void Install()
     {
+        Install(DocumentPreviewRegistry.AllExtensions);
+    }
+
+    public static void Install(System.Collections.Generic.IEnumerable<string> extensions)
+    {
         var server = new MarkdownPreviewHandler();
         TryUninstallQuiet(server);
 
         // 主路径：手写 .NET Framework COM CodeBase（避免 SharpShell InstallServer 半残状态）
         InstallViaRegistryCodeBase();
-        EnsureUserAssociations();
+        EnsureUserAssociations(extensions);
         EnsureDisableLowIlUser();
 
         // 尽力再用 SharpShell 补全 PreviewHandlers / 关联（失败不影响）
@@ -132,25 +137,53 @@ public static class HandlerRegistration
         inproc.SetValue("CodeBase", codeBase);
     }
 
-    private static void EnsureUserAssociations()
+    private static void EnsureUserAssociations(System.Collections.Generic.IEnumerable<string> extensions)
     {
         const string shellEx = "{8895b1c6-b41f-4c1c-a562-0d564250836f}";
-        foreach (var ext in new[]
-                 {
-                     @"Software\Classes\.md",
-                     @"Software\Classes\SystemFileAssociations\.md"
-                 })
+
+        // 先清掉已知扩展，再按本次勾选写入，避免残留旧关联。
+        ClearUserAssociations();
+
+        foreach (var raw in extensions ?? System.Array.Empty<string>())
         {
-            using var key = Registry.CurrentUser.CreateSubKey(ext);
-            key?.SetValue("PerceivedType", "text");
-            key?.SetValue("Content Type", "text/markdown");
-            using var preview = Registry.CurrentUser.CreateSubKey(ext + @"\shellex\" + shellEx);
-            preview?.SetValue("", HandlerIds.ClsidBraced);
+            var ext = NormalizeExt(raw);
+            if (ext.Length == 0)
+            {
+                continue;
+            }
+
+            foreach (var root in new[]
+                     {
+                         @"Software\Classes\" + ext,
+                         @"Software\Classes\SystemFileAssociations\" + ext
+                     })
+            {
+                using var key = Registry.CurrentUser.CreateSubKey(root);
+                key?.SetValue("PerceivedType", "text");
+                using var preview = Registry.CurrentUser.CreateSubKey(root + @"\shellex\" + shellEx);
+                preview?.SetValue("", HandlerIds.ClsidBraced);
+            }
         }
 
         using var previewHandlers = Registry.CurrentUser.CreateSubKey(
             @"Software\Microsoft\Windows\CurrentVersion\PreviewHandlers");
         previewHandlers?.SetValue(HandlerIds.ClsidBraced, HandlerIds.DisplayName);
+    }
+
+    private static string NormalizeExt(string value)
+    {
+        var ext = (value ?? string.Empty).Trim().ToLowerInvariant();
+        if (ext.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        if (!ext.StartsWith(".", System.StringComparison.Ordinal))
+        {
+            ext = "." + ext;
+        }
+
+        return ext;
     }
 
     private static void EnsureDisableLowIlUser()
@@ -180,13 +213,16 @@ public static class HandlerRegistration
     private static void ClearUserAssociations()
     {
         const string shellEx = "{8895b1c6-b41f-4c1c-a562-0d564250836f}";
-        foreach (var ext in new[]
-                 {
-                     @"Software\Classes\.md\shellex\" + shellEx,
-                     @"Software\Classes\SystemFileAssociations\.md\shellex\" + shellEx
-                 })
+        foreach (var ext in DocumentPreviewRegistry.AllExtensions)
         {
-            Registry.CurrentUser.DeleteSubKeyTree(ext, throwOnMissingSubKey: false);
+            foreach (var path in new[]
+                     {
+                         @"Software\Classes\" + ext + @"\shellex\" + shellEx,
+                         @"Software\Classes\SystemFileAssociations\" + ext + @"\shellex\" + shellEx
+                     })
+            {
+                Registry.CurrentUser.DeleteSubKeyTree(path, throwOnMissingSubKey: false);
+            }
         }
     }
 }

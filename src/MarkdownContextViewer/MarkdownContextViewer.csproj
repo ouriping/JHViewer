@@ -21,6 +21,16 @@
     <ProjectReference Include="..\MarkdownWiki.Core\MarkdownWiki.Core.csproj" />
   </ItemGroup>
 
+  <!-- 演示示例：复制到输出目录，便于「查看 → 打开 JSON/XML 演示」 -->
+  <Target Name="CopyPreviewDemoSamples" AfterTargets="Build">
+    <ItemGroup>
+      <_PreviewDemoFiles Include="$(MSBuildProjectDirectory)\..\..\samples\preview-demo\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PreviewDemoFiles)"
+          DestinationFolder="$(TargetDir)samples\preview-demo\%(RecursiveDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
+
   <!-- 把 Handler / Register 输出复制到主程序目录，便于部署 -->
   <Target Name="CopyPreviewHandlerOutputs" AfterTargets="Build">
     <PropertyGroup>

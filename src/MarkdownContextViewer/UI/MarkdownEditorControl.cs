@@ -17,6 +17,7 @@ public partial class MarkdownEditorControl : UserControl
     private string? _tempHtmlPath;
 
     public event EventHandler? SaveRequested;
+    public event EventHandler<PreviewEngineKind>? PreviewEngineChanged;
 
     public MarkdownEditorControl()
         : this(new MarkdownRenderService())
@@ -39,6 +40,7 @@ public partial class MarkdownEditorControl : UserControl
 
         Disposed += (_, _) => CleanupTempFile();
         SyncViewModeButtons(showEditor: true, showPreview: true);
+        SyncEngineButtons(PreviewEngineSetting.Load());
     }
 
     public string MarkdownText
@@ -56,6 +58,7 @@ public partial class MarkdownEditorControl : UserControl
         var useWinForms = kind == PreviewEngineKind.WinForms;
         winFormsPreview.Visible = useWinForms;
         preview.Visible = !useWinForms;
+        SyncEngineButtons(kind);
         RefreshPreviewImmediate();
     }
 
@@ -108,6 +111,19 @@ public partial class MarkdownEditorControl : UserControl
     private void btnPreviewOnly_Click(object? sender, EventArgs e) => SetPreviewMode();
 
     private void btnSplit_Click(object? sender, EventArgs e) => SetSplitMode();
+
+    private void btnEngineWeb_Click(object? sender, EventArgs e) =>
+        ChangePreviewEngine(PreviewEngineKind.WebView);
+
+    private void btnEngineWinForms_Click(object? sender, EventArgs e) =>
+        ChangePreviewEngine(PreviewEngineKind.WinForms);
+
+    private void ChangePreviewEngine(PreviewEngineKind kind)
+    {
+        PreviewEngineSetting.Save(kind);
+        UsePreviewEngine(kind);
+        PreviewEngineChanged?.Invoke(this, kind);
+    }
 
     private void editor_TextChanged(object? sender, EventArgs e) => SchedulePreviewRefresh();
 
@@ -279,6 +295,12 @@ public partial class MarkdownEditorControl : UserControl
         btnEditorOnly.Checked = showEditor && !showPreview;
         btnPreviewOnly.Checked = !showEditor && showPreview;
         btnSplit.Checked = showEditor && showPreview;
+    }
+
+    private void SyncEngineButtons(PreviewEngineKind kind)
+    {
+        btnEngineWeb.Checked = kind == PreviewEngineKind.WebView;
+        btnEngineWinForms.Checked = kind == PreviewEngineKind.WinForms;
     }
 
     private static bool IsDesignTime() =>

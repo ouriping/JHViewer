@@ -35,6 +35,10 @@ namespace MarkdownPreview.Handler
             this.btnRecent = new System.Windows.Forms.ToolStripDropDownButton();
             this.btnHistory = new System.Windows.Forms.ToolStripButton();
             this.btnRefresh = new System.Windows.Forms.ToolStripButton();
+            this.btnEngine = new System.Windows.Forms.ToolStripDropDownButton();
+            this.mnuEngineWeb = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuEngineWinForms = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparatorEngine = new System.Windows.Forms.ToolStripSeparator();
             this.btnEditor = new System.Windows.Forms.ToolStripButton();
             this.btnExport = new System.Windows.Forms.ToolStripButton();
             this.btnMore = new System.Windows.Forms.ToolStripDropDownButton();
@@ -127,6 +131,8 @@ namespace MarkdownPreview.Handler
             this.btnHistory,
             this.btnRefresh,
             this.toolStripSeparator1,
+            this.btnEngine,
+            this.toolStripSeparatorEngine,
             this.btnEditor,
             this.btnExport,
             this.toolStripSeparator2,
@@ -165,6 +171,39 @@ namespace MarkdownPreview.Handler
             this.btnRefresh.Text = "刷新";
             this.btnRefresh.ToolTipText = "重新读取当前文件";
             this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
+            // 
+            // btnEngine
+            // 
+            this.btnEngine.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnEngine.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mnuEngineWeb,
+            this.mnuEngineWinForms});
+            this.btnEngine.Name = "btnEngine";
+            this.btnEngine.Size = new System.Drawing.Size(53, 24);
+            this.btnEngine.Text = "引擎";
+            this.btnEngine.ToolTipText = "切换预览渲染引擎（与主程序设置同步）";
+            this.btnEngine.DropDownOpening += new System.EventHandler(this.btnEngine_DropDownOpening);
+            // 
+            // mnuEngineWeb
+            // 
+            this.mnuEngineWeb.Name = "mnuEngineWeb";
+            this.mnuEngineWeb.Size = new System.Drawing.Size(280, 26);
+            this.mnuEngineWeb.Text = "Web（还原度高）";
+            this.mnuEngineWeb.ToolTipText = "WebView2：Markdown 排版还原度高，启动与内存开销更大";
+            this.mnuEngineWeb.Click += new System.EventHandler(this.mnuEngineWeb_Click);
+            // 
+            // mnuEngineWinForms
+            // 
+            this.mnuEngineWinForms.Name = "mnuEngineWinForms";
+            this.mnuEngineWinForms.Size = new System.Drawing.Size(280, 26);
+            this.mnuEngineWinForms.Text = "WinForms（更快更省）★";
+            this.mnuEngineWinForms.ToolTipText = "RichTextBox：启动快、更省内存，适合大文件；Markdown 还原度有限";
+            this.mnuEngineWinForms.Click += new System.EventHandler(this.mnuEngineWinForms_Click);
+            // 
+            // toolStripSeparatorEngine
+            // 
+            this.toolStripSeparatorEngine.Name = "toolStripSeparatorEngine";
+            this.toolStripSeparatorEngine.Size = new System.Drawing.Size(6, 27);
             // 
             // btnEditor
             // 
@@ -284,7 +323,6 @@ namespace MarkdownPreview.Handler
             this.actionStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         private Panel panelToolbar;
@@ -298,6 +336,10 @@ namespace MarkdownPreview.Handler
         private ToolStripDropDownButton btnRecent;
         private ToolStripButton btnHistory;
         private ToolStripButton btnRefresh;
+        private ToolStripDropDownButton btnEngine;
+        private ToolStripMenuItem mnuEngineWeb;
+        private ToolStripMenuItem mnuEngineWinForms;
+        private ToolStripSeparator toolStripSeparatorEngine;
         private ToolStripButton btnEditor;
         private ToolStripButton btnExport;
         private ToolStripDropDownButton btnMore;

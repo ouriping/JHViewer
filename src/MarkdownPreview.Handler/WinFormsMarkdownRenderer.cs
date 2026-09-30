@@ -7,28 +7,53 @@ namespace MarkdownPreview.Handler;
 
 internal static class PreviewEngineChoice
 {
-    public static bool UseWinForms()
+    private static string SettingPath => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "MarkdownContextViewer",
+        "preview-engine.txt");
+
+    public static bool UseWinForms() => IsWinForms(Load());
+
+    public static string Load()
     {
-        var path = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "MarkdownContextViewer",
-            "preview-engine.txt");
         try
         {
-            if (!File.Exists(path))
+            if (!File.Exists(SettingPath))
             {
-                return false;
+                return "WebView";
             }
 
-            var text = File.ReadAllText(path).Trim();
-            return string.Equals(text, "WinForms", StringComparison.OrdinalIgnoreCase);
+            var text = File.ReadAllText(SettingPath).Trim();
+            return IsWinForms(text) ? "WinForms" : "WebView";
         }
         catch (Exception ex)
         {
             HandlerLog.Error("读取预览引擎设置失败。", ex);
-            return false;
+            return "WebView";
         }
     }
+
+    public static void Save(bool useWinForms)
+    {
+        try
+        {
+            var dir = Path.GetDirectoryName(SettingPath);
+            if (!string.IsNullOrWhiteSpace(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            File.WriteAllText(SettingPath, useWinForms ? "WinForms" : "WebView");
+            HandlerLog.Info("预览引擎已保存: " + (useWinForms ? "WinForms" : "WebView"));
+        }
+        catch (Exception ex)
+        {
+            HandlerLog.Error("保存预览引擎设置失败。", ex);
+        }
+    }
+
+    private static bool IsWinForms(string text) =>
+        string.Equals(text, "WinForms", StringComparison.OrdinalIgnoreCase);
 }
 
 internal static class WinFormsMarkdownRenderer

@@ -39,6 +39,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="System.Web.Extensions" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="SharpShell" Version="2.7.2" />
     <PackageReference Include="Markdig" Version="0.37.0" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />

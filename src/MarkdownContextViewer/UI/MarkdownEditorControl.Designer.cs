@@ -54,6 +54,10 @@ partial class MarkdownEditorControl
         btnEditorOnly = new ToolStripButton();
         btnPreviewOnly = new ToolStripButton();
         btnSplit = new ToolStripButton();
+        sepView = new ToolStripSeparator();
+        lblEngine = new ToolStripLabel();
+        btnEngineWeb = new ToolStripButton();
+        btnEngineWinForms = new ToolStripButton();
         mainSplit = new SplitContainer();
         editor = new RichTextBox();
         preview = new WebBrowser();
@@ -393,7 +397,9 @@ partial class MarkdownEditorControl
         stripView.GripStyle = ToolStripGripStyle.Hidden;
         stripView.Items.AddRange(new ToolStripItem[]
         {
-            lblLayout, btnEditorOnly, btnPreviewOnly, btnSplit
+            lblLayout, btnEditorOnly, btnPreviewOnly, btnSplit,
+            sepView,
+            lblEngine, btnEngineWeb, btnEngineWinForms
         });
         stripView.Location = new Point(0, 0);
         stripView.Name = "stripView";
@@ -440,6 +446,38 @@ partial class MarkdownEditorControl
         btnSplit.Text = "分栏";
         btnSplit.ToolTipText = "编辑/预览分栏";
         btnSplit.Click += btnSplit_Click;
+        // 
+        // sepView
+        // 
+        sepView.Name = "sepView";
+        sepView.Size = new Size(6, 31);
+        // 
+        // lblEngine
+        // 
+        lblEngine.ForeColor = Color.FromArgb(96, 104, 116);
+        lblEngine.Name = "lblEngine";
+        lblEngine.Size = new Size(32, 28);
+        lblEngine.Text = "引擎";
+        // 
+        // btnEngineWeb
+        // 
+        btnEngineWeb.CheckOnClick = true;
+        btnEngineWeb.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        btnEngineWeb.Name = "btnEngineWeb";
+        btnEngineWeb.Size = new Size(100, 28);
+        btnEngineWeb.Text = "Web（还原度高）";
+        btnEngineWeb.ToolTipText = "WebBrowser：Markdown 排版还原度高，启动与内存开销更大";
+        btnEngineWeb.Click += btnEngineWeb_Click;
+        // 
+        // btnEngineWinForms
+        // 
+        btnEngineWinForms.CheckOnClick = true;
+        btnEngineWinForms.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        btnEngineWinForms.Name = "btnEngineWinForms";
+        btnEngineWinForms.Size = new Size(130, 28);
+        btnEngineWinForms.Text = "WinForms（更快更省）★";
+        btnEngineWinForms.ToolTipText = "RichTextBox：启动快、更省内存，适合大文件；Markdown 还原度有限";
+        btnEngineWinForms.Click += btnEngineWinForms_Click;
         // 
         // mainSplit
         // 
@@ -566,6 +604,10 @@ partial class MarkdownEditorControl
     private ToolStripButton btnEditorOnly = null!;
     private ToolStripButton btnPreviewOnly = null!;
     private ToolStripButton btnSplit = null!;
+    private ToolStripSeparator sepView = null!;
+    private ToolStripLabel lblEngine = null!;
+    private ToolStripButton btnEngineWeb = null!;
+    private ToolStripButton btnEngineWinForms = null!;
     private SplitContainer mainSplit = null!;
     private RichTextBox editor = null!;
     private WebBrowser preview = null!;

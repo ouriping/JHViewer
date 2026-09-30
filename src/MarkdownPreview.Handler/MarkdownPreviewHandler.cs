@@ -5,12 +5,15 @@ using SharpShell.SharpPreviewHandler;
 namespace MarkdownPreview.Handler;
 
 /// <summary>
-/// 资源管理器预览窗格：SharpShell + Markdig + WebView2。
+/// 资源管理器预览窗格：Markdown / JSON / XML（SharpShell + Markdig + WebView2 / WinForms）。
 /// </summary>
 [ComVisible(true)]
 [Guid(HandlerIds.Clsid)]
 [DisplayName(HandlerIds.DisplayName)]
 [COMServerAssociation(AssociationType.ClassOfExtension, ".md")]
+[COMServerAssociation(AssociationType.ClassOfExtension, ".markdown")]
+[COMServerAssociation(AssociationType.ClassOfExtension, ".json")]
+[COMServerAssociation(AssociationType.ClassOfExtension, ".xml")]
 [PreviewHandler(
     DisableLowILProcessIsolation = true,
     SurrogateHostType = SurrogateHostType.DedicatedPrevhost)]
@@ -30,7 +33,7 @@ public sealed class MarkdownPreviewHandler : SharpPreviewHandler
             }
             else
             {
-                control.ShowMarkdown("**无法读取 Markdown 文件。**");
+                control.ShowMarkdown("**无法读取文件。**");
             }
         }
         catch (System.Exception ex)

@@ -13,6 +13,11 @@ internal sealed class ExplorerIntegrationService
     private const string MdExtensionKey = @"Software\Classes\.md";
     private const string MdSystemAssociationKey = @"Software\Classes\SystemFileAssociations\.md";
     private const string PreviewHandlersKey = @"Software\Microsoft\Windows\CurrentVersion\PreviewHandlers";
+
+    private static readonly string[] PreviewFileExtensions =
+    {
+        ".md", ".markdown", ".json", ".xml"
+    };
     private const string IeFeatureEmulationKey =
         @"Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION";
 
@@ -147,21 +152,42 @@ internal sealed class ExplorerIntegrationService
         return string.Join(Environment.NewLine, lines);
     }
 
-    public void EnablePreview()
+    public void EnablePreview() =>
+        EnablePreview(PreviewFileExtensions, progress: null);
+
+    public void EnablePreview(
+        IReadOnlyList<string> extensions,
+        IProgress<PreviewRegistrationProgress>? progress = null)
     {
+        var selected = NormalizeExtensions(extensions);
+        if (selected.Count == 0)
+        {
+            throw new InvalidOperationException("请至少选择一种要注册的文件格式。");
+        }
+
+        Report(progress, 5, "清理旧版 COM 注册…");
         UnregisterLegacyNetComHost();
+
+        Report(progress, 18, "部署预览组件文件到本地目录…");
         DeployPreviewHandlerFiles();
-        // 先无提权写 HKCU（SharpShell codebase）；再尝试提权写 HKLM DisableLowIL
+        Report(progress, 28, $"组件已部署：{GetDeployDirectory()}");
+
+        var installArgs = "install " + string.Join(' ', selected);
+        Report(progress, 35, $"运行注册脚本（无提权）：MarkdownPreview.Register.exe {installArgs}");
         try
         {
-            RunRegisterTool("install", elevate: false);
+            var output = RunRegisterTool(installArgs, elevate: false);
+            AppendScriptOutput(progress, output);
+            Report(progress, 55, "COM 注册完成（HKCU）。");
         }
         catch (Exception ex)
         {
-            // 回退：提权安装（写入 HKLM Classes）
+            Report(progress, 40, "无提权注册失败，尝试 UAC 提权安装…");
             try
             {
-                RunRegisterTool("install", elevate: true);
+                var output = RunRegisterTool(installArgs, elevate: true);
+                AppendScriptOutput(progress, output);
+                Report(progress, 55, "COM 注册完成（已提权）。");
             }
             catch
             {
@@ -170,16 +196,41 @@ internal sealed class ExplorerIntegrationService
             }
         }
 
+        Report(progress, 62, "配置 HKLM DisableLowIL（中等完整性 prevhost）…");
         EnsureHklmDisableLowIl();
+
+        Report(progress, 70, "配置浏览器模拟（FEATURE_BROWSER_EMULATION）…");
         ConfigureBrowserEmulation();
-        EnsureExtensionPreview(MdExtensionKey);
-        EnsureExtensionPreview(MdSystemAssociationKey);
+
+        Report(progress, 78, "按勾选写入扩展名预览关联：" + string.Join(" ", selected));
+        foreach (var ext in PreviewFileExtensions)
+        {
+            ClearExtensionPreview($@"Software\Classes\{ext}");
+            ClearExtensionPreview($@"Software\Classes\SystemFileAssociations\{ext}");
+        }
+
+        foreach (var ext in selected)
+        {
+            EnsureExtensionPreview($@"Software\Classes\{ext}");
+            EnsureExtensionPreview($@"Software\Classes\SystemFileAssociations\{ext}");
+            Report(progress, 85, $"已关联 {ext}");
+        }
+
+        Report(progress, 92, "通知 Shell 关联已变更…");
         NotifyShellAssociationsChanged();
+
+        Report(progress, 96, "结束 prevhost 进程…");
         KillPrevhost();
+
+        Report(progress, 100, "预览窗格启用完成。");
     }
 
-    public void DisablePreview()
+    public void DisablePreview() =>
+        DisablePreview(progress: null);
+
+    public void DisablePreview(IProgress<PreviewRegistrationProgress>? progress = null)
     {
+        Report(progress, 10, "运行卸载脚本：MarkdownPreview.Register.exe uninstall");
         Exception? last = null;
         foreach (var elevate in new[] { false, true })
         {
@@ -187,25 +238,68 @@ internal sealed class ExplorerIntegrationService
             {
                 if (File.Exists(GetRegisterExePath()))
                 {
-                    RunRegisterTool("uninstall", elevate);
+                    var output = RunRegisterTool("uninstall", elevate);
+                    AppendScriptOutput(progress, output);
                     last = null;
+                    Report(progress, 45, elevate ? "卸载脚本完成（已提权）。" : "卸载脚本完成。");
                     break;
                 }
             }
             catch (Exception ex)
             {
                 last = ex;
+                Report(progress, 30, (elevate ? "提权" : "无提权") + "卸载失败：" + ex.Message);
             }
         }
 
         _ = last; // 即使 uninstall 失败也继续清注册表
-        ClearExtensionPreview(MdExtensionKey);
-        ClearExtensionPreview(MdSystemAssociationKey);
+        Report(progress, 55, "清除扩展名预览关联…");
+        foreach (var ext in PreviewFileExtensions)
+        {
+            ClearExtensionPreview($@"Software\Classes\{ext}");
+            ClearExtensionPreview($@"Software\Classes\SystemFileAssociations\{ext}");
+            Report(progress, 70, $"已清除 {ext}");
+        }
+
+        Report(progress, 80, "清理旧版 COM / DisableLowIL / 浏览器模拟…");
         UnregisterLegacyNetComHost();
         ClearHklmDisableLowIl();
         ClearBrowserEmulation();
+
+        Report(progress, 90, "通知 Shell 并结束 prevhost…");
         NotifyShellAssociationsChanged();
         KillPrevhost();
+
+        Report(progress, 100, "预览窗格已取消。");
+    }
+
+    private static List<string> NormalizeExtensions(IEnumerable<string>? extensions)
+    {
+        var allowed = new HashSet<string>(PreviewFileExtensions, StringComparer.OrdinalIgnoreCase);
+        return (extensions ?? [])
+            .Select(x => (x ?? string.Empty).Trim().ToLowerInvariant())
+            .Select(x => x.StartsWith('.') ? x : "." + x)
+            .Where(x => allowed.Contains(x))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static void Report(IProgress<PreviewRegistrationProgress>? progress, int percent, string message)
+    {
+        progress?.Report(new PreviewRegistrationProgress(percent, message));
+    }
+
+    private static void AppendScriptOutput(IProgress<PreviewRegistrationProgress>? progress, string? output)
+    {
+        if (string.IsNullOrWhiteSpace(output) || progress is null)
+        {
+            return;
+        }
+
+        foreach (var line in output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries))
+        {
+            progress.Report(new PreviewRegistrationProgress(-1, "  » " + line.Trim()));
+        }
     }
 
     public int KillPrevhost()
@@ -478,7 +572,8 @@ internal sealed class ExplorerIntegrationService
         }
     }
 
-    private void RunRegisterTool(string command, bool elevate)
+    /// <returns>捕获到的脚本标准输出（提权模式可能为空）。</returns>
+    private string RunRegisterTool(string command, bool elevate)
     {
         var exe = GetRegisterExePath();
         if (!File.Exists(exe))
@@ -493,16 +588,34 @@ internal sealed class ExplorerIntegrationService
             FileName = exe,
             Arguments = command,
             WorkingDirectory = workDir,
-            UseShellExecute = true,
             WindowStyle = ProcessWindowStyle.Hidden
         };
+
         if (elevate)
         {
+            // runas 必须 UseShellExecute，无法重定向输出
+            psi.UseShellExecute = true;
             psi.Verb = "runas";
+        }
+        else
+        {
+            psi.UseShellExecute = false;
+            psi.RedirectStandardOutput = true;
+            psi.RedirectStandardError = true;
+            psi.CreateNoWindow = true;
         }
 
         using var process = Process.Start(psi)
             ?? throw new InvalidOperationException("无法启动注册工具（可能取消了 UAC）。");
+
+        var stdout = string.Empty;
+        var stderr = string.Empty;
+        if (!elevate)
+        {
+            stdout = process.StandardOutput.ReadToEnd();
+            stderr = process.StandardError.ReadToEnd();
+        }
+
         if (!process.WaitForExit(60000))
         {
             try { process.Kill(); } catch { /* ignore */ }
@@ -511,8 +624,13 @@ internal sealed class ExplorerIntegrationService
 
         if (process.ExitCode != 0)
         {
-            throw new InvalidOperationException($"注册工具失败，退出码={process.ExitCode}。请以管理员同意 UAC 后重试。");
+            var detail = string.IsNullOrWhiteSpace(stderr) ? stdout : stderr;
+            throw new InvalidOperationException(
+                $"注册工具失败，退出码={process.ExitCode}。" +
+                (string.IsNullOrWhiteSpace(detail) ? "请以管理员同意 UAC 后重试。" : "\n" + detail.Trim()));
         }
+
+        return string.IsNullOrWhiteSpace(stdout) ? stderr : stdout;
     }
 
     /// <summary>清理旧版 .NET 8 comhost 注册，避免与 SharpShell 冲突。</summary>
@@ -531,7 +649,6 @@ internal sealed class ExplorerIntegrationService
     {
         using var extensionKey = Registry.CurrentUser.CreateSubKey(extensionKeyPath);
         extensionKey?.SetValue("PerceivedType", "text");
-        extensionKey?.SetValue("Content Type", "text/markdown");
 
         using var previewKey = Registry.CurrentUser.CreateSubKey(
             $@"{extensionKeyPath}\shellex\{PreviewHandlerShellEx}");

@@ -1,0 +1,32 @@
+{
+  "product": "菁华 Markdown 浏览器",
+  "version": "1.2.0",
+  "preview": {
+    "engines": [
+      {
+        "id": "web",
+        "name": "Web",
+        "strength": "还原度高",
+        "recommendedFor": ["Markdown 排版", "表格", "代码高亮"]
+      },
+      {
+        "id": "winforms",
+        "name": "WinForms",
+        "strength": "更快更省",
+        "recommendedFor": ["大文件", "JSON", "XML"]
+      }
+    ],
+    "defaultEngine": "web"
+  },
+  "formats": [
+    { "ext": ".md", "provider": "markdown" },
+    { "ext": ".json", "provider": "json" },
+    { "ext": ".xml", "provider": "xml" }
+  ],
+  "authors": [
+    { "name": "大白菜", "role": "维护者" },
+    { "name": "社区贡献者", "role": "反馈" }
+  ],
+  "enabled": true,
+  "maxNodes": 2000
+}
