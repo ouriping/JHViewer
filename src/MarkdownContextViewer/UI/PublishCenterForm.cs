@@ -50,6 +50,57 @@ public partial class PublishCenterForm : Form
         }
     }
 
+    private void btnChmBrowse_Click(object sender, EventArgs e)
+    {
+        using var dialog = new FolderBrowserDialog
+        {
+            Description = "选择要打包为 CHM 的 Markdown 文档根目录"
+        };
+
+        if (dialog.ShowDialog() == DialogResult.OK)
+        {
+            txtChmDirectory.Text = dialog.SelectedPath;
+        }
+    }
+
+    private void btnExportChm_Click(object sender, EventArgs e)
+    {
+        var root = txtChmDirectory.Text.Trim();
+        if (string.IsNullOrWhiteSpace(root) || !Directory.Exists(root))
+        {
+            MessageBox.Show("请先选择有效的文档根目录。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        try
+        {
+            Cursor = Cursors.WaitCursor;
+            var result = ChmDesktopExporter.Export(root, compile: chkChmCompile.Checked);
+            var detail = result.Message + Environment.NewLine +
+                         "构建目录：" + result.BuildDirectory + Environment.NewLine +
+                         (result.Compiled ? "CHM：" + result.ChmPath : "未生成 CHM（可打开 Project.hhp 手工编译）");
+            MessageBox.Show(detail, result.Ok ? "导出完成" : "导出失败", MessageBoxButtons.OK,
+                result.Ok ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+
+            if (result.Ok && Directory.Exists(result.BuildDirectory))
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = result.BuildDirectory,
+                    UseShellExecute = true
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "导出失败", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+        finally
+        {
+            Cursor = Cursors.Default;
+        }
+    }
+
     private void StartMarkdownWiki()
     {
         try

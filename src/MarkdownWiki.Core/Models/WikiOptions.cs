@@ -29,4 +29,6 @@ public sealed class WikiOptions
 
     /// <summary>允许的图片扩展名（含点或不含点均可）。</summary>
     public string[] AllowedImageExtensions { get; set; } = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"];
+
+    public WikiChmOptions Chm { get; set; } = new();
 }

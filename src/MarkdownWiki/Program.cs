@@ -21,6 +21,11 @@ builder.Services.AddSingleton<WikiDocumentService>();
 builder.Services.AddSingleton<WikiRenderService>();
 builder.Services.AddSingleton<WikiMediaService>();
 builder.Services.AddSingleton<WikiContentWatcher>();
+builder.Services.AddSingleton<ChmHtmlBuilder>();
+builder.Services.AddSingleton<ChmProjectWriter>();
+builder.Services.AddSingleton<ChmCompiler>();
+builder.Services.AddSingleton<ChmExportState>();
+builder.Services.AddSingleton<ChmExportService>();
 
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -131,6 +136,54 @@ static void MapWikiApi(WebApplication app)
         Results.Json(new { ok = true, data = docs.Search(q ?? string.Empty) }, JsonOptions()));
 
     var adminApi = api.MapGroup("").RequireAuthorization();
+
+    adminApi.MapPost("/export/chm", (ChmExportService export, ChmExportState state, WikiOptions wikiOptions, bool? compile, bool? includeIndex) =>
+    {
+        if (!wikiOptions.EnableEdit)
+        {
+            return Results.Json(new { ok = false, error = "当前为只读模式。" }, JsonOptions(), statusCode: 403);
+        }
+
+        var opts = export.CreateDefaultOptions();
+        opts.Compile = compile ?? true;
+        opts.IncludeIndex = includeIndex ?? opts.IncludeIndex;
+        if (opts.Compile == false)
+        {
+            opts.PreferredCompiler = "None";
+        }
+
+        var result = export.Export(opts);
+        state.Set(result.ChmPath, result.BuildDirectory);
+        return Results.Json(new { ok = result.Ok, data = result }, JsonOptions(), statusCode: result.Ok ? 200 : 500);
+    });
+
+    adminApi.MapGet("/export/chm/download", (ChmExportState state) =>
+    {
+        var (chmPath, _) = state.Get();
+        if (string.IsNullOrWhiteSpace(chmPath) || !File.Exists(chmPath))
+        {
+            return Results.NotFound(new { ok = false, error = "尚无可用的 CHM，请先导出。" });
+        }
+
+        var name = Path.GetFileName(chmPath);
+        return Results.File(chmPath, "application/vnd.ms-htmlhelp", name);
+    });
+
+    adminApi.MapGet("/export/chm/status", (ChmExportService export, ChmExportState state) =>
+    {
+        var detected = export.DetectCompiler();
+        var last = state.Get();
+        return Results.Json(new
+        {
+            ok = true,
+            data = new
+            {
+                compiler = detected is null ? null : new { detected.Kind, detected.Path },
+                lastChmPath = last.chmPath,
+                lastBuildDirectory = last.buildDirectory
+            }
+        }, JsonOptions());
+    });
 
     adminApi.MapPost("/preview", async (HttpRequest request, WikiRenderService render) =>
     {

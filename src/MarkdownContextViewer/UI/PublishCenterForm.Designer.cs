@@ -36,6 +36,14 @@ partial class PublishCenterForm
         txtWikiDirectory = new TextBox();
         btnWikiBrowse = new Button();
         lblWiki = new Label();
+        tabChm = new TabPage();
+        panelChm = new Panel();
+        btnExportChm = new Button();
+        chkChmCompile = new CheckBox();
+        panelChmRow = new Panel();
+        txtChmDirectory = new TextBox();
+        btnChmBrowse = new Button();
+        lblChm = new Label();
         tabs.SuspendLayout();
         tabSingle.SuspendLayout();
         panelSingle.SuspendLayout();
@@ -45,6 +53,9 @@ partial class PublishCenterForm
         tabWiki.SuspendLayout();
         panelWiki.SuspendLayout();
         panelWikiRow.SuspendLayout();
+        tabChm.SuspendLayout();
+        panelChm.SuspendLayout();
+        panelChmRow.SuspendLayout();
         SuspendLayout();
         // 
         // tabs
@@ -52,6 +63,7 @@ partial class PublishCenterForm
         tabs.Controls.Add(tabSingle);
         tabs.Controls.Add(tabDirectory);
         tabs.Controls.Add(tabWiki);
+        tabs.Controls.Add(tabChm);
         tabs.Dock = DockStyle.Fill;
         tabs.Location = new Point(0, 0);
         tabs.Margin = new Padding(4, 4, 4, 4);
@@ -272,6 +284,99 @@ partial class PublishCenterForm
         lblWiki.TabIndex = 3;
         lblWiki.Text = "启动独立 MarkdownWiki：多 md 树导航、Web 阅读/编辑，保存后立即更新网页。默认端口 5099。";
         // 
+        // tabChm
+        // 
+        tabChm.Controls.Add(panelChm);
+        tabChm.Location = new Point(4, 29);
+        tabChm.Margin = new Padding(4, 4, 4, 4);
+        tabChm.Name = "tabChm";
+        tabChm.Padding = new Padding(4, 4, 4, 4);
+        tabChm.Size = new Size(949, 415);
+        tabChm.TabIndex = 3;
+        tabChm.Text = "导出 CHM";
+        tabChm.UseVisualStyleBackColor = true;
+        // 
+        // panelChm
+        // 
+        panelChm.Controls.Add(btnExportChm);
+        panelChm.Controls.Add(chkChmCompile);
+        panelChm.Controls.Add(panelChmRow);
+        panelChm.Controls.Add(lblChm);
+        panelChm.Dock = DockStyle.Fill;
+        panelChm.Location = new Point(4, 4);
+        panelChm.Margin = new Padding(4, 4, 4, 4);
+        panelChm.Name = "panelChm";
+        panelChm.Padding = new Padding(21, 19, 21, 19);
+        panelChm.Size = new Size(941, 407);
+        panelChm.TabIndex = 0;
+        // 
+        // btnExportChm
+        // 
+        btnExportChm.Dock = DockStyle.Top;
+        btnExportChm.Location = new Point(21, 160);
+        btnExportChm.Margin = new Padding(4, 4, 4, 4);
+        btnExportChm.Name = "btnExportChm";
+        btnExportChm.Size = new Size(899, 45);
+        btnExportChm.TabIndex = 0;
+        btnExportChm.Text = "导出 CHM（Markdown → HTML Help）";
+        btnExportChm.Click += btnExportChm_Click;
+        // 
+        // chkChmCompile
+        // 
+        chkChmCompile.AutoSize = true;
+        chkChmCompile.Checked = true;
+        chkChmCompile.CheckState = CheckState.Checked;
+        chkChmCompile.Dock = DockStyle.Top;
+        chkChmCompile.Location = new Point(21, 125);
+        chkChmCompile.Margin = new Padding(4, 4, 4, 4);
+        chkChmCompile.Name = "chkChmCompile";
+        chkChmCompile.Padding = new Padding(4, 8, 4, 8);
+        chkChmCompile.Size = new Size(899, 40);
+        chkChmCompile.TabIndex = 1;
+        chkChmCompile.Text = "自动调用 hhc.exe / chmcmd（未安装则仅生成中间工程）";
+        // 
+        // panelChmRow
+        // 
+        panelChmRow.Controls.Add(txtChmDirectory);
+        panelChmRow.Controls.Add(btnChmBrowse);
+        panelChmRow.Dock = DockStyle.Top;
+        panelChmRow.Location = new Point(21, 78);
+        panelChmRow.Margin = new Padding(4, 4, 4, 4);
+        panelChmRow.Name = "panelChmRow";
+        panelChmRow.Size = new Size(899, 47);
+        panelChmRow.TabIndex = 2;
+        // 
+        // txtChmDirectory
+        // 
+        txtChmDirectory.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        txtChmDirectory.Location = new Point(4, 9);
+        txtChmDirectory.Margin = new Padding(4, 4, 4, 4);
+        txtChmDirectory.Name = "txtChmDirectory";
+        txtChmDirectory.PlaceholderText = "选择包含 .md 的文档根目录";
+        txtChmDirectory.Size = new Size(717, 27);
+        txtChmDirectory.TabIndex = 0;
+        // 
+        // btnChmBrowse
+        // 
+        btnChmBrowse.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnChmBrowse.Location = new Point(735, 7);
+        btnChmBrowse.Margin = new Padding(4, 4, 4, 4);
+        btnChmBrowse.Name = "btnChmBrowse";
+        btnChmBrowse.Size = new Size(154, 33);
+        btnChmBrowse.TabIndex = 1;
+        btnChmBrowse.Text = "选择目录";
+        btnChmBrowse.Click += btnChmBrowse_Click;
+        // 
+        // lblChm
+        // 
+        lblChm.Dock = DockStyle.Top;
+        lblChm.Location = new Point(21, 19);
+        lblChm.Margin = new Padding(4, 0, 4, 0);
+        lblChm.Name = "lblChm";
+        lblChm.Size = new Size(899, 59);
+        lblChm.TabIndex = 3;
+        lblChm.Text = "将多份 Markdown 打包为 Windows CHM 帮助文件。输出在文档根旁的 chm-output 目录。";
+        // 
         // PublishCenterForm
         // 
         AutoScaleDimensions = new SizeF(9F, 20F);
@@ -293,6 +398,11 @@ partial class PublishCenterForm
         panelWiki.ResumeLayout(false);
         panelWikiRow.ResumeLayout(false);
         panelWikiRow.PerformLayout();
+        tabChm.ResumeLayout(false);
+        panelChm.ResumeLayout(false);
+        panelChm.PerformLayout();
+        panelChmRow.ResumeLayout(false);
+        panelChmRow.PerformLayout();
         ResumeLayout(false);
     }
 
@@ -316,4 +426,12 @@ partial class PublishCenterForm
     private Button btnWikiBrowse = null!;
     private Button btnStartWiki = null!;
     private Button btnOpenWiki = null!;
+    private TabPage tabChm = null!;
+    private Panel panelChm = null!;
+    private Label lblChm = null!;
+    private Panel panelChmRow = null!;
+    private TextBox txtChmDirectory = null!;
+    private Button btnChmBrowse = null!;
+    private CheckBox chkChmCompile = null!;
+    private Button btnExportChm = null!;
 }

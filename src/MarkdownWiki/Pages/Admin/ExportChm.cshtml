@@ -1,0 +1,71 @@
+@page
+@model MarkdownWiki.Pages.Admin.ExportChmModel
+@{
+    ViewData["Title"] = "导出 CHM";
+}
+<section class="content full">
+    <h1>导出 CHM 帮助包</h1>
+    <p class="meta">
+        将当前文档根打包为 Windows HTML Help（.chm）。流水线：Markdown → HTML + HHP/HHC → 调用 hhc/chmcmd。
+        若未安装编译器，仍会生成可手工编译的中间工程。
+    </p>
+
+    <div class="cards" style="margin-bottom:16px;">
+        <div class="card">
+            <h2>编译器状态</h2>
+            @if (Model.DetectedCompiler is null)
+            {
+                <p class="alert" style="margin:0;">未检测到 <code>hhc.exe</code> / <code>chmcmd</code>。可安装 HTML Help Workshop，或仅生成中间文件后手工编译。</p>
+            }
+            else
+            {
+                <p class="ok" style="margin:0;">已检测到：<code>@Model.DetectedCompiler</code></p>
+            }
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert">@Model.ErrorMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.Message))
+    {
+        <div class="ok">@Model.Message</div>
+    }
+
+    <form method="post" class="cards">
+        <div class="card">
+            <h2>导出选项</h2>
+            <label><input asp-for="Compile" type="checkbox" /> 尝试自动编译（若已安装编译器）</label>
+            <label><input asp-for="IncludeIndex" type="checkbox" /> 生成索引（标题 / 二级标题）</label>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+                <button type="submit" asp-page-handler="Export">开始导出</button>
+                @if (!string.IsNullOrEmpty(Model.LastChmPath) && System.IO.File.Exists(Model.LastChmPath))
+                {
+                    <a class="button-link" href="/api/export/chm/download">下载 CHM</a>
+                }
+                @if (!string.IsNullOrEmpty(Model.LastBuildDirectory) && Directory.Exists(Model.LastBuildDirectory))
+                {
+                    <span class="meta">构建目录：<code>@Model.LastBuildDirectory</code></span>
+                }
+            </div>
+        </div>
+    </form>
+
+    @if (Model.Logs.Count > 0)
+    {
+        <details open class="preview-box" style="margin-top:16px;">
+            <summary>导出日志</summary>
+            <pre style="white-space:pre-wrap;">@string.Join(Environment.NewLine, Model.Logs)</pre>
+        </details>
+    }
+
+    <div class="help-card" style="margin-top:16px;">
+        <h3>说明</h3>
+        <ul>
+            <li>从网络下载的 CHM 若打开空白：右键文件 → 属性 → <strong>解除锁定</strong>。</li>
+            <li>中间工程文件：<code>Project.hhp</code>、<code>TableOfContents.hhc</code>、<code>html\*.htm</code>。</li>
+            <li>可用 HTML Help Workshop 打开 <code>Project.hhp</code> 后点击 Compile。</li>
+        </ul>
+    </div>
+</section>

@@ -8,6 +8,7 @@ Windows Markdown 浏览器：编辑、发布站点、资源管理器预览窗格
 jinghua-markdown-viewer/
 ├── docs/                          # 设计与说明文档
 │   ├── MarkdownWiki开发文档.md
+│   ├── Markdown转CHM开发文档.md
 │   ├── 说明文档.md
 │   ├── 预览窗格.md
 │   └── 网站访问功能设计说明.md
@@ -47,6 +48,8 @@ dotnet run --project .\src\MarkdownWiki\MarkdownWiki.csproj
 
 管理后台：`http://127.0.0.1:5099/Admin`（需登录，默认密码 `123456`，可在 `Wiki:AdminPassword` 修改）
 
+导出 CHM：管理后台「导出 CHM」，或桌面「发布中心 → 导出 CHM」。无 HTML Help Workshop 时仍会生成 `Project.hhp` 等中间文件，可手工编译。
+
 常用参数：
 
 ```powershell
@@ -57,4 +60,5 @@ dotnet run --project .\src\MarkdownWiki\MarkdownWiki.csproj -- --lan
 
 也可在桌面程序「发布中心 → MarkdownWiki」页签启动。
 
-设计说明见 [`docs/MarkdownWiki开发文档.md`](docs/MarkdownWiki开发文档.md)。
+设计说明见 [`docs/MarkdownWiki开发文档.md`](docs/MarkdownWiki开发文档.md)。  
+CHM 离线帮助包设计见 [`docs/Markdown转CHM开发文档.md`](docs/Markdown转CHM开发文档.md)。

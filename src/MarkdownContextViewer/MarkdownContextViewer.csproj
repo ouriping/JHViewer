@@ -18,6 +18,7 @@
     <ProjectReference Include="..\MarkdownPreview.Shell\MarkdownPreview.Shell.csproj" />
     <ProjectReference Include="..\MarkdownPreview.Handler\MarkdownPreview.Handler.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\MarkdownPreview.Register\MarkdownPreview.Register.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="..\MarkdownWiki.Core\MarkdownWiki.Core.csproj" />
   </ItemGroup>
 
   <!-- 把 Handler / Register 输出复制到主程序目录，便于部署 -->
