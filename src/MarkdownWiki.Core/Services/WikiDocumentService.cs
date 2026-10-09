@@ -3,7 +3,10 @@ using System.Text.RegularExpressions;
 using MarkdownWiki.Core.Models;
 
 namespace MarkdownWiki.Core.Services;
-
+/// <summary>
+/// Wiki 文档服务，提供文档的读写、创建、删除、移动、重命名等操作。不依赖资源管理器 prevhost。
+/// 发布成网站，可以直接在浏览器里查看。
+/// </summary>
 public sealed class WikiDocumentService
 {
     private static readonly Regex HeadingRegex = new(@"^\s*#\s+(.+)$", RegexOptions.Multiline | RegexOptions.Compiled);
@@ -16,7 +19,13 @@ public sealed class WikiDocumentService
         _pathGuard = pathGuard;
         _treeService = treeService;
     }
-
+    /// <summary>
+    /// 获取文档内容，如果文档不存在，抛出异常。 
+    /// 如果是主页或者/ ,默认第一个文档为主页。
+    /// </summary>
+    /// <param name="relativePath"></param>
+    /// <returns></returns>
+    /// <exception cref="FileNotFoundException"></exception>
     public WikiDocument Get(string relativePath)
     {
         var full = _pathGuard.ResolveSafePath(relativePath, expectDocument: true);

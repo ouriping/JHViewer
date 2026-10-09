@@ -1,20 +1,19 @@
 using System.ComponentModel;
-using System.Text;
 
 namespace MarkdownContextViewer;
 
 /// <summary>
 /// Markdown 编辑用户控件。
 /// Ribbon：TabControl + ToolStrip；命令：<see cref="MarkdownTextCommands"/>；本类只做编排与快捷键。
+/// Web 预览使用独立控件 <see cref="WebMarkdownView"/>。
 /// </summary>
 public partial class MarkdownEditorControl : UserControl
 {
     private const int PreviewDebounceMs = 200;
 
-    private readonly MarkdownRenderService _renderService;
     private readonly System.Windows.Forms.Timer _previewDebounceTimer;
     private MarkdownTextCommands _commands = null!;
-    private string? _tempHtmlPath;
+    private string? _documentPath;
 
     public event EventHandler? SaveRequested;
     public event EventHandler<PreviewEngineKind>? PreviewEngineChanged;
@@ -26,7 +25,7 @@ public partial class MarkdownEditorControl : UserControl
 
     public MarkdownEditorControl(MarkdownRenderService renderService)
     {
-        _renderService = renderService ?? throw new ArgumentNullException(nameof(renderService));
+        ArgumentNullException.ThrowIfNull(renderService);
 
         InitializeComponent();
         _commands = new MarkdownTextCommands(editor);
@@ -38,12 +37,18 @@ public partial class MarkdownEditorControl : UserControl
         };
         _previewDebounceTimer.Tick += PreviewDebounceTimer_Tick;
 
-        Disposed += (_, _) => CleanupTempFile();
         PreviewKeyDown += MarkdownEditorControl_PreviewKeyDown;
         editor.PreviewKeyDown += Editor_PreviewKeyDown;
-        SyncEngineButtons(PreviewEngineSetting.Load());
+        UsePreviewEngine(PreviewEngineSetting.Load());
         // 默认仅预览；FrmMain 打开文件时也会再调一次 SetPreviewMode()
         SetPreviewMode();
+    }
+
+    /// <summary>关联的文档路径，用于 Web 预览解析相对图片。</summary>
+    public string? DocumentPath
+    {
+        get => _documentPath;
+        set => _documentPath = value;
     }
 
     public string MarkdownText
@@ -268,53 +273,10 @@ public partial class MarkdownEditorControl : UserControl
             return;
         }
 
-        NavigateHtml(_renderService.RenderHtml(editor.Text));
-    }
-
-    private void NavigateHtml(string html)
-    {
-        CleanupTempFile();
-
-        var tempDir = Path.GetTempPath();
-        try
-        {
-            Directory.CreateDirectory(tempDir);
-        }
-        catch
-        {
-            tempDir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Temp");
-            Directory.CreateDirectory(tempDir);
-        }
-
-        _tempHtmlPath = Path.Combine(tempDir, $"MarkdownEditorPreview-{Guid.NewGuid():N}.html");
-        File.WriteAllText(_tempHtmlPath, html, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
-        preview.Navigate(_tempHtmlPath);
-    }
-
-    private void CleanupTempFile()
-    {
-        if (string.IsNullOrWhiteSpace(_tempHtmlPath))
-        {
-            return;
-        }
-
-        try
-        {
-            if (File.Exists(_tempHtmlPath))
-            {
-                File.Delete(_tempHtmlPath);
-            }
-        }
-        catch
-        {
-            // ignore
-        }
-        finally
-        {
-            _tempHtmlPath = null;
-        }
+        var baseDir = string.IsNullOrWhiteSpace(_documentPath)
+            ? null
+            : Path.GetDirectoryName(_documentPath);
+        preview.LoadMarkdown(editor.Text, baseDir);
     }
 
     private void ShowPanels(bool showEditor, bool showPreview)

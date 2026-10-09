@@ -20,8 +20,15 @@ partial class FrmMain
         mnuFile = new ToolStripMenuItem();
         mnuOpen = new ToolStripMenuItem();
         mnuSave = new ToolStripMenuItem();
-        mnuPublish = new ToolStripMenuItem();
+        mnuExport = new ToolStripMenuItem();
+        mnuExportCurrentSite = new ToolStripMenuItem();
+        mnuExportFolderSite = new ToolStripMenuItem();
+        mnuExportSingleHtml = new ToolStripMenuItem();
+        mnuExportChm = new ToolStripMenuItem();
+        mnuExportDialog = new ToolStripMenuItem();
         mnuExit = new ToolStripMenuItem();
+        mnuTools = new ToolStripMenuItem();
+        mnuMarkdownWiki = new ToolStripMenuItem();
         mnuExplorer = new ToolStripMenuItem();
         mnuRegisterContext = new ToolStripMenuItem();
         mnuUnregisterContext = new ToolStripMenuItem();
@@ -60,7 +67,7 @@ partial class FrmMain
         // 
         // menuStrip
         // 
-        menuStrip.Items.AddRange(new ToolStripItem[] { mnuFile, mnuExplorer, mnuView });
+        menuStrip.Items.AddRange(new ToolStripItem[] { mnuFile, mnuExplorer, mnuView, mnuTools });
         menuStrip.Location = new Point(0, 0);
         menuStrip.Name = "menuStrip";
         menuStrip.Size = new Size(1100, 25);
@@ -69,7 +76,7 @@ partial class FrmMain
         // 
         // mnuFile
         // 
-        mnuFile.DropDownItems.AddRange(new ToolStripItem[] { mnuOpen, mnuSave, mnuPublish, new ToolStripSeparator(), mnuExit });
+        mnuFile.DropDownItems.AddRange(new ToolStripItem[] { mnuOpen, mnuSave, mnuExport, new ToolStripSeparator(), mnuExit });
         mnuFile.Name = "mnuFile";
         mnuFile.Size = new Size(44, 21);
         mnuFile.Text = "文件";
@@ -90,12 +97,47 @@ partial class FrmMain
         mnuSave.Text = "保存";
         mnuSave.Click += mnuSave_Click;
         // 
-        // mnuPublish
+        // mnuExport
         // 
-        mnuPublish.Name = "mnuPublish";
-        mnuPublish.Size = new Size(180, 22);
-        mnuPublish.Text = "发布中心";
-        mnuPublish.Click += mnuPublish_Click;
+        mnuExport.DropDownItems.AddRange(new ToolStripItem[] { mnuExportCurrentSite, mnuExportFolderSite, mnuExportSingleHtml, mnuExportChm, new ToolStripSeparator(), mnuExportDialog });
+        mnuExport.Name = "mnuExport";
+        mnuExport.Size = new Size(180, 22);
+        mnuExport.Text = "导出";
+        // 
+        // mnuExportCurrentSite
+        // 
+        mnuExportCurrentSite.Name = "mnuExportCurrentSite";
+        mnuExportCurrentSite.Size = new Size(240, 22);
+        mnuExportCurrentSite.Text = "导出当前文档为站点…";
+        mnuExportCurrentSite.Click += mnuExportCurrentSite_Click;
+        // 
+        // mnuExportFolderSite
+        // 
+        mnuExportFolderSite.Name = "mnuExportFolderSite";
+        mnuExportFolderSite.Size = new Size(240, 22);
+        mnuExportFolderSite.Text = "导出文件夹为站点…";
+        mnuExportFolderSite.Click += mnuExportFolderSite_Click;
+        // 
+        // mnuExportSingleHtml
+        // 
+        mnuExportSingleHtml.Name = "mnuExportSingleHtml";
+        mnuExportSingleHtml.Size = new Size(280, 22);
+        mnuExportSingleHtml.Text = "导出为单文件 docs.html…";
+        mnuExportSingleHtml.Click += mnuExportSingleHtml_Click;
+        // 
+        // mnuExportChm
+        // 
+        mnuExportChm.Name = "mnuExportChm";
+        mnuExportChm.Size = new Size(280, 22);
+        mnuExportChm.Text = "导出为 CHM 帮助文件…";
+        mnuExportChm.Click += mnuExportChm_Click;
+        // 
+        // mnuExportDialog
+        // 
+        mnuExportDialog.Name = "mnuExportDialog";
+        mnuExportDialog.Size = new Size(240, 22);
+        mnuExportDialog.Text = "导出…";
+        mnuExportDialog.Click += mnuExportDialog_Click;
         // 
         // mnuExit
         // 
@@ -171,14 +213,14 @@ partial class FrmMain
         // 
         mnuEngineWebView.Name = "mnuEngineWebView";
         mnuEngineWebView.Size = new Size(280, 22);
-        mnuEngineWebView.Text = "预览引擎：Web（还原度高）";
+        mnuEngineWebView.Text = "预览引擎：Web（还原度高）★";
         mnuEngineWebView.Click += mnuEngineWebView_Click;
         // 
         // mnuEngineWinForms
         // 
         mnuEngineWinForms.Name = "mnuEngineWinForms";
         mnuEngineWinForms.Size = new Size(280, 22);
-        mnuEngineWinForms.Text = "预览引擎：WinForms（更快更省）★";
+        mnuEngineWinForms.Text = "预览引擎：WinForms（更快更省）";
         mnuEngineWinForms.Click += mnuEngineWinForms_Click;
         // 
         // mnuPreviewWindow
@@ -216,6 +258,20 @@ partial class FrmMain
         mnuOpenDemoFolder.Text = "打开演示示例目录";
         mnuOpenDemoFolder.Click += mnuOpenDemoFolder_Click;
         // 
+        // mnuTools
+        // 
+        mnuTools.DropDownItems.AddRange(new ToolStripItem[] { mnuMarkdownWiki });
+        mnuTools.Name = "mnuTools";
+        mnuTools.Size = new Size(44, 21);
+        mnuTools.Text = "工具";
+        // 
+        // mnuMarkdownWiki
+        // 
+        mnuMarkdownWiki.Name = "mnuMarkdownWiki";
+        mnuMarkdownWiki.Size = new Size(200, 22);
+        mnuMarkdownWiki.Text = "MarkdownWiki…";
+        mnuMarkdownWiki.Click += mnuMarkdownWiki_Click;
+        // 
         // toolStrip
         // 
         toolStrip.Items.AddRange(new ToolStripItem[] { btnOpen, btnSaveCurrent, btnExportWeb });
@@ -245,9 +301,10 @@ partial class FrmMain
         // 
         btnExportWeb.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnExportWeb.Name = "btnExportWeb";
-        btnExportWeb.Size = new Size(60, 22);
-        btnExportWeb.Text = "发布中心";
-        btnExportWeb.Click += mnuPublish_Click;
+        btnExportWeb.Size = new Size(72, 22);
+        btnExportWeb.Text = "导出站点";
+        btnExportWeb.ToolTipText = "将当前文档导出为本地预览站点";
+        btnExportWeb.Click += mnuExportCurrentSite_Click;
         // 
         // statusStrip
         // 
@@ -349,8 +406,15 @@ partial class FrmMain
     private ToolStripMenuItem mnuFile = null!;
     private ToolStripMenuItem mnuOpen = null!;
     private ToolStripMenuItem mnuSave = null!;
-    private ToolStripMenuItem mnuPublish = null!;
+    private ToolStripMenuItem mnuExport = null!;
+    private ToolStripMenuItem mnuExportCurrentSite = null!;
+    private ToolStripMenuItem mnuExportFolderSite = null!;
+    private ToolStripMenuItem mnuExportSingleHtml = null!;
+    private ToolStripMenuItem mnuExportChm = null!;
+    private ToolStripMenuItem mnuExportDialog = null!;
     private ToolStripMenuItem mnuExit = null!;
+    private ToolStripMenuItem mnuTools = null!;
+    private ToolStripMenuItem mnuMarkdownWiki = null!;
     private ToolStripMenuItem mnuExplorer = null!;
     private ToolStripMenuItem mnuRegisterContext = null!;
     private ToolStripMenuItem mnuUnregisterContext = null!;

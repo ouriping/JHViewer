@@ -18,3 +18,5 @@ x86/
 ## Others
 *.log
 *.pdb
+/chm-output/Help.chw
+/chm-output

@@ -15,6 +15,7 @@ public partial class FrmMain : Form
     private readonly MarkdownRenderService _markdownRenderService = null!;
     private readonly SiteExportService _siteExportService = null!;
     private readonly DirectorySiteExportService _directorySiteExportService = null!;
+    private readonly SingleHtmlExportService _singleHtmlExportService = null!;
     private readonly LocalWebHostService _localWebHostService = null!;
 
     private PreviewEngineKind _previewEngine = PreviewEngineKind.WebView;
@@ -48,6 +49,7 @@ public partial class FrmMain : Form
         _markdownRenderService = new MarkdownRenderService();
         _siteExportService = new SiteExportService(_markdownRenderService);
         _directorySiteExportService = new DirectorySiteExportService(_markdownRenderService);
+        _singleHtmlExportService = new SingleHtmlExportService();
         _localWebHostService = new LocalWebHostService();
 
         WireEvents();
@@ -217,6 +219,7 @@ public partial class FrmMain : Form
         var editorControl = new MarkdownEditorControl(_markdownRenderService)
         {
             Dock = DockStyle.Fill,
+            DocumentPath = filePath,
             MarkdownText = markdown
         };
 
@@ -259,13 +262,15 @@ public partial class FrmMain : Form
         MessageBox.Show("保存成功。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 
-    private void OpenPublishCenter()
+    private void OpenExportDialog(ExportPreset preset)
     {
         using var form = new PublishCenterForm(
             GetCurrentDocumentForPublish,
             _siteExportService,
             _directorySiteExportService,
-            _localWebHostService);
+            _singleHtmlExportService,
+            _localWebHostService,
+            preset);
 
         form.ShowDialog(this);
     }
@@ -552,7 +557,12 @@ public partial class FrmMain : Form
 
     private void mnuOpen_Click(object sender, EventArgs e) => OpenFilesByDialog();
     private void mnuSave_Click(object sender, EventArgs e) => SaveCurrentTab();
-    private void mnuPublish_Click(object sender, EventArgs e) => OpenPublishCenter();
+    private void mnuExportDialog_Click(object sender, EventArgs e) => OpenExportDialog(ExportPreset.Site);
+    private void mnuExportCurrentSite_Click(object sender, EventArgs e) => OpenExportDialog(ExportPreset.CurrentSite);
+    private void mnuExportFolderSite_Click(object sender, EventArgs e) => OpenExportDialog(ExportPreset.FolderSite);
+    private void mnuExportSingleHtml_Click(object sender, EventArgs e) => OpenExportDialog(ExportPreset.SingleHtml);
+    private void mnuExportChm_Click(object sender, EventArgs e) => OpenExportDialog(ExportPreset.Chm);
+    private void mnuMarkdownWiki_Click(object sender, EventArgs e) => OpenExportDialog(ExportPreset.Wiki);
     private void mnuExit_Click(object sender, EventArgs e) => Close();
     private void mnuRegisterContext_Click(object sender, EventArgs e) => RegisterContextMenu();
     private void mnuUnregisterContext_Click(object sender, EventArgs e) => UnregisterContextMenu();

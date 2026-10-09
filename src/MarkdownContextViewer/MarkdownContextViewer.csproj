@@ -42,6 +42,15 @@
     <EmbeddedResource Update="UI\DocumentPreviewDemoForm.resx">
       <DependentUpon>DocumentPreviewDemoForm.cs</DependentUpon>
     </EmbeddedResource>
+    <Compile Update="UI\WebMarkdownView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\WebMarkdownView.Designer.cs">
+      <DependentUpon>WebMarkdownView.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="UI\WebMarkdownView.resx">
+      <DependentUpon>WebMarkdownView.cs</DependentUpon>
+    </EmbeddedResource>
     <Compile Update="UI\PublishCenterForm.cs">
       <SubType>Form</SubType>
     </Compile>

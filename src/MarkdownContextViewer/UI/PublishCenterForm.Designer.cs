@@ -16,310 +16,115 @@ partial class PublishCenterForm
 
     private void InitializeComponent()
     {
-        tabs = new TabControl();
-        tabSingle = new TabPage();
-        panelSingle = new Panel();
-        btnExportCurrent = new Button();
-        lblSingle = new Label();
-        tabDirectory = new TabPage();
-        panelDirectory = new Panel();
-        btnExportDirectory = new Button();
-        panelDirectoryRow = new Panel();
+        panelRoot = new Panel();
+        panelButtons = new Panel();
+        btnPrimary = new Button();
+        btnCancel = new Button();
+        lblHint = new Label();
+        grpOptions = new GroupBox();
+        btnOpenWiki = new Button();
+        chkChmCompile = new CheckBox();
+        chkOpenAfter = new CheckBox();
+        grpTarget = new GroupBox();
+        radioWiki = new RadioButton();
+        radioChm = new RadioButton();
+        radioSingleHtml = new RadioButton();
+        radioSite = new RadioButton();
+        grpSource = new GroupBox();
+        panelDirRow = new Panel();
         txtDirectory = new TextBox();
         btnBrowse = new Button();
-        lblDirectory = new Label();
-        tabWiki = new TabPage();
-        panelWiki = new Panel();
-        btnOpenWiki = new Button();
-        btnStartWiki = new Button();
-        panelWikiRow = new Panel();
-        txtWikiDirectory = new TextBox();
-        btnWikiBrowse = new Button();
-        lblWiki = new Label();
-        tabChm = new TabPage();
-        panelChm = new Panel();
-        btnExportChm = new Button();
-        chkChmCompile = new CheckBox();
-        panelChmRow = new Panel();
-        txtChmDirectory = new TextBox();
-        btnChmBrowse = new Button();
-        lblChm = new Label();
-        tabs.SuspendLayout();
-        tabSingle.SuspendLayout();
-        panelSingle.SuspendLayout();
-        tabDirectory.SuspendLayout();
-        panelDirectory.SuspendLayout();
-        panelDirectoryRow.SuspendLayout();
-        tabWiki.SuspendLayout();
-        panelWiki.SuspendLayout();
-        panelWikiRow.SuspendLayout();
-        tabChm.SuspendLayout();
-        panelChm.SuspendLayout();
-        panelChmRow.SuspendLayout();
+        radioFolder = new RadioButton();
+        lblCurrentDoc = new Label();
+        radioCurrent = new RadioButton();
+        panelRoot.SuspendLayout();
+        panelButtons.SuspendLayout();
+        grpOptions.SuspendLayout();
+        grpTarget.SuspendLayout();
+        grpSource.SuspendLayout();
+        panelDirRow.SuspendLayout();
         SuspendLayout();
         // 
-        // tabs
+        // panelRoot
         // 
-        tabs.Controls.Add(tabSingle);
-        tabs.Controls.Add(tabDirectory);
-        tabs.Controls.Add(tabWiki);
-        tabs.Controls.Add(tabChm);
-        tabs.Dock = DockStyle.Fill;
-        tabs.Location = new Point(0, 0);
-        tabs.Margin = new Padding(4, 4, 4, 4);
-        tabs.Name = "tabs";
-        tabs.SelectedIndex = 0;
-        tabs.Size = new Size(957, 448);
-        tabs.TabIndex = 0;
+        panelRoot.Controls.Add(panelButtons);
+        panelRoot.Controls.Add(lblHint);
+        panelRoot.Controls.Add(grpOptions);
+        panelRoot.Controls.Add(grpTarget);
+        panelRoot.Controls.Add(grpSource);
+        panelRoot.Dock = DockStyle.Fill;
+        panelRoot.Location = new Point(0, 0);
+        panelRoot.Name = "panelRoot";
+        panelRoot.Padding = new Padding(16, 12, 16, 12);
+        panelRoot.Size = new Size(620, 600);
+        panelRoot.TabIndex = 0;
         // 
-        // tabSingle
+        // panelButtons
         // 
-        tabSingle.Controls.Add(panelSingle);
-        tabSingle.Location = new Point(4, 29);
-        tabSingle.Margin = new Padding(4, 4, 4, 4);
-        tabSingle.Name = "tabSingle";
-        tabSingle.Padding = new Padding(4, 4, 4, 4);
-        tabSingle.Size = new Size(949, 415);
-        tabSingle.TabIndex = 0;
-        tabSingle.Text = "快速发布（当前文档）";
-        tabSingle.UseVisualStyleBackColor = true;
+        panelButtons.Controls.Add(btnPrimary);
+        panelButtons.Controls.Add(btnCancel);
+        panelButtons.Dock = DockStyle.Bottom;
+        panelButtons.Location = new Point(16, 548);
+        panelButtons.Name = "panelButtons";
+        panelButtons.Size = new Size(588, 40);
+        panelButtons.TabIndex = 4;
         // 
-        // panelSingle
+        // btnPrimary
         // 
-        panelSingle.Controls.Add(btnExportCurrent);
-        panelSingle.Controls.Add(lblSingle);
-        panelSingle.Dock = DockStyle.Fill;
-        panelSingle.Location = new Point(4, 4);
-        panelSingle.Margin = new Padding(4, 4, 4, 4);
-        panelSingle.Name = "panelSingle";
-        panelSingle.Padding = new Padding(21, 19, 21, 19);
-        panelSingle.Size = new Size(941, 407);
-        panelSingle.TabIndex = 0;
+        btnPrimary.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnPrimary.Location = new Point(488, 4);
+        btnPrimary.Name = "btnPrimary";
+        btnPrimary.Size = new Size(100, 32);
+        btnPrimary.TabIndex = 1;
+        btnPrimary.Text = "导出";
+        btnPrimary.Click += btnPrimary_Click;
         // 
-        // btnExportCurrent
+        // btnCancel
         // 
-        btnExportCurrent.Dock = DockStyle.Top;
-        btnExportCurrent.Location = new Point(21, 101);
-        btnExportCurrent.Margin = new Padding(4, 4, 4, 4);
-        btnExportCurrent.Name = "btnExportCurrent";
-        btnExportCurrent.Size = new Size(899, 45);
-        btnExportCurrent.TabIndex = 0;
-        btnExportCurrent.Text = "导出当前文档并访问";
-        btnExportCurrent.Click += btnExportCurrent_Click;
+        btnCancel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnCancel.DialogResult = DialogResult.Cancel;
+        btnCancel.Location = new Point(388, 4);
+        btnCancel.Name = "btnCancel";
+        btnCancel.Size = new Size(92, 32);
+        btnCancel.TabIndex = 0;
+        btnCancel.Text = "取消";
         // 
-        // lblSingle
+        // lblHint
         // 
-        lblSingle.Dock = DockStyle.Top;
-        lblSingle.Location = new Point(21, 19);
-        lblSingle.Margin = new Padding(4, 0, 4, 0);
-        lblSingle.Name = "lblSingle";
-        lblSingle.Size = new Size(899, 82);
-        lblSingle.TabIndex = 1;
-        lblSingle.Text = "将当前标签页的 Markdown 导出到程序目录 site-output，并启动本地网站访问。";
+        lblHint.Dock = DockStyle.Top;
+        lblHint.ForeColor = SystemColors.GrayText;
+        lblHint.Location = new Point(16, 450);
+        lblHint.Name = "lblHint";
+        lblHint.Padding = new Padding(4, 8, 4, 0);
+        lblHint.Size = new Size(588, 40);
+        lblHint.TabIndex = 3;
+        lblHint.Text = "将 Markdown 导出为可在浏览器中打开的本地站点。";
         // 
-        // tabDirectory
+        // grpOptions
         // 
-        tabDirectory.Controls.Add(panelDirectory);
-        tabDirectory.Location = new Point(4, 29);
-        tabDirectory.Margin = new Padding(4, 4, 4, 4);
-        tabDirectory.Name = "tabDirectory";
-        tabDirectory.Padding = new Padding(4, 4, 4, 4);
-        tabDirectory.Size = new Size(949, 415);
-        tabDirectory.TabIndex = 1;
-        tabDirectory.Text = "目录站点";
-        tabDirectory.UseVisualStyleBackColor = true;
-        // 
-        // panelDirectory
-        // 
-        panelDirectory.Controls.Add(btnExportDirectory);
-        panelDirectory.Controls.Add(panelDirectoryRow);
-        panelDirectory.Controls.Add(lblDirectory);
-        panelDirectory.Dock = DockStyle.Fill;
-        panelDirectory.Location = new Point(4, 4);
-        panelDirectory.Margin = new Padding(4, 4, 4, 4);
-        panelDirectory.Name = "panelDirectory";
-        panelDirectory.Padding = new Padding(21, 19, 21, 19);
-        panelDirectory.Size = new Size(941, 407);
-        panelDirectory.TabIndex = 0;
-        // 
-        // btnExportDirectory
-        // 
-        btnExportDirectory.Dock = DockStyle.Top;
-        btnExportDirectory.Location = new Point(21, 125);
-        btnExportDirectory.Margin = new Padding(4, 4, 4, 4);
-        btnExportDirectory.Name = "btnExportDirectory";
-        btnExportDirectory.Size = new Size(899, 45);
-        btnExportDirectory.TabIndex = 0;
-        btnExportDirectory.Text = "导出目录站点并访问";
-        btnExportDirectory.Click += btnExportDirectory_Click;
-        // 
-        // panelDirectoryRow
-        // 
-        panelDirectoryRow.Controls.Add(txtDirectory);
-        panelDirectoryRow.Controls.Add(btnBrowse);
-        panelDirectoryRow.Dock = DockStyle.Top;
-        panelDirectoryRow.Location = new Point(21, 78);
-        panelDirectoryRow.Margin = new Padding(4, 4, 4, 4);
-        panelDirectoryRow.Name = "panelDirectoryRow";
-        panelDirectoryRow.Size = new Size(899, 47);
-        panelDirectoryRow.TabIndex = 1;
-        // 
-        // txtDirectory
-        // 
-        txtDirectory.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-        txtDirectory.Location = new Point(4, 9);
-        txtDirectory.Margin = new Padding(4, 4, 4, 4);
-        txtDirectory.Name = "txtDirectory";
-        txtDirectory.Size = new Size(717, 27);
-        txtDirectory.TabIndex = 0;
-        // 
-        // btnBrowse
-        // 
-        btnBrowse.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        btnBrowse.Location = new Point(735, 7);
-        btnBrowse.Margin = new Padding(4, 4, 4, 4);
-        btnBrowse.Name = "btnBrowse";
-        btnBrowse.Size = new Size(154, 33);
-        btnBrowse.TabIndex = 1;
-        btnBrowse.Text = "选择目录";
-        btnBrowse.Click += btnBrowse_Click;
-        // 
-        // lblDirectory
-        // 
-        lblDirectory.Dock = DockStyle.Top;
-        lblDirectory.Location = new Point(21, 19);
-        lblDirectory.Margin = new Padding(4, 0, 4, 0);
-        lblDirectory.Name = "lblDirectory";
-        lblDirectory.Size = new Size(899, 59);
-        lblDirectory.TabIndex = 2;
-        lblDirectory.Text = "选择一个包含 .md 的目录，按目录结构导出站点并访问。";
-        // 
-        // tabWiki
-        // 
-        tabWiki.Controls.Add(panelWiki);
-        tabWiki.Location = new Point(4, 29);
-        tabWiki.Margin = new Padding(4, 4, 4, 4);
-        tabWiki.Name = "tabWiki";
-        tabWiki.Padding = new Padding(4, 4, 4, 4);
-        tabWiki.Size = new Size(949, 415);
-        tabWiki.TabIndex = 2;
-        tabWiki.Text = "MarkdownWiki";
-        tabWiki.UseVisualStyleBackColor = true;
-        // 
-        // panelWiki
-        // 
-        panelWiki.Controls.Add(btnOpenWiki);
-        panelWiki.Controls.Add(btnStartWiki);
-        panelWiki.Controls.Add(panelWikiRow);
-        panelWiki.Controls.Add(lblWiki);
-        panelWiki.Dock = DockStyle.Fill;
-        panelWiki.Location = new Point(4, 4);
-        panelWiki.Margin = new Padding(4, 4, 4, 4);
-        panelWiki.Name = "panelWiki";
-        panelWiki.Padding = new Padding(21, 19, 21, 19);
-        panelWiki.Size = new Size(941, 407);
-        panelWiki.TabIndex = 0;
+        grpOptions.Controls.Add(btnOpenWiki);
+        grpOptions.Controls.Add(chkChmCompile);
+        grpOptions.Controls.Add(chkOpenAfter);
+        grpOptions.Dock = DockStyle.Top;
+        grpOptions.Location = new Point(16, 310);
+        grpOptions.Name = "grpOptions";
+        grpOptions.Padding = new Padding(12, 8, 12, 8);
+        grpOptions.Size = new Size(588, 140);
+        grpOptions.TabIndex = 2;
+        grpOptions.TabStop = false;
+        grpOptions.Text = "选项";
         // 
         // btnOpenWiki
         // 
         btnOpenWiki.Dock = DockStyle.Top;
-        btnOpenWiki.Location = new Point(21, 170);
-        btnOpenWiki.Margin = new Padding(4, 4, 4, 4);
+        btnOpenWiki.Location = new Point(12, 84);
         btnOpenWiki.Name = "btnOpenWiki";
-        btnOpenWiki.Size = new Size(899, 45);
-        btnOpenWiki.TabIndex = 0;
-        btnOpenWiki.Text = "打开 Wiki 浏览器（http://127.0.0.1:5099）";
+        btnOpenWiki.Padding = new Padding(4, 0, 4, 0);
+        btnOpenWiki.Size = new Size(564, 32);
+        btnOpenWiki.TabIndex = 2;
+        btnOpenWiki.Text = "打开已启动的 Wiki（127.0.0.1:5099）";
+        btnOpenWiki.Visible = false;
         btnOpenWiki.Click += btnOpenWiki_Click;
-        // 
-        // btnStartWiki
-        // 
-        btnStartWiki.Dock = DockStyle.Top;
-        btnStartWiki.Location = new Point(21, 125);
-        btnStartWiki.Margin = new Padding(4, 4, 4, 4);
-        btnStartWiki.Name = "btnStartWiki";
-        btnStartWiki.Size = new Size(899, 45);
-        btnStartWiki.TabIndex = 1;
-        btnStartWiki.Text = "启动 MarkdownWiki（可编辑帮助站）";
-        btnStartWiki.Click += btnStartWiki_Click;
-        // 
-        // panelWikiRow
-        // 
-        panelWikiRow.Controls.Add(txtWikiDirectory);
-        panelWikiRow.Controls.Add(btnWikiBrowse);
-        panelWikiRow.Dock = DockStyle.Top;
-        panelWikiRow.Location = new Point(21, 78);
-        panelWikiRow.Margin = new Padding(4, 4, 4, 4);
-        panelWikiRow.Name = "panelWikiRow";
-        panelWikiRow.Size = new Size(899, 47);
-        panelWikiRow.TabIndex = 2;
-        // 
-        // txtWikiDirectory
-        // 
-        txtWikiDirectory.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-        txtWikiDirectory.Location = new Point(4, 9);
-        txtWikiDirectory.Margin = new Padding(4, 4, 4, 4);
-        txtWikiDirectory.Name = "txtWikiDirectory";
-        txtWikiDirectory.PlaceholderText = "可选：文档根目录（留空使用 Wiki 默认示例）";
-        txtWikiDirectory.Size = new Size(717, 27);
-        txtWikiDirectory.TabIndex = 0;
-        // 
-        // btnWikiBrowse
-        // 
-        btnWikiBrowse.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        btnWikiBrowse.Location = new Point(735, 7);
-        btnWikiBrowse.Margin = new Padding(4, 4, 4, 4);
-        btnWikiBrowse.Name = "btnWikiBrowse";
-        btnWikiBrowse.Size = new Size(154, 33);
-        btnWikiBrowse.TabIndex = 1;
-        btnWikiBrowse.Text = "选择目录";
-        btnWikiBrowse.Click += btnWikiBrowse_Click;
-        // 
-        // lblWiki
-        // 
-        lblWiki.Dock = DockStyle.Top;
-        lblWiki.Location = new Point(21, 19);
-        lblWiki.Margin = new Padding(4, 0, 4, 0);
-        lblWiki.Name = "lblWiki";
-        lblWiki.Size = new Size(899, 59);
-        lblWiki.TabIndex = 3;
-        lblWiki.Text = "启动独立 MarkdownWiki：多 md 树导航、Web 阅读/编辑，保存后立即更新网页。默认端口 5099。";
-        // 
-        // tabChm
-        // 
-        tabChm.Controls.Add(panelChm);
-        tabChm.Location = new Point(4, 29);
-        tabChm.Margin = new Padding(4, 4, 4, 4);
-        tabChm.Name = "tabChm";
-        tabChm.Padding = new Padding(4, 4, 4, 4);
-        tabChm.Size = new Size(949, 415);
-        tabChm.TabIndex = 3;
-        tabChm.Text = "导出 CHM";
-        tabChm.UseVisualStyleBackColor = true;
-        // 
-        // panelChm
-        // 
-        panelChm.Controls.Add(btnExportChm);
-        panelChm.Controls.Add(chkChmCompile);
-        panelChm.Controls.Add(panelChmRow);
-        panelChm.Controls.Add(lblChm);
-        panelChm.Dock = DockStyle.Fill;
-        panelChm.Location = new Point(4, 4);
-        panelChm.Margin = new Padding(4, 4, 4, 4);
-        panelChm.Name = "panelChm";
-        panelChm.Padding = new Padding(21, 19, 21, 19);
-        panelChm.Size = new Size(941, 407);
-        panelChm.TabIndex = 0;
-        // 
-        // btnExportChm
-        // 
-        btnExportChm.Dock = DockStyle.Top;
-        btnExportChm.Location = new Point(21, 160);
-        btnExportChm.Margin = new Padding(4, 4, 4, 4);
-        btnExportChm.Name = "btnExportChm";
-        btnExportChm.Size = new Size(899, 45);
-        btnExportChm.TabIndex = 0;
-        btnExportChm.Text = "导出 CHM（Markdown → HTML Help）";
-        btnExportChm.Click += btnExportChm_Click;
         // 
         // chkChmCompile
         // 
@@ -327,111 +132,221 @@ partial class PublishCenterForm
         chkChmCompile.Checked = true;
         chkChmCompile.CheckState = CheckState.Checked;
         chkChmCompile.Dock = DockStyle.Top;
-        chkChmCompile.Location = new Point(21, 125);
-        chkChmCompile.Margin = new Padding(4, 4, 4, 4);
+        chkChmCompile.Location = new Point(12, 56);
         chkChmCompile.Name = "chkChmCompile";
-        chkChmCompile.Padding = new Padding(4, 8, 4, 8);
-        chkChmCompile.Size = new Size(899, 40);
+        chkChmCompile.Padding = new Padding(4, 2, 4, 2);
+        chkChmCompile.Size = new Size(564, 28);
         chkChmCompile.TabIndex = 1;
-        chkChmCompile.Text = "自动调用 hhc.exe（优先程序目录 tools\\hhc\\hhc.exe；找不到会提示）";
+        chkChmCompile.Text = "自动编译 CHM（使用 tools\\hhc\\hhc.exe）";
         // 
-        // panelChmRow
+        // chkOpenAfter
         // 
-        panelChmRow.Controls.Add(txtChmDirectory);
-        panelChmRow.Controls.Add(btnChmBrowse);
-        panelChmRow.Dock = DockStyle.Top;
-        panelChmRow.Location = new Point(21, 78);
-        panelChmRow.Margin = new Padding(4, 4, 4, 4);
-        panelChmRow.Name = "panelChmRow";
-        panelChmRow.Size = new Size(899, 47);
-        panelChmRow.TabIndex = 2;
+        chkOpenAfter.AutoSize = true;
+        chkOpenAfter.Checked = true;
+        chkOpenAfter.CheckState = CheckState.Checked;
+        chkOpenAfter.Dock = DockStyle.Top;
+        chkOpenAfter.Location = new Point(12, 28);
+        chkOpenAfter.Name = "chkOpenAfter";
+        chkOpenAfter.Padding = new Padding(4, 2, 4, 2);
+        chkOpenAfter.Size = new Size(564, 28);
+        chkOpenAfter.TabIndex = 0;
+        chkOpenAfter.Text = "完成后打开";
         // 
-        // txtChmDirectory
+        // grpTarget
         // 
-        txtChmDirectory.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-        txtChmDirectory.Location = new Point(4, 9);
-        txtChmDirectory.Margin = new Padding(4, 4, 4, 4);
-        txtChmDirectory.Name = "txtChmDirectory";
-        txtChmDirectory.PlaceholderText = "选择包含 .md 的文档根目录";
-        txtChmDirectory.Size = new Size(717, 27);
-        txtChmDirectory.TabIndex = 0;
+        grpTarget.Controls.Add(radioWiki);
+        grpTarget.Controls.Add(radioChm);
+        grpTarget.Controls.Add(radioSingleHtml);
+        grpTarget.Controls.Add(radioSite);
+        grpTarget.Dock = DockStyle.Top;
+        grpTarget.Location = new Point(16, 160);
+        grpTarget.Name = "grpTarget";
+        grpTarget.Padding = new Padding(12, 8, 12, 8);
+        grpTarget.Size = new Size(588, 150);
+        grpTarget.TabIndex = 1;
+        grpTarget.TabStop = false;
+        grpTarget.Text = "目标";
         // 
-        // btnChmBrowse
+        // radioWiki
         // 
-        btnChmBrowse.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-        btnChmBrowse.Location = new Point(735, 7);
-        btnChmBrowse.Margin = new Padding(4, 4, 4, 4);
-        btnChmBrowse.Name = "btnChmBrowse";
-        btnChmBrowse.Size = new Size(154, 33);
-        btnChmBrowse.TabIndex = 1;
-        btnChmBrowse.Text = "选择目录";
-        btnChmBrowse.Click += btnChmBrowse_Click;
+        radioWiki.AutoSize = true;
+        radioWiki.Dock = DockStyle.Top;
+        radioWiki.Location = new Point(12, 112);
+        radioWiki.Name = "radioWiki";
+        radioWiki.Padding = new Padding(4, 2, 4, 2);
+        radioWiki.Size = new Size(564, 28);
+        radioWiki.TabIndex = 3;
+        radioWiki.Text = "MarkdownWiki（可编辑帮助站）";
+        radioWiki.CheckedChanged += SourceOrTargetChanged;
         // 
-        // lblChm
+        // radioChm
         // 
-        lblChm.Dock = DockStyle.Top;
-        lblChm.Location = new Point(21, 19);
-        lblChm.Margin = new Padding(4, 0, 4, 0);
-        lblChm.Name = "lblChm";
-        lblChm.Size = new Size(899, 59);
-        lblChm.TabIndex = 3;
-        lblChm.Text = "将多份 Markdown 打包为 Windows CHM 帮助文件。输出在文档根旁的 chm-output 目录。";
+        radioChm.AutoSize = true;
+        radioChm.Dock = DockStyle.Top;
+        radioChm.Location = new Point(12, 84);
+        radioChm.Name = "radioChm";
+        radioChm.Padding = new Padding(4, 2, 4, 2);
+        radioChm.Size = new Size(564, 28);
+        radioChm.TabIndex = 2;
+        radioChm.Text = "帮助文件（CHM）";
+        radioChm.CheckedChanged += SourceOrTargetChanged;
+        // 
+        // radioSingleHtml
+        // 
+        radioSingleHtml.AutoSize = true;
+        radioSingleHtml.Dock = DockStyle.Top;
+        radioSingleHtml.Location = new Point(12, 56);
+        radioSingleHtml.Name = "radioSingleHtml";
+        radioSingleHtml.Padding = new Padding(4, 2, 4, 2);
+        radioSingleHtml.Size = new Size(564, 28);
+        radioSingleHtml.TabIndex = 1;
+        radioSingleHtml.Text = "单文件 docs.html（图片转 Base64）";
+        radioSingleHtml.CheckedChanged += SourceOrTargetChanged;
+        // 
+        // radioSite
+        // 
+        radioSite.AutoSize = true;
+        radioSite.Checked = true;
+        radioSite.Dock = DockStyle.Top;
+        radioSite.Location = new Point(12, 28);
+        radioSite.Name = "radioSite";
+        radioSite.Padding = new Padding(4, 2, 4, 2);
+        radioSite.Size = new Size(564, 28);
+        radioSite.TabIndex = 0;
+        radioSite.TabStop = true;
+        radioSite.Text = "本地预览站点（HTML）";
+        radioSite.CheckedChanged += SourceOrTargetChanged;
+        // 
+        // grpSource
+        // 
+        grpSource.Controls.Add(panelDirRow);
+        grpSource.Controls.Add(radioFolder);
+        grpSource.Controls.Add(lblCurrentDoc);
+        grpSource.Controls.Add(radioCurrent);
+        grpSource.Dock = DockStyle.Top;
+        grpSource.Location = new Point(16, 12);
+        grpSource.Name = "grpSource";
+        grpSource.Padding = new Padding(12, 8, 12, 8);
+        grpSource.Size = new Size(588, 148);
+        grpSource.TabIndex = 0;
+        grpSource.TabStop = false;
+        grpSource.Text = "来源";
+        // 
+        // panelDirRow
+        // 
+        panelDirRow.Controls.Add(txtDirectory);
+        panelDirRow.Controls.Add(btnBrowse);
+        panelDirRow.Dock = DockStyle.Top;
+        panelDirRow.Location = new Point(12, 108);
+        panelDirRow.Name = "panelDirRow";
+        panelDirRow.Padding = new Padding(24, 4, 0, 0);
+        panelDirRow.Size = new Size(564, 36);
+        panelDirRow.TabIndex = 3;
+        // 
+        // txtDirectory
+        // 
+        txtDirectory.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        txtDirectory.Location = new Point(24, 6);
+        txtDirectory.Name = "txtDirectory";
+        txtDirectory.PlaceholderText = "包含 Markdown 的文档根目录";
+        txtDirectory.Size = new Size(428, 27);
+        txtDirectory.TabIndex = 0;
+        // 
+        // btnBrowse
+        // 
+        btnBrowse.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnBrowse.Location = new Point(460, 4);
+        btnBrowse.Name = "btnBrowse";
+        btnBrowse.Size = new Size(100, 30);
+        btnBrowse.TabIndex = 1;
+        btnBrowse.Text = "浏览…";
+        btnBrowse.Click += btnBrowse_Click;
+        // 
+        // radioFolder
+        // 
+        radioFolder.AutoSize = true;
+        radioFolder.Dock = DockStyle.Top;
+        radioFolder.Location = new Point(12, 80);
+        radioFolder.Name = "radioFolder";
+        radioFolder.Padding = new Padding(4, 4, 4, 0);
+        radioFolder.Size = new Size(564, 28);
+        radioFolder.TabIndex = 2;
+        radioFolder.Text = "文档目录";
+        radioFolder.CheckedChanged += SourceOrTargetChanged;
+        // 
+        // lblCurrentDoc
+        // 
+        lblCurrentDoc.AutoEllipsis = true;
+        lblCurrentDoc.Dock = DockStyle.Top;
+        lblCurrentDoc.ForeColor = SystemColors.GrayText;
+        lblCurrentDoc.Location = new Point(12, 56);
+        lblCurrentDoc.Name = "lblCurrentDoc";
+        lblCurrentDoc.Padding = new Padding(24, 0, 4, 4);
+        lblCurrentDoc.Size = new Size(564, 24);
+        lblCurrentDoc.TabIndex = 1;
+        lblCurrentDoc.Text = "未打开文档";
+        // 
+        // radioCurrent
+        // 
+        radioCurrent.AutoSize = true;
+        radioCurrent.Checked = true;
+        radioCurrent.Dock = DockStyle.Top;
+        radioCurrent.Location = new Point(12, 28);
+        radioCurrent.Name = "radioCurrent";
+        radioCurrent.Padding = new Padding(4, 4, 4, 0);
+        radioCurrent.Size = new Size(564, 28);
+        radioCurrent.TabIndex = 0;
+        radioCurrent.TabStop = true;
+        radioCurrent.Text = "当前文档";
+        radioCurrent.CheckedChanged += SourceOrTargetChanged;
         // 
         // PublishCenterForm
         // 
+        AcceptButton = btnPrimary;
         AutoScaleDimensions = new SizeF(9F, 20F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(957, 448);
-        Controls.Add(tabs);
-        Margin = new Padding(4, 4, 4, 4);
+        CancelButton = btnCancel;
+        ClientSize = new Size(620, 600);
+        Controls.Add(panelRoot);
+        FormBorderStyle = FormBorderStyle.FixedDialog;
+        MaximizeBox = false;
+        MinimizeBox = false;
         Name = "PublishCenterForm";
+        ShowInTaskbar = false;
         StartPosition = FormStartPosition.CenterParent;
-        Text = "发布中心";
-        tabs.ResumeLayout(false);
-        tabSingle.ResumeLayout(false);
-        panelSingle.ResumeLayout(false);
-        tabDirectory.ResumeLayout(false);
-        panelDirectory.ResumeLayout(false);
-        panelDirectoryRow.ResumeLayout(false);
-        panelDirectoryRow.PerformLayout();
-        tabWiki.ResumeLayout(false);
-        panelWiki.ResumeLayout(false);
-        panelWikiRow.ResumeLayout(false);
-        panelWikiRow.PerformLayout();
-        tabChm.ResumeLayout(false);
-        panelChm.ResumeLayout(false);
-        panelChm.PerformLayout();
-        panelChmRow.ResumeLayout(false);
-        panelChmRow.PerformLayout();
+        Text = "导出";
+        panelRoot.ResumeLayout(false);
+        panelButtons.ResumeLayout(false);
+        grpOptions.ResumeLayout(false);
+        grpOptions.PerformLayout();
+        grpTarget.ResumeLayout(false);
+        grpTarget.PerformLayout();
+        grpSource.ResumeLayout(false);
+        grpSource.PerformLayout();
+        panelDirRow.ResumeLayout(false);
+        panelDirRow.PerformLayout();
         ResumeLayout(false);
     }
 
-    private TabControl tabs = null!;
-    private TabPage tabSingle = null!;
-    private Panel panelSingle = null!;
-    private Label lblSingle = null!;
-    private Button btnExportCurrent = null!;
-    private TabPage tabDirectory = null!;
-    private Panel panelDirectory = null!;
-    private Label lblDirectory = null!;
-    private Panel panelDirectoryRow = null!;
+    private Panel panelRoot = null!;
+    private GroupBox grpSource = null!;
+    private RadioButton radioCurrent = null!;
+    private Label lblCurrentDoc = null!;
+    private RadioButton radioFolder = null!;
+    private Panel panelDirRow = null!;
     private TextBox txtDirectory = null!;
     private Button btnBrowse = null!;
-    private Button btnExportDirectory = null!;
-    private TabPage tabWiki = null!;
-    private Panel panelWiki = null!;
-    private Label lblWiki = null!;
-    private Panel panelWikiRow = null!;
-    private TextBox txtWikiDirectory = null!;
-    private Button btnWikiBrowse = null!;
-    private Button btnStartWiki = null!;
-    private Button btnOpenWiki = null!;
-    private TabPage tabChm = null!;
-    private Panel panelChm = null!;
-    private Label lblChm = null!;
-    private Panel panelChmRow = null!;
-    private TextBox txtChmDirectory = null!;
-    private Button btnChmBrowse = null!;
+    private GroupBox grpTarget = null!;
+    private RadioButton radioSite = null!;
+    private RadioButton radioSingleHtml = null!;
+    private RadioButton radioChm = null!;
+    private RadioButton radioWiki = null!;
+    private GroupBox grpOptions = null!;
+    private CheckBox chkOpenAfter = null!;
     private CheckBox chkChmCompile = null!;
-    private Button btnExportChm = null!;
+    private Button btnOpenWiki = null!;
+    private Label lblHint = null!;
+    private Panel panelButtons = null!;
+    private Button btnPrimary = null!;
+    private Button btnCancel = null!;
 }

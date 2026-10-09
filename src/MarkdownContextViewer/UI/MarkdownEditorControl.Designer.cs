@@ -62,7 +62,7 @@ partial class MarkdownEditorControl
         btnEngineWinForms = new ToolStripButton();
         mainSplit = new SplitContainer();
         editor = new RichTextBox();
-        preview = new WebBrowser();
+        preview = new WebMarkdownView();
         winFormsPreview = new WinFormsMarkdownView();
         ribbonHost.SuspendLayout();
         quickAccessStrip.SuspendLayout();
@@ -483,7 +483,7 @@ partial class MarkdownEditorControl
         btnEngineWeb.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnEngineWeb.Name = "btnEngineWeb";
         btnEngineWeb.Size = new Size(100, 24);
-        btnEngineWeb.Text = "Web（还原度高）";
+        btnEngineWeb.Text = "Web（还原度高）★";
         btnEngineWeb.ToolTipText = "WebBrowser：Markdown 排版还原度高，启动与内存开销更大";
         btnEngineWeb.Click += btnEngineWeb_Click;
         // 
@@ -492,8 +492,8 @@ partial class MarkdownEditorControl
         btnEngineWinForms.CheckOnClick = true;
         btnEngineWinForms.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnEngineWinForms.Name = "btnEngineWinForms";
-        btnEngineWinForms.Size = new Size(130, 24);
-        btnEngineWinForms.Text = "WinForms（更快更省）★";
+        btnEngineWinForms.Size = new Size(120, 24);
+        btnEngineWinForms.Text = "WinForms（更快更省）";
         btnEngineWinForms.ToolTipText = "RichTextBox：启动快、更省内存，适合大文件；Markdown 还原度有限";
         btnEngineWinForms.Click += btnEngineWinForms_Click;
         // 
@@ -537,9 +537,7 @@ partial class MarkdownEditorControl
         // 
         preview.Dock = DockStyle.Fill;
         preview.Location = new Point(0, 0);
-        preview.MinimumSize = new Size(20, 20);
         preview.Name = "preview";
-        preview.ScriptErrorsSuppressed = true;
         preview.Size = new Size(546, 544);
         preview.TabIndex = 1;
         // 
@@ -630,6 +628,6 @@ partial class MarkdownEditorControl
     private ToolStripButton btnEngineWinForms = null!;
     private SplitContainer mainSplit = null!;
     private RichTextBox editor = null!;
-    private WebBrowser preview = null!;
+    private WebMarkdownView preview = null!;
     private WinFormsMarkdownView winFormsPreview = null!;
 }

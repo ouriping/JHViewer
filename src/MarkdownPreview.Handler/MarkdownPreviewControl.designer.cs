@@ -165,7 +165,7 @@ namespace MarkdownPreview.Handler
             // 
             this.mnuEngineWeb.Name = "mnuEngineWeb";
             this.mnuEngineWeb.Size = new System.Drawing.Size(280, 26);
-            this.mnuEngineWeb.Text = "Web（还原度高）";
+            this.mnuEngineWeb.Text = "Web（还原度高）★";
             this.mnuEngineWeb.ToolTipText = "WebView2：Markdown 排版还原度高，启动与内存开销更大";
             this.mnuEngineWeb.Click += new System.EventHandler(this.mnuEngineWeb_Click);
             // 
@@ -173,7 +173,7 @@ namespace MarkdownPreview.Handler
             // 
             this.mnuEngineWinForms.Name = "mnuEngineWinForms";
             this.mnuEngineWinForms.Size = new System.Drawing.Size(280, 26);
-            this.mnuEngineWinForms.Text = "WinForms（更快更省）★";
+            this.mnuEngineWinForms.Text = "WinForms（更快更省）";
             this.mnuEngineWinForms.ToolTipText = "RichTextBox：启动快、更省内存，适合大文件；Markdown 还原度有限";
             this.mnuEngineWinForms.Click += new System.EventHandler(this.mnuEngineWinForms_Click);
             // 
