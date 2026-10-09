@@ -1,3 +1,4 @@
+using System.Text;
 using MarkdownWiki.Core.Models;
 using MarkdownWiki.Core.Services;
 
@@ -37,7 +38,7 @@ public class ChmExportTests
 
             var result = export.Export(new ChmExportOptions
             {
-                Title = "Test Help",
+                Title = "测试帮助",
                 HomeDocument = "index.md",
                 OutputDirectory = outDir,
                 FileName = "Test.chm",
@@ -57,6 +58,17 @@ public class ChmExportTests
 
             var faqHtml = File.ReadAllText(Path.Combine(result.BuildDirectory, "html", "index.htm"));
             Assert.Contains("guide/faq.htm", faqHtml.Replace('\\', '/'));
+            Assert.Contains("charset=utf-8", faqHtml, StringComparison.OrdinalIgnoreCase);
+
+            // 工程文件须为系统 ANSI（GBK），hhc 才能正确读中文标题
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            var gbk = Encoding.GetEncoding(936);
+            var hhp = File.ReadAllText(Path.Combine(result.BuildDirectory, "Project.hhp"), gbk);
+            Assert.Contains("Title=测试帮助", hhp);
+            Assert.Contains("Language=0x0804", hhp);
+            var hhc = File.ReadAllText(Path.Combine(result.BuildDirectory, "TableOfContents.hhc"), gbk);
+            Assert.Contains("index.htm", hhc, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("faq.htm", hhc, StringComparison.OrdinalIgnoreCase);
         }
         finally
         {

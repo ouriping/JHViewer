@@ -6,48 +6,10 @@ namespace MarkdownContextViewer;
 /// <summary>
 /// 主程序内 JSON / XML 结构化预览演示（树 + 原文），不依赖资源管理器 prevhost。
 /// </summary>
-public sealed class DocumentPreviewDemoForm : Form
+public sealed partial class DocumentPreviewDemoForm : Form
 {
     private const int MaxNodes = 2000;
     private const int MaxDepth = 12;
-
-    private readonly SplitContainer _split = new()
-    {
-        Dock = DockStyle.Fill,
-        Orientation = Orientation.Vertical,
-        SplitterDistance = 320
-    };
-
-    private readonly TreeView _tree = new()
-    {
-        Dock = DockStyle.Fill,
-        HideSelection = false,
-        Font = new Font("Microsoft YaHei UI", 9.5f)
-    };
-
-    private readonly RichTextBox _raw = new()
-    {
-        Dock = DockStyle.Fill,
-        ReadOnly = true,
-        BorderStyle = BorderStyle.None,
-        Font = new Font("Consolas", 10f),
-        WordWrap = false,
-        DetectUrls = false,
-        BackColor = Color.White
-    };
-
-    private readonly ToolStripLabel _lblPath = new()
-    {
-        Text = "未打开文件",
-        AutoSize = false,
-        Width = 420
-    };
-
-    private readonly ToolStripDropDownButton _layoutButton = new("显示：树和文件")
-    {
-        DisplayStyle = ToolStripItemDisplayStyle.Text,
-        ToolTipText = "切换只看树、只看文件，或两边都显示"
-    };
 
     private enum LayoutMode
     {
@@ -61,41 +23,24 @@ public sealed class DocumentPreviewDemoForm : Form
 
     public DocumentPreviewDemoForm()
     {
-        Text = "结构化预览演示（JSON / XML）";
-        Width = 960;
-        Height = 640;
-        StartPosition = FormStartPosition.CenterParent;
-        Font = new Font("Microsoft YaHei UI", 9f);
-
-        var strip = new ToolStrip
-        {
-            GripStyle = ToolStripGripStyle.Hidden,
-            RenderMode = ToolStripRenderMode.System
-        };
-        var btnOpen = new ToolStripButton("打开…") { DisplayStyle = ToolStripItemDisplayStyle.Text };
-        var btnRefresh = new ToolStripButton("刷新") { DisplayStyle = ToolStripItemDisplayStyle.Text };
-        var btnDemoJson = new ToolStripButton("JSON 演示") { DisplayStyle = ToolStripItemDisplayStyle.Text };
-        var btnDemoXml = new ToolStripButton("XML 演示") { DisplayStyle = ToolStripItemDisplayStyle.Text };
-        var btnFolder = new ToolStripButton("示例目录") { DisplayStyle = ToolStripItemDisplayStyle.Text };
-        btnOpen.Click += (_, _) => OpenByDialog();
-        btnRefresh.Click += (_, _) => Reload();
-        btnDemoJson.Click += (_, _) => OpenDemo("book-catalog.json");
-        btnDemoXml.Click += (_, _) => OpenDemo("library.xml");
-        btnFolder.Click += (_, _) => OpenDemoFolder();
-        var treeOnly = new ToolStripMenuItem("只显示树结构");
-        var fileOnly = new ToolStripMenuItem("只显示文件");
-        var both = new ToolStripMenuItem("都显示") { Checked = true };
-        treeOnly.Click += (_, _) => SetLayout(LayoutMode.TreeOnly);
-        fileOnly.Click += (_, _) => SetLayout(LayoutMode.FileOnly);
-        both.Click += (_, _) => SetLayout(LayoutMode.Both);
-        _layoutButton.DropDownItems.AddRange([treeOnly, fileOnly, both]);
-        strip.Items.AddRange([btnOpen, btnRefresh, new ToolStripSeparator(), btnDemoJson, btnDemoXml, btnFolder, new ToolStripSeparator(), _layoutButton, _lblPath]);
-
-        _split.Panel1.Controls.Add(_tree);
-        _split.Panel2.Controls.Add(_raw);
-        Controls.Add(_split);
-        Controls.Add(strip);
+        InitializeComponent();
     }
+
+    private void btnOpen_Click(object? sender, EventArgs e) => OpenByDialog();
+
+    private void btnRefresh_Click(object? sender, EventArgs e) => Reload();
+
+    private void btnDemoJson_Click(object? sender, EventArgs e) => OpenDemo("book-catalog.json");
+
+    private void btnDemoXml_Click(object? sender, EventArgs e) => OpenDemo("library.xml");
+
+    private void btnFolder_Click(object? sender, EventArgs e) => OpenDemoFolder();
+
+    private void mnuTreeOnly_Click(object? sender, EventArgs e) => SetLayout(LayoutMode.TreeOnly);
+
+    private void mnuFileOnly_Click(object? sender, EventArgs e) => SetLayout(LayoutMode.FileOnly);
+
+    private void mnuBoth_Click(object? sender, EventArgs e) => SetLayout(LayoutMode.Both);
 
     public void LoadFile(string path)
     {
@@ -107,14 +52,14 @@ public sealed class DocumentPreviewDemoForm : Form
 
         _currentPath = path;
         var text = File.ReadAllText(path);
-        _raw.Text = text;
-        _lblPath.Text = path;
+        rawView.Text = text;
+        lblPath.Text = path;
         Text = $"结构化预览 - {Path.GetFileName(path)}";
 
-        _tree.BeginUpdate();
+        treeView.BeginUpdate();
         try
         {
-            _tree.Nodes.Clear();
+            treeView.Nodes.Clear();
             var ext = Path.GetExtension(path);
             if (ext.Equals(".json", StringComparison.OrdinalIgnoreCase))
             {
@@ -126,17 +71,17 @@ public sealed class DocumentPreviewDemoForm : Form
             }
             else
             {
-                _tree.Nodes.Add("仅支持 .json / .xml");
+                treeView.Nodes.Add("仅支持 .json / .xml");
             }
         }
         catch (Exception ex)
         {
-            _tree.Nodes.Clear();
-            _tree.Nodes.Add("解析失败: " + ex.Message);
+            treeView.Nodes.Clear();
+            treeView.Nodes.Add("解析失败: " + ex.Message);
         }
         finally
         {
-            _tree.EndUpdate();
+            treeView.EndUpdate();
         }
     }
 
@@ -192,26 +137,23 @@ public sealed class DocumentPreviewDemoForm : Form
     private void SetLayout(LayoutMode layout)
     {
         _layout = layout;
-        _layoutButton.Text = layout switch
+        btnLayout.Text = layout switch
         {
             LayoutMode.TreeOnly => "显示：只看树",
             LayoutMode.FileOnly => "显示：只看文件",
             _ => "显示：树和文件"
         };
-        foreach (ToolStripMenuItem item in _layoutButton.DropDownItems)
-        {
-            item.Checked = (item.Text == "只显示树结构" && layout == LayoutMode.TreeOnly)
-                || (item.Text == "只显示文件" && layout == LayoutMode.FileOnly)
-                || (item.Text == "都显示" && layout == LayoutMode.Both);
-        }
+        mnuTreeOnly.Checked = layout == LayoutMode.TreeOnly;
+        mnuFileOnly.Checked = layout == LayoutMode.FileOnly;
+        mnuBoth.Checked = layout == LayoutMode.Both;
 
-        _split.Panel1Collapsed = layout == LayoutMode.FileOnly;
-        _split.Panel2Collapsed = layout == LayoutMode.TreeOnly;
-        if (layout == LayoutMode.Both && _split.Width > 160)
+        splitMain.Panel1Collapsed = layout == LayoutMode.FileOnly;
+        splitMain.Panel2Collapsed = layout == LayoutMode.TreeOnly;
+        if (layout == LayoutMode.Both && splitMain.Width > 160)
         {
             try
             {
-                _split.SplitterDistance = Math.Max(80, _split.Width / 2);
+                splitMain.SplitterDistance = Math.Max(80, splitMain.Width / 2);
             }
             catch (InvalidOperationException)
             {
@@ -224,11 +166,11 @@ public sealed class DocumentPreviewDemoForm : Form
         using var doc = JsonDocument.Parse(text);
         var counter = new NodeCounter();
         var root = BuildJsonNode("JSON", doc.RootElement, 0, counter);
-        _tree.Nodes.Add(root);
+        treeView.Nodes.Add(root);
         root.Expand();
         if (counter.Truncated)
         {
-            _tree.Nodes.Add($"… 已截断（上限 {MaxNodes} 节点 / 深度 {MaxDepth}）");
+            treeView.Nodes.Add($"… 已截断（上限 {MaxNodes} 节点 / 深度 {MaxDepth}）");
         }
     }
 
@@ -237,17 +179,17 @@ public sealed class DocumentPreviewDemoForm : Form
         var doc = XDocument.Parse(text, LoadOptions.PreserveWhitespace);
         if (doc.Root is null)
         {
-            _tree.Nodes.Add("(空文档)");
+            treeView.Nodes.Add("(空文档)");
             return;
         }
 
         var counter = new NodeCounter();
         var root = BuildXmlNode(doc.Root, 0, counter);
-        _tree.Nodes.Add(root);
+        treeView.Nodes.Add(root);
         root.Expand();
         if (counter.Truncated)
         {
-            _tree.Nodes.Add($"… 已截断（上限 {MaxNodes} 节点 / 深度 {MaxDepth}）");
+            treeView.Nodes.Add($"… 已截断（上限 {MaxNodes} 节点 / 深度 {MaxDepth}）");
         }
     }
 

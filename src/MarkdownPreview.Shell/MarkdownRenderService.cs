@@ -2,14 +2,19 @@ using Markdig;
 
 namespace MarkdownPreview.Shell;
 /// <summary>
-/// 
+///  Markdown 渲染服务，用于将 Markdown 文本转换为 HTML。通过 Markdig 库实现。
+///  也可以使用其它库进行渲染。比喻：Markdig、HtmlAgilityPack、NHtmlParser 等。当前只实现使用 Markdig 进行渲染。
 /// </summary>
 public sealed class MarkdownRenderService
 {
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
         .UseAdvancedExtensions()
         .Build();
-
+    /// <summary>
+    /// 将 Markdown 文本渲染为 HTML。渲染成功，则返回 HTML 字符串
+    /// </summary>
+    /// <param name="markdown"></param>
+    /// <returns></returns>
     public string RenderHtml(string markdown)
     {
         var htmlBody = Markdown.ToHtml(markdown ?? string.Empty, Pipeline);

@@ -81,14 +81,14 @@ public sealed class ChmExportService
 
         try
         {
-            if (Directory.Exists(buildRoot))
-            {
-                Directory.Delete(buildRoot, recursive: true);
-            }
+            // 资源管理器若正打开旧 build，Directory.Delete 会失败；先安全清理，失败则换时间戳目录
+            buildRoot = PrepareBuildRoot(options.OutputDirectory, logs);
+            htmlRoot = Path.Combine(buildRoot, "html");
+            cssDir = Path.Combine(buildRoot, "css");
 
             Directory.CreateDirectory(htmlRoot);
             Directory.CreateDirectory(cssDir);
-            File.WriteAllText(Path.Combine(cssDir, "chm.css"), ChmCss, new UTF8Encoding(false));
+            ChmTextEncoding.WriteAllText(Path.Combine(cssDir, "chm.css"), ChmCss, ChmTextEncoding.TopicHtml);
 
             var tree = _treeService.GetTree();
             var files = new List<string> { @"css\chm.css" };
@@ -112,7 +112,8 @@ public sealed class ChmExportService
                 }
 
                 var page = _htmlBuilder.BuildPage(doc.Markdown, relative, doc.Title, options.Title);
-                File.WriteAllText(htmFull, page, new UTF8Encoding(false));
+                // 主题页用带 BOM 的 UTF-8 + charset=utf-8，正文中文可正常显示
+                ChmTextEncoding.WriteAllText(htmFull, page, ChmTextEncoding.TopicHtml);
                 files.Add(htmRelative.Replace('/', '\\'));
                 indexEntries.Add((doc.Title, htmRelative.Replace('/', '\\')));
 
@@ -232,6 +233,78 @@ public sealed class ChmExportService
                 Message = "导出失败：" + ex.Message,
                 Logs = logs
             };
+        }
+    }
+
+    /// <summary>
+    /// 准备空的 build 目录。若目录被资源管理器等占用，先改名再删；仍失败则使用 build-时间戳。
+    /// </summary>
+    private static string PrepareBuildRoot(string outputDirectory, List<string> logs)
+    {
+        Directory.CreateDirectory(outputDirectory);
+        var preferred = Path.Combine(outputDirectory, "build");
+
+        if (TryClearDirectory(preferred, logs))
+        {
+            Directory.CreateDirectory(preferred);
+            return preferred;
+        }
+
+        var fallback = Path.Combine(outputDirectory, "build-" + DateTime.Now.ToString("yyyyMMdd-HHmmss"));
+        logs.Add($"原 build 目录被占用，改用：{fallback}");
+        Directory.CreateDirectory(fallback);
+        return fallback;
+    }
+
+    private static bool TryClearDirectory(string path, List<string> logs)
+    {
+        if (!Directory.Exists(path))
+        {
+            return true;
+        }
+
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            try
+            {
+                Directory.Delete(path, recursive: true);
+                return true;
+            }
+            catch (IOException) when (attempt < 2)
+            {
+                Thread.Sleep(200);
+            }
+            catch (UnauthorizedAccessException) when (attempt < 2)
+            {
+                Thread.Sleep(200);
+            }
+            catch (Exception)
+            {
+                break;
+            }
+        }
+
+        // 改名可绕过「当前目录被占用」；旧目录稍后再删或留待手动清理
+        try
+        {
+            var trash = path + ".old-" + Guid.NewGuid().ToString("N")[..8];
+            Directory.Move(path, trash);
+            logs.Add($"已将占用中的目录移走：{trash}");
+            try
+            {
+                Directory.Delete(trash, recursive: true);
+            }
+            catch
+            {
+                logs.Add($"残留目录可稍后手动删除：{trash}");
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logs.Add($"无法清理 build 目录：{ex.Message}");
+            return false;
         }
     }
 

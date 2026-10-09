@@ -333,7 +333,7 @@ partial class PublishCenterForm
         chkChmCompile.Padding = new Padding(4, 8, 4, 8);
         chkChmCompile.Size = new Size(899, 40);
         chkChmCompile.TabIndex = 1;
-        chkChmCompile.Text = "自动调用 hhc.exe / chmcmd（未安装则仅生成中间工程）";
+        chkChmCompile.Text = "自动调用 hhc.exe（优先程序目录 tools\\hhc\\hhc.exe；找不到会提示）";
         // 
         // panelChmRow
         // 

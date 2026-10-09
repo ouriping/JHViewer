@@ -36,7 +36,21 @@ public partial class MarkdownPreviewForm : Form
         using var dialog = new OpenFileDialog
         {
             Filter = "Markdown 文件 (*.md)|*.md|所有文件 (*.*)|*.*",
-            Title = "选择要预览的 Markdown 文件"
+            Title = "选择要预览的 Markdown 文件",
+            //打开历史记录
+            RestoreDirectory = true,
+            //显示最近打开的文件
+            CheckFileExists = true,
+            //显示最近打开的文件
+            CheckPathExists = true,
+            //显示最近打开的文件
+            Multiselect = false,
+            //显示最近打开的文件
+            ReadOnlyChecked = false,
+            //显示最近打开的文件
+            ShowReadOnly = false,
+            //显示最近打开的文件
+            ShowHelp = false,
         };
 
         if (dialog.ShowDialog(this) == DialogResult.OK)

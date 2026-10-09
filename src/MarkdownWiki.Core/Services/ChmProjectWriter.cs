@@ -20,7 +20,8 @@ public sealed class ChmProjectWriter
         sb.AppendLine("</OBJECT>");
         WriteNodes(sb, tree.Children, mdPathToHtmLocal, indent: 0);
         sb.AppendLine("</BODY></HTML>");
-        File.WriteAllText(hhcPath, sb.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        // hhc.exe 按 ANSI/GBK 读目录文件，不能用 UTF-8
+        ChmTextEncoding.WriteAllText(hhcPath, sb.ToString(), ChmTextEncoding.ProjectFiles);
     }
 
     public void WriteIndex(string hhkPath, IEnumerable<(string name, string local)> entries)
@@ -43,7 +44,7 @@ public sealed class ChmProjectWriter
 
         sb.AppendLine("</UL>");
         sb.AppendLine("</BODY></HTML>");
-        File.WriteAllText(hhkPath, sb.ToString(), new UTF8Encoding(false));
+        ChmTextEncoding.WriteAllText(hhkPath, sb.ToString(), ChmTextEncoding.ProjectFiles);
     }
 
     public void WriteProject(
@@ -71,15 +72,18 @@ public sealed class ChmProjectWriter
 
         sb.AppendLine($"Default topic={defaultTopicLocal}");
         sb.AppendLine("Display compile progress=Yes");
-        sb.AppendLine("Language=0x804 中文(中国)");
-        sb.AppendLine($"Title={options.Title}");
+        // 仅写 LCID；不要把「中文(中国)」写进 UTF-8 注释里再被 hhc 当 ANSI 读
+        sb.AppendLine("Language=0x0804");
+        sb.AppendLine($"Title={SanitizeHhpValue(options.Title)}");
         sb.AppendLine("Default Font=Microsoft YaHei,9,0");
         sb.AppendLine(options.FullTextSearch ? "Full-text search=Yes" : "Full-text search=No");
         sb.AppendLine("Binary TOC=Yes");
         sb.AppendLine("Default Window=Main");
+        sb.AppendLine("Auto Index=Yes");
         sb.AppendLine();
         sb.AppendLine("[WINDOWS]");
-        sb.AppendLine($"Main=\"{options.Title}\",\"TableOfContents.hhc\",\"{(includeIndex ? "Index.hhk" : "")}\",\"{defaultTopicLocal}\",\"{defaultTopicLocal}\",,,,,0x62520,,0x104e,,,,,,,,0");
+        sb.AppendLine(
+            $"Main=\"{SanitizeHhpValue(options.Title)}\",\"TableOfContents.hhc\",\"{(includeIndex ? "Index.hhk" : "")}\",\"{defaultTopicLocal}\",\"{defaultTopicLocal}\",,,,,0x62520,,0x104e,[0,0,800,600],,,,,,,0");
         sb.AppendLine();
         sb.AppendLine("[FILES]");
         foreach (var file in files.Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
@@ -87,7 +91,18 @@ public sealed class ChmProjectWriter
             sb.AppendLine(file.Replace('/', '\\'));
         }
 
-        File.WriteAllText(hhpPath, sb.ToString(), new UTF8Encoding(false));
+        ChmTextEncoding.WriteAllText(hhpPath, sb.ToString(), ChmTextEncoding.ProjectFiles);
+    }
+
+    /// <summary>hhp 行内值去掉换行与多余引号，避免破坏工程语法。</summary>
+    private static string SanitizeHhpValue(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "Help";
+        }
+
+        return value.Replace("\"", "'").Replace('\r', ' ').Replace('\n', ' ').Trim();
     }
 
     private static void WriteNodes(

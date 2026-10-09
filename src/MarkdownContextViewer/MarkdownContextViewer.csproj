@@ -15,10 +15,54 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="UI\OperationProgressForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\OperationProgressForm.Designer.cs">
+      <DependentUpon>OperationProgressForm.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="UI\OperationProgressForm.resx">
+      <DependentUpon>OperationProgressForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="UI\PreviewRegistrationForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\PreviewRegistrationForm.Designer.cs">
+      <DependentUpon>PreviewRegistrationForm.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="UI\PreviewRegistrationForm.resx">
+      <DependentUpon>PreviewRegistrationForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="UI\DocumentPreviewDemoForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\DocumentPreviewDemoForm.Designer.cs">
+      <DependentUpon>DocumentPreviewDemoForm.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="UI\DocumentPreviewDemoForm.resx">
+      <DependentUpon>DocumentPreviewDemoForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Update="UI\PublishCenterForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\PublishCenterForm.Designer.cs">
+      <DependentUpon>PublishCenterForm.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="UI\PublishCenterForm.resx">
+      <DependentUpon>PublishCenterForm.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MarkdownPreview.Shell\MarkdownPreview.Shell.csproj" />
     <ProjectReference Include="..\MarkdownPreview.Handler\MarkdownPreview.Handler.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\MarkdownPreview.Register\MarkdownPreview.Register.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\MarkdownWiki.Core\MarkdownWiki.Core.csproj" />
+  </ItemGroup>
+
+  <!-- 随程序分发 HTML Help Workshop 编译器 hhc.exe -->
+  <ItemGroup>
+    <None Include="..\..\tools\hhc\**\*.*" Link="tools\hhc\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Condition="Exists('..\..\tools\hhc')" />
   </ItemGroup>
 
   <!-- 演示示例：复制到输出目录，便于「查看 → 打开 JSON/XML 演示」 -->

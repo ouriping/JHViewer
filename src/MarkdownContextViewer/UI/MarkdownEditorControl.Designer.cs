@@ -21,6 +21,8 @@ partial class MarkdownEditorControl
         btnSave = new ToolStripButton();
         btnUndo = new ToolStripButton();
         btnRedo = new ToolStripButton();
+        sepQuick = new ToolStripSeparator();
+        sepQuickEngine = new ToolStripSeparator();
         ribbonTabs = new TabControl();
         tabStart = new TabPage();
         stripStart = new ToolStrip();
@@ -92,7 +94,17 @@ partial class MarkdownEditorControl
         // 
         quickAccessStrip.BackColor = Color.FromArgb(243, 246, 251);
         quickAccessStrip.GripStyle = ToolStripGripStyle.Hidden;
-        quickAccessStrip.Items.AddRange(new ToolStripItem[] { btnSave, btnUndo, btnRedo });
+        quickAccessStrip.Items.AddRange(new ToolStripItem[] {
+            btnSave,
+            btnUndo,
+            btnRedo,
+            sepQuick,
+            btnPreviewOnly,
+            btnEditorOnly,
+            btnSplit,
+            sepQuickEngine,
+            btnEngineWeb,
+            btnEngineWinForms});
         quickAccessStrip.Location = new Point(4, 4);
         quickAccessStrip.Name = "quickAccessStrip";
         quickAccessStrip.Padding = new Padding(2, 1, 1, 1);
@@ -397,9 +409,7 @@ partial class MarkdownEditorControl
         stripView.GripStyle = ToolStripGripStyle.Hidden;
         stripView.Items.AddRange(new ToolStripItem[]
         {
-            lblLayout, btnEditorOnly, btnPreviewOnly, btnSplit,
-            sepView,
-            lblEngine, btnEngineWeb, btnEngineWinForms
+            lblLayout, lblEngine
         });
         stripView.Location = new Point(0, 0);
         stripView.Name = "stripView";
@@ -412,40 +422,48 @@ partial class MarkdownEditorControl
         // 
         lblLayout.ForeColor = Color.FromArgb(96, 104, 116);
         lblLayout.Name = "lblLayout";
-        lblLayout.Size = new Size(32, 28);
-        lblLayout.Text = "布局";
+        lblLayout.Size = new Size(280, 28);
+        lblLayout.Text = "布局与引擎切换在上方快捷栏";
         // 
-        // btnEditorOnly
+        // sepQuick / 布局按钮（挂在快捷栏，预览模式也能切换）
         // 
-        btnEditorOnly.CheckOnClick = true;
-        btnEditorOnly.DisplayStyle = ToolStripItemDisplayStyle.Text;
-        btnEditorOnly.Name = "btnEditorOnly";
-        btnEditorOnly.Size = new Size(48, 28);
-        btnEditorOnly.Text = "仅编辑";
-        btnEditorOnly.ToolTipText = "仅编辑";
-        btnEditorOnly.Click += btnEditorOnly_Click;
+        sepQuick.Name = "sepQuick";
+        sepQuick.Size = new Size(6, 24);
         // 
         // btnPreviewOnly
         // 
         btnPreviewOnly.CheckOnClick = true;
         btnPreviewOnly.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnPreviewOnly.Name = "btnPreviewOnly";
-        btnPreviewOnly.Size = new Size(48, 28);
+        btnPreviewOnly.Size = new Size(48, 24);
         btnPreviewOnly.Text = "仅预览";
-        btnPreviewOnly.ToolTipText = "仅预览";
+        btnPreviewOnly.ToolTipText = "仅预览（Esc）";
         btnPreviewOnly.Click += btnPreviewOnly_Click;
+        // 
+        // btnEditorOnly
+        // 
+        btnEditorOnly.CheckOnClick = true;
+        btnEditorOnly.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        btnEditorOnly.Name = "btnEditorOnly";
+        btnEditorOnly.Size = new Size(48, 24);
+        btnEditorOnly.Text = "仅编辑";
+        btnEditorOnly.ToolTipText = "仅编辑（Ctrl+E）";
+        btnEditorOnly.Click += btnEditorOnly_Click;
         // 
         // btnSplit
         // 
-        btnSplit.Checked = true;
         btnSplit.CheckOnClick = true;
-        btnSplit.CheckState = CheckState.Checked;
         btnSplit.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnSplit.Name = "btnSplit";
-        btnSplit.Size = new Size(36, 28);
+        btnSplit.Size = new Size(36, 24);
         btnSplit.Text = "分栏";
         btnSplit.ToolTipText = "编辑/预览分栏";
         btnSplit.Click += btnSplit_Click;
+        // 
+        // sepQuickEngine
+        // 
+        sepQuickEngine.Name = "sepQuickEngine";
+        sepQuickEngine.Size = new Size(6, 24);
         // 
         // sepView
         // 
@@ -456,15 +474,15 @@ partial class MarkdownEditorControl
         // 
         lblEngine.ForeColor = Color.FromArgb(96, 104, 116);
         lblEngine.Name = "lblEngine";
-        lblEngine.Size = new Size(32, 28);
-        lblEngine.Text = "引擎";
+        lblEngine.Size = new Size(200, 28);
+        lblEngine.Text = "快捷键：Ctrl+E 编辑，Esc 预览";
         // 
         // btnEngineWeb
         // 
         btnEngineWeb.CheckOnClick = true;
         btnEngineWeb.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnEngineWeb.Name = "btnEngineWeb";
-        btnEngineWeb.Size = new Size(100, 28);
+        btnEngineWeb.Size = new Size(100, 24);
         btnEngineWeb.Text = "Web（还原度高）";
         btnEngineWeb.ToolTipText = "WebBrowser：Markdown 排版还原度高，启动与内存开销更大";
         btnEngineWeb.Click += btnEngineWeb_Click;
@@ -474,7 +492,7 @@ partial class MarkdownEditorControl
         btnEngineWinForms.CheckOnClick = true;
         btnEngineWinForms.DisplayStyle = ToolStripItemDisplayStyle.Text;
         btnEngineWinForms.Name = "btnEngineWinForms";
-        btnEngineWinForms.Size = new Size(130, 28);
+        btnEngineWinForms.Size = new Size(130, 24);
         btnEngineWinForms.Text = "WinForms（更快更省）★";
         btnEngineWinForms.ToolTipText = "RichTextBox：启动快、更省内存，适合大文件；Markdown 还原度有限";
         btnEngineWinForms.Click += btnEngineWinForms_Click;
@@ -571,6 +589,8 @@ partial class MarkdownEditorControl
     private ToolStripButton btnSave = null!;
     private ToolStripButton btnUndo = null!;
     private ToolStripButton btnRedo = null!;
+    private ToolStripSeparator sepQuick = null!;
+    private ToolStripSeparator sepQuickEngine = null!;
     private TabControl ribbonTabs = null!;
     private TabPage tabStart = null!;
     private ToolStrip stripStart = null!;

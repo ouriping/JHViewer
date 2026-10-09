@@ -72,23 +72,51 @@ public partial class PublishCenterForm : Form
             return;
         }
 
+        var compile = chkChmCompile.Checked;
+        if (compile)
+        {
+            var compiler = ChmDesktopExporter.ResolveCompilerPath();
+            if (string.IsNullOrWhiteSpace(compiler))
+            {
+                var expected = Path.Combine(AppContext.BaseDirectory, ChmDesktopExporter.BundledHhcRelativePath);
+                var choice = MessageBox.Show(
+                    "未找到 CHM 编译器 hhc.exe。\n\n" +
+                    $"期望自带位置：\n{expected}\n\n" +
+                    "也可安装 HTML Help Workshop，或将 hhc.exe 放到上述目录后重试。\n\n" +
+                    "是否仍只生成中间工程（.hhp / .hhc / HTML），稍后再手工编译？",
+                    "缺少 HHC.EXE",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+                if (choice != DialogResult.Yes)
+                {
+                    return;
+                }
+
+                compile = false;
+            }
+        }
+
         try
         {
             Cursor = Cursors.WaitCursor;
-            var result = ChmDesktopExporter.Export(root, compile: chkChmCompile.Checked);
+            var result = ChmDesktopExporter.Export(root, compile: compile);
             var detail = result.Message + Environment.NewLine +
                          "构建目录：" + result.BuildDirectory + Environment.NewLine +
-                         (result.Compiled ? "CHM：" + result.ChmPath : "未生成 CHM（可打开 Project.hhp 手工编译）");
+                         (result.Compiled
+                             ? "CHM：" + result.ChmPath
+                             : "未生成 CHM（可打开 Project.hhp 手工编译）");
+            if (!string.IsNullOrWhiteSpace(result.CompilerUsed))
+            {
+                detail += Environment.NewLine + "编译器：" + result.CompilerUsed;
+            }
+
             MessageBox.Show(detail, result.Ok ? "导出完成" : "导出失败", MessageBoxButtons.OK,
                 result.Ok ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
 
-            if (result.Ok && Directory.Exists(result.BuildDirectory))
+            // 打开输出目录或 CHM，不要直接打开 build（会锁住目录导致下次无法删除）
+            if (result.Ok)
             {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = result.BuildDirectory,
-                    UseShellExecute = true
-                });
+                OpenChmExportResult(result);
             }
         }
         catch (Exception ex)
@@ -98,6 +126,51 @@ public partial class PublishCenterForm : Form
         finally
         {
             Cursor = Cursors.Default;
+        }
+    }
+
+    private static void OpenChmExportResult(MarkdownWiki.Core.Models.ChmExportResult result)
+    {
+        try
+        {
+            if (result.Compiled && !string.IsNullOrWhiteSpace(result.ChmPath) && File.Exists(result.ChmPath))
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = "/select,\"" + result.ChmPath + "\"",
+                    UseShellExecute = true
+                });
+                return;
+            }
+
+            var openDir = !string.IsNullOrWhiteSpace(result.ProjectPath)
+                ? Path.GetDirectoryName(result.ProjectPath)
+                : result.BuildDirectory;
+            // 优先打开 chm-output 根，而不是其下的 build
+            if (!string.IsNullOrWhiteSpace(openDir))
+            {
+                var parent = Directory.GetParent(openDir);
+                if (parent is not null
+                    && openDir.EndsWith("build", StringComparison.OrdinalIgnoreCase)
+                    && Directory.Exists(parent.FullName))
+                {
+                    openDir = parent.FullName;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(openDir) && Directory.Exists(openDir))
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = openDir,
+                    UseShellExecute = true
+                });
+            }
+        }
+        catch
+        {
+            // 打开资源管理器失败不影响导出结果
         }
     }
 

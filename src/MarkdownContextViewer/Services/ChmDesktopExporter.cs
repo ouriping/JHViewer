@@ -6,6 +6,16 @@ namespace MarkdownContextViewer;
 /// <summary>桌面端调用 MarkdownWiki.Core 导出 CHM。</summary>
 public static class ChmDesktopExporter
 {
+    /// <summary>自带编译器相对输出目录的路径：tools\hhc\hhc.exe</summary>
+    public static string BundledHhcRelativePath => Path.Combine("tools", "hhc", "hhc.exe");
+
+    /// <summary>解析可用的 hhc.exe：自带 → 系统 HTML Help Workshop → PATH。</summary>
+    public static string? ResolveCompilerPath() =>
+        new ChmCompiler().Detect(preferredPath: null, preferredKind: "Auto")?.Path;
+
+    /// <summary>仅查找随程序部署的 tools\hhc\hhc.exe。</summary>
+    public static string? FindBundledHhc() => ChmCompiler.FindBundledHhc();
+
     public static ChmExportResult Export(string contentRoot, string? outputDirectory = null, bool compile = true, bool includeIndex = true)
     {
         if (!Directory.Exists(contentRoot))
@@ -19,6 +29,7 @@ public static class ChmDesktopExporter
             output = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(contentRoot)) ?? contentRoot, "chm-output");
         }
 
+        var bundledHhc = FindBundledHhc();
         var wikiOptions = new WikiOptions
         {
             ContentRoot = Path.GetFullPath(contentRoot),
@@ -30,7 +41,8 @@ public static class ChmDesktopExporter
                 FileName = "Help.chm",
                 IncludeIndex = includeIndex,
                 FullTextSearch = true,
-                PreferredCompiler = compile ? "Auto" : "None"
+                PreferredCompiler = compile ? "Auto" : "None",
+                CompilerPath = bundledHhc ?? string.Empty
             }
         };
 
@@ -46,7 +58,12 @@ public static class ChmDesktopExporter
         var opts = export.CreateDefaultOptions();
         opts.Compile = compile;
         opts.IncludeIndex = includeIndex;
-        if (!compile)
+        if (!string.IsNullOrWhiteSpace(bundledHhc))
+        {
+            opts.CompilerPath = bundledHhc;
+            opts.PreferredCompiler = compile ? "Hhc" : "None";
+        }
+        else if (!compile)
         {
             opts.PreferredCompiler = "None";
         }

@@ -16,69 +16,66 @@ partial class MarkdownPreviewForm
 
     private void InitializeComponent()
     {
-        toolPanel = new Panel();
-        btnRefresh = new Button();
-        btnOpen = new Button();
         markdownPreviewControl = new MarkdownPreviewControl();
-        toolPanel.SuspendLayout();
+        menuStrip1 = new MenuStrip();
+        打开文件OToolStripMenuItem = new ToolStripMenuItem();
+        刷新RToolStripMenuItem = new ToolStripMenuItem();
+        menuStrip1.SuspendLayout();
         SuspendLayout();
-        // 
-        // toolPanel
-        // 
-        toolPanel.Controls.Add(btnRefresh);
-        toolPanel.Controls.Add(btnOpen);
-        toolPanel.Dock = DockStyle.Top;
-        toolPanel.Location = new Point(0, 0);
-        toolPanel.Name = "toolPanel";
-        toolPanel.Padding = new Padding(8, 8, 8, 4);
-        toolPanel.Size = new Size(800, 48);
-        toolPanel.TabIndex = 0;
-        // 
-        // btnOpen
-        // 
-        btnOpen.Location = new Point(8, 8);
-        btnOpen.Name = "btnOpen";
-        btnOpen.Size = new Size(110, 30);
-        btnOpen.TabIndex = 0;
-        btnOpen.Text = "打开 .md";
-        btnOpen.UseVisualStyleBackColor = true;
-        btnOpen.Click += btnOpen_Click;
-        // 
-        // btnRefresh
-        // 
-        btnRefresh.Location = new Point(128, 8);
-        btnRefresh.Name = "btnRefresh";
-        btnRefresh.Size = new Size(110, 30);
-        btnRefresh.TabIndex = 1;
-        btnRefresh.Text = "刷新";
-        btnRefresh.UseVisualStyleBackColor = true;
-        btnRefresh.Click += btnRefresh_Click;
         // 
         // markdownPreviewControl
         // 
         markdownPreviewControl.Dock = DockStyle.Fill;
-        markdownPreviewControl.Location = new Point(0, 48);
+        markdownPreviewControl.Location = new Point(0, 28);
+        markdownPreviewControl.Margin = new Padding(5, 5, 5, 5);
         markdownPreviewControl.Name = "markdownPreviewControl";
-        markdownPreviewControl.Size = new Size(800, 552);
+        markdownPreviewControl.Size = new Size(1029, 678);
         markdownPreviewControl.TabIndex = 1;
+        // 
+        // menuStrip1
+        // 
+        menuStrip1.ImageScalingSize = new Size(20, 20);
+        menuStrip1.Items.AddRange(new ToolStripItem[] { 打开文件OToolStripMenuItem, 刷新RToolStripMenuItem });
+        menuStrip1.Location = new Point(0, 0);
+        menuStrip1.Name = "menuStrip1";
+        menuStrip1.Size = new Size(1029, 28);
+        menuStrip1.TabIndex = 2;
+        menuStrip1.Text = "menuStrip1";
+        // 
+        // 打开文件OToolStripMenuItem
+        // 
+        打开文件OToolStripMenuItem.Name = "打开文件OToolStripMenuItem";
+        打开文件OToolStripMenuItem.Size = new Size(105, 24);
+        打开文件OToolStripMenuItem.Text = "打开文件(&O)";
+        打开文件OToolStripMenuItem.Click += btnOpen_Click;
+        // 
+        // 刷新RToolStripMenuItem
+        // 
+        刷新RToolStripMenuItem.Name = "刷新RToolStripMenuItem";
+        刷新RToolStripMenuItem.Size = new Size(73, 24);
+        刷新RToolStripMenuItem.Text = "刷新(&R)";
+        刷新RToolStripMenuItem.Click += btnRefresh_Click;
         // 
         // MarkdownPreviewForm
         // 
-        AutoScaleDimensions = new SizeF(7F, 17F);
+        AutoScaleDimensions = new SizeF(9F, 20F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(800, 600);
+        ClientSize = new Size(1029, 706);
         Controls.Add(markdownPreviewControl);
-        Controls.Add(toolPanel);
-        MinimumSize = new Size(480, 360);
+        Controls.Add(menuStrip1);
+        MainMenuStrip = menuStrip1;
+        Margin = new Padding(4, 4, 4, 4);
+        MinimumSize = new Size(612, 415);
         Name = "MarkdownPreviewForm";
         StartPosition = FormStartPosition.CenterParent;
         Text = "Markdown 渲染预览";
-        toolPanel.ResumeLayout(false);
+        menuStrip1.ResumeLayout(false);
+        menuStrip1.PerformLayout();
         ResumeLayout(false);
+        PerformLayout();
     }
-
-    private Panel toolPanel = null!;
-    private Button btnOpen = null!;
-    private Button btnRefresh = null!;
     private MarkdownPreviewControl markdownPreviewControl = null!;
+    private MenuStrip menuStrip1;
+    private ToolStripMenuItem 打开文件OToolStripMenuItem;
+    private ToolStripMenuItem 刷新RToolStripMenuItem;
 }

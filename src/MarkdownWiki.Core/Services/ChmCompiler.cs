@@ -21,8 +21,14 @@ public sealed class ChmCompiler
         {
             if (!string.IsNullOrWhiteSpace(path) && File.Exists(path))
             {
-                candidates.Add((path, kind));
+                candidates.Add((path!, kind));
             }
+        }
+
+        // 优先：应用自带 tools/hhc/hhc.exe（随主程序部署）
+        foreach (var bundled in EnumerateBundledHhcPaths())
+        {
+            AddIfExists(bundled, "Hhc");
         }
 
         var pf86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
@@ -118,6 +124,48 @@ public sealed class ChmCompiler
         {
             logs.Add(ex.Message);
             return (false, "调用编译器失败：" + ex.Message, logs);
+        }
+    }
+
+    /// <summary>应用目录内打包的 hhc.exe（tools/hhc/hhc.exe 或旁路 hhc.exe）。</summary>
+    public static string? FindBundledHhc()
+    {
+        foreach (var path in EnumerateBundledHhcPaths())
+        {
+            if (File.Exists(path))
+            {
+                return path;
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<string> EnumerateBundledHhcPaths()
+    {
+        var bases = new List<string>();
+        void AddBase(string? dir)
+        {
+            if (!string.IsNullOrWhiteSpace(dir) && !bases.Contains(dir, StringComparer.OrdinalIgnoreCase))
+            {
+                bases.Add(dir);
+            }
+        }
+
+        AddBase(AppContext.BaseDirectory);
+        try
+        {
+            AddBase(Path.GetDirectoryName(typeof(ChmCompiler).Assembly.Location));
+        }
+        catch
+        {
+            // ignore
+        }
+
+        foreach (var root in bases)
+        {
+            yield return Path.Combine(root, "tools", "hhc", "hhc.exe");
+            yield return Path.Combine(root, "hhc.exe");
         }
     }
 

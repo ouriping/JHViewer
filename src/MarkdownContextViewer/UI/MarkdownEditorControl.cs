@@ -39,8 +39,11 @@ public partial class MarkdownEditorControl : UserControl
         _previewDebounceTimer.Tick += PreviewDebounceTimer_Tick;
 
         Disposed += (_, _) => CleanupTempFile();
-        SyncViewModeButtons(showEditor: true, showPreview: true);
+        PreviewKeyDown += MarkdownEditorControl_PreviewKeyDown;
+        editor.PreviewKeyDown += Editor_PreviewKeyDown;
         SyncEngineButtons(PreviewEngineSetting.Load());
+        // 默认仅预览；FrmMain 打开文件时也会再调一次 SetPreviewMode()
+        SetPreviewMode();
     }
 
     public string MarkdownText
@@ -127,8 +130,39 @@ public partial class MarkdownEditorControl : UserControl
 
     private void editor_TextChanged(object? sender, EventArgs e) => SchedulePreviewRefresh();
 
+    private void MarkdownEditorControl_PreviewKeyDown(object? sender, PreviewKeyDownEventArgs e)
+    {
+        if (e.KeyCode == Keys.Escape || (e.Control && e.KeyCode == Keys.E))
+        {
+            e.IsInputKey = true;
+        }
+    }
+
+    private void Editor_PreviewKeyDown(object? sender, PreviewKeyDownEventArgs e)
+    {
+        if (e.KeyCode == Keys.Escape || (e.Control && e.KeyCode == Keys.E))
+        {
+            e.IsInputKey = true;
+        }
+    }
+
     private void editor_KeyDown(object? sender, KeyEventArgs e)
     {
+        if (e.KeyCode == Keys.Escape)
+        {
+            SetPreviewMode();
+            e.SuppressKeyPress = true;
+            return;
+        }
+
+        if (e.Control && e.KeyCode == Keys.E && !e.Shift)
+        {
+            SetEditorMode();
+            editor.Focus();
+            e.SuppressKeyPress = true;
+            return;
+        }
+
         if (!e.Control)
         {
             return;
@@ -288,6 +322,17 @@ public partial class MarkdownEditorControl : UserControl
         mainSplit.Panel1Collapsed = !showEditor;
         mainSplit.Panel2Collapsed = !showPreview;
         SyncViewModeButtons(showEditor, showPreview);
+        ApplyChromeForMode(showEditor);
+    }
+
+    private void ApplyChromeForMode(bool showEditor)
+    {
+        // 仅预览：收起 Ribbon 编辑区，只留快捷栏（含布局/引擎切换）
+        ribbonTabs.Visible = showEditor;
+        ribbonHost.Height = showEditor ? 96 : 36;
+        btnUndo.Visible = showEditor;
+        btnRedo.Visible = showEditor;
+        btnSave.Enabled = true;
     }
 
     private void SyncViewModeButtons(bool showEditor, bool showPreview)
@@ -295,6 +340,28 @@ public partial class MarkdownEditorControl : UserControl
         btnEditorOnly.Checked = showEditor && !showPreview;
         btnPreviewOnly.Checked = !showEditor && showPreview;
         btnSplit.Checked = showEditor && showPreview;
+    }
+
+    protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+    {
+        if (keyData == Keys.Escape)
+        {
+            SetPreviewMode();
+            return true;
+        }
+
+        if (keyData == (Keys.Control | Keys.E))
+        {
+            SetEditorMode();
+            if (!mainSplit.Panel1Collapsed)
+            {
+                editor.Focus();
+            }
+
+            return true;
+        }
+
+        return base.ProcessCmdKey(ref msg, keyData);
     }
 
     private void SyncEngineButtons(PreviewEngineKind kind)

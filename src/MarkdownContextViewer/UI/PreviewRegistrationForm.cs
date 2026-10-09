@@ -1,81 +1,41 @@
+using System.ComponentModel;
+
 namespace MarkdownContextViewer;
 
 /// <summary>
 /// 启用/取消资源管理器预览窗格：勾选格式、显示脚本日志与进度。
+/// 界面在设计器文件中；格式分组复选框在运行时填充到 pnlFormatsHost。
 /// </summary>
-internal sealed class PreviewRegistrationForm : Form
+internal sealed partial class PreviewRegistrationForm : Form
 {
-    private readonly ExplorerIntegrationService _explorerService;
+    private readonly ExplorerIntegrationService _explorerService = null!;
     private readonly Dictionary<string, CheckBox> _extensionChecks = new(StringComparer.OrdinalIgnoreCase);
-
-    private Panel _pnlFormats = null!;
-    private Button _btnEnable = null!;
-    private Button _btnDisable = null!;
-    private Button _btnClose = null!;
-    private ProgressBar _progressBar = null!;
-    private Label _lblStatus = null!;
-    private TextBox _txtLog = null!;
-    private Label _lblEngineHint = null!;
-
     private bool _busy;
 
+    public PreviewRegistrationForm()
+    {
+        InitializeComponent();
+        if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
+        {
+            return;
+        }
+
+        BuildFormatGroups();
+    }
+
     public PreviewRegistrationForm(ExplorerIntegrationService explorerService)
+        : this()
     {
         _explorerService = explorerService ?? throw new ArgumentNullException(nameof(explorerService));
-        InitializeUi();
         LoadSavedSelection();
         RefreshEngineHint();
     }
 
-    private void InitializeUi()
+    private void BuildFormatGroups()
     {
-        Text = "启用资源管理器预览窗格";
-        StartPosition = FormStartPosition.CenterParent;
-        MinimumSize = new Size(640, 560);
-        Size = new Size(720, 640);
-        Font = new Font("Microsoft YaHei UI", 9F);
-        MaximizeBox = false;
-        ShowInTaskbar = true;
-
-        var root = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 1,
-            RowCount = 5,
-            Padding = new Padding(12)
-        };
-        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        Controls.Add(root);
-
-        var intro = new Label
-        {
-            AutoSize = true,
-            MaximumSize = new Size(680, 0),
-            Text = "选择要在资源管理器“预览窗格”中启用的文件类型。" +
-                   "注册会部署预览组件并写入扩展名关联；下方显示脚本操作与进度。",
-            Margin = new Padding(0, 0, 0, 8)
-        };
-        root.Controls.Add(intro, 0, 0);
-
-        _pnlFormats = new Panel
-        {
-            AutoSize = true,
-            Dock = DockStyle.Top,
-            Padding = new Padding(0, 0, 0, 4)
-        };
-        var formatLayout = new FlowLayoutPanel
-        {
-            AutoSize = true,
-            Dock = DockStyle.Fill,
-            FlowDirection = FlowDirection.TopDown,
-            WrapContents = false,
-            Padding = new Padding(0)
-        };
-        _pnlFormats.Controls.Add(formatLayout);
+        pnlFormatsHost.SuspendLayout();
+        pnlFormatsHost.Controls.Clear();
+        _extensionChecks.Clear();
 
         foreach (var group in PreviewFormatCatalog.Groups)
         {
@@ -97,14 +57,13 @@ internal sealed class PreviewRegistrationForm : Form
                 WrapContents = false
             };
 
-            var desc = new Label
+            inner.Controls.Add(new Label
             {
                 AutoSize = true,
                 ForeColor = SystemColors.GrayText,
                 Text = group.Description,
                 Margin = new Padding(0, 0, 0, 4)
-            };
-            inner.Controls.Add(desc);
+            });
 
             var checkRow = new FlowLayoutPanel
             {
@@ -130,104 +89,17 @@ internal sealed class PreviewRegistrationForm : Form
 
             inner.Controls.Add(checkRow);
             box.Controls.Add(inner);
-            formatLayout.Controls.Add(box);
+            pnlFormatsHost.Controls.Add(box);
         }
 
-        var quickRow = new FlowLayoutPanel
-        {
-            AutoSize = true,
-            FlowDirection = FlowDirection.LeftToRight,
-            Margin = new Padding(0, 0, 0, 4)
-        };
-        var btnAll = new Button { Text = "全选", AutoSize = true };
-        var btnNone = new Button { Text = "全不选", AutoSize = true };
-        var btnDefault = new Button { Text = "恢复默认", AutoSize = true };
-        btnAll.Click += (_, _) => SetAllChecks(true);
-        btnNone.Click += (_, _) => SetAllChecks(false);
-        btnDefault.Click += (_, _) => ApplySelection(PreviewRegistrationOptions.CreateDefault().Extensions);
-        quickRow.Controls.Add(btnAll);
-        quickRow.Controls.Add(btnNone);
-        quickRow.Controls.Add(btnDefault);
-        formatLayout.Controls.Add(quickRow);
-
-        root.Controls.Add(_pnlFormats, 0, 1);
-
-        _lblEngineHint = new Label
-        {
-            AutoSize = true,
-            ForeColor = SystemColors.GrayText,
-            Margin = new Padding(0, 0, 0, 8)
-        };
-        root.Controls.Add(_lblEngineHint, 0, 2);
-
-        var logPanel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 4, 0, 4) };
-        var logLayout = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 1,
-            RowCount = 3
-        };
-        logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
-        logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 22));
-        logLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-
-        _progressBar = new ProgressBar
-        {
-            Dock = DockStyle.Fill,
-            Minimum = 0,
-            Maximum = 100,
-            Style = ProgressBarStyle.Continuous
-        };
-        _lblStatus = new Label
-        {
-            Dock = DockStyle.Fill,
-            Text = "就绪",
-            TextAlign = ContentAlignment.MiddleLeft
-        };
-        _txtLog = new TextBox
-        {
-            Dock = DockStyle.Fill,
-            Multiline = true,
-            ReadOnly = true,
-            ScrollBars = ScrollBars.Both,
-            WordWrap = false,
-            Font = new Font("Consolas", 9F),
-            BackColor = Color.FromArgb(250, 250, 250)
-        };
-
-        logLayout.Controls.Add(_progressBar, 0, 0);
-        logLayout.Controls.Add(_lblStatus, 0, 1);
-        logLayout.Controls.Add(_txtLog, 0, 2);
-        logPanel.Controls.Add(logLayout);
-        root.Controls.Add(logPanel, 0, 3);
-
-        var buttons = new FlowLayoutPanel
-        {
-            AutoSize = true,
-            Dock = DockStyle.Fill,
-            FlowDirection = FlowDirection.RightToLeft,
-            Padding = new Padding(0, 8, 0, 0)
-        };
-        _btnClose = new Button { Text = "关闭", AutoSize = true, DialogResult = DialogResult.Cancel };
-        _btnDisable = new Button { Text = "取消预览窗格", AutoSize = true };
-        _btnEnable = new Button { Text = "注册并启用", AutoSize = true };
-        _btnEnable.Click += async (_, _) => await RunEnableAsync();
-        _btnDisable.Click += async (_, _) => await RunDisableAsync();
-        _btnClose.Click += (_, _) => Close();
-        buttons.Controls.Add(_btnClose);
-        buttons.Controls.Add(_btnDisable);
-        buttons.Controls.Add(_btnEnable);
-        root.Controls.Add(buttons, 0, 4);
-
-        AcceptButton = _btnEnable;
-        CancelButton = _btnClose;
+        pnlFormatsHost.ResumeLayout(true);
     }
 
     private void RefreshEngineHint()
     {
         var engine = PreviewEngineSetting.Load();
         var name = engine == PreviewEngineKind.WinForms ? "WinForms（更快更省）" : "Web（还原度高）";
-        _lblEngineHint.Text = $"当前预览引擎：{name}（在主窗口“查看”菜单切换；JSON/XML 推荐 WinForms）";
+        lblEngineHint.Text = $"当前预览引擎：{name}（在主窗口“查看”菜单切换；JSON/XML 推荐 WinForms）";
     }
 
     private void LoadSavedSelection()
@@ -260,6 +132,19 @@ internal sealed class PreviewRegistrationForm : Form
             .Select(kv => kv.Key)
             .ToList();
 
+    private async void btnEnable_Click(object? sender, EventArgs e) => await RunEnableAsync();
+
+    private async void btnDisable_Click(object? sender, EventArgs e) => await RunDisableAsync();
+
+    private void btnClose_Click(object? sender, EventArgs e) => Close();
+
+    private void btnSelectAll_Click(object? sender, EventArgs e) => SetAllChecks(true);
+
+    private void btnSelectNone_Click(object? sender, EventArgs e) => SetAllChecks(false);
+
+    private void btnSelectDefault_Click(object? sender, EventArgs e) =>
+        ApplySelection(PreviewRegistrationOptions.CreateDefault().Extensions);
+
     private async Task RunEnableAsync()
     {
         if (_busy)
@@ -276,7 +161,6 @@ internal sealed class PreviewRegistrationForm : Form
         }
 
         PreviewRegistrationSetting.Save(new PreviewRegistrationOptions { Extensions = selected });
-        // 必须在 UI 线程创建 Progress，才能捕获 WinForms 同步上下文
         var progress = CreateProgress();
         await RunOperationAsync(
             "正在注册并启用预览窗格…",
@@ -311,25 +195,25 @@ internal sealed class PreviewRegistrationForm : Form
     {
         _busy = true;
         SetUiEnabled(false);
-        _progressBar.Value = 0;
-        _txtLog.Clear();
+        progressBar.Value = 0;
+        txtLog.Clear();
         AppendLog(startMessage);
-        _lblStatus.Text = startMessage;
+        lblStatus.Text = startMessage;
 
         try
         {
             await Task.Run(work);
             AppendLog("—— 完成 ——");
-            _lblStatus.Text = "完成";
-            if (_progressBar.Value < 100)
+            lblStatus.Text = "完成";
+            if (progressBar.Value < 100)
             {
-                _progressBar.Value = 100;
+                progressBar.Value = 100;
             }
         }
         catch (Exception ex)
         {
             AppendLog("错误：" + ex.Message);
-            _lblStatus.Text = "失败";
+            lblStatus.Text = "失败";
             MessageBox.Show(this, ex.Message, "操作失败", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
@@ -340,10 +224,8 @@ internal sealed class PreviewRegistrationForm : Form
         }
     }
 
-    private IProgress<PreviewRegistrationProgress> CreateProgress()
-    {
-        return new Progress<PreviewRegistrationProgress>(ApplyProgress);
-    }
+    private IProgress<PreviewRegistrationProgress> CreateProgress() =>
+        new Progress<PreviewRegistrationProgress>(ApplyProgress);
 
     private void ApplyProgress(PreviewRegistrationProgress p)
     {
@@ -360,7 +242,6 @@ internal sealed class PreviewRegistrationForm : Form
             }
             catch (ObjectDisposedException)
             {
-                // ignore
             }
 
             return;
@@ -368,7 +249,7 @@ internal sealed class PreviewRegistrationForm : Form
 
         if (p.Percent >= 0)
         {
-            _progressBar.Value = Math.Clamp(p.Percent, 0, 100);
+            progressBar.Value = Math.Clamp(p.Percent, 0, 100);
         }
 
         if (!string.IsNullOrWhiteSpace(p.Message))
@@ -376,7 +257,7 @@ internal sealed class PreviewRegistrationForm : Form
             AppendLog(p.Message);
             if (p.Percent >= 0)
             {
-                _lblStatus.Text = p.Message;
+                lblStatus.Text = p.Message;
             }
         }
     }
@@ -384,18 +265,21 @@ internal sealed class PreviewRegistrationForm : Form
     private void AppendLog(string message)
     {
         var line = $"[{DateTime.Now:HH:mm:ss}] {message}";
-        if (_txtLog.TextLength > 0)
+        if (txtLog.TextLength > 0)
         {
-            _txtLog.AppendText(Environment.NewLine);
+            txtLog.AppendText(Environment.NewLine);
         }
 
-        _txtLog.AppendText(line);
+        txtLog.AppendText(line);
     }
 
     private void SetUiEnabled(bool enabled)
     {
-        _btnEnable.Enabled = enabled;
-        _btnDisable.Enabled = enabled;
+        btnEnable.Enabled = enabled;
+        btnDisable.Enabled = enabled;
+        btnSelectAll.Enabled = enabled;
+        btnSelectNone.Enabled = enabled;
+        btnSelectDefault.Enabled = enabled;
         foreach (var chk in _extensionChecks.Values)
         {
             chk.Enabled = enabled;

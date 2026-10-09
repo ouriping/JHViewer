@@ -221,6 +221,7 @@ public partial class FrmMain : Form
         };
 
         editorControl.UsePreviewEngine(_previewEngine);
+        editorControl.SetPreviewMode();
         editorControl.SaveRequested += (_, _) => SaveCurrentTab();
         editorControl.PreviewEngineChanged += (_, kind) => SetPreviewEngine(kind);
 
