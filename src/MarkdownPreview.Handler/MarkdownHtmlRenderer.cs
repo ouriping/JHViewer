@@ -2,6 +2,10 @@ using Markdig;
 
 namespace MarkdownPreview.Handler;
 
+/// <summary>
+/// Markdown 转 HTML 的渲染器。
+/// Markdig 本身会忽略 HTML头部，这里把 HTML 内联到样式中。
+/// </summary>
 internal static class MarkdownHtmlRenderer
 {
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()

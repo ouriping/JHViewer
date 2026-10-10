@@ -22,7 +22,12 @@ internal static class HtmlSingleFileExporter
         var portable = ImgSrc.Replace(html ?? "", match => EmbedImage(match, directory));
         File.WriteAllText(outputPath, portable, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="match"></param>
+    /// <param name="markdownDirectory"></param>
+    /// <returns></returns>
     private static string EmbedImage(Match match, string markdownDirectory)
     {
         var src = match.Groups[2].Value;

@@ -1,18 +1,11 @@
+using MarkdownPreview.Handler.Enums;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
 
 namespace MarkdownPreview.Handler;
 
-/// <summary>
-/// JSON / XML 的 WinForms 预览：树 + 原文。
-/// </summary>
-internal enum StructuredLayout
-{
-    Both,
-    TreeOnly,
-    FileOnly
-}
+ 
 
 internal sealed class StructuredPreviewControl : UserControl
 {

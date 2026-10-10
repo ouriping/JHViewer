@@ -19,6 +19,10 @@ namespace MarkdownPreview.Handler;
     SurrogateHostType = SurrogateHostType.DedicatedPrevhost)]
 public sealed class MarkdownPreviewHandler : SharpPreviewHandler
 {
+    /// <summary>
+    /// 重写 DoPreview 方法来实现自己的预览逻辑（例如，绘制图片、显示文本或自定义控件）
+    /// </summary>
+    /// <returns></returns>
     protected override PreviewHandlerControl DoPreview()
     {
         var control = new MarkdownPreviewControl();

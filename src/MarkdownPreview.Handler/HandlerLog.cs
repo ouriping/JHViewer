@@ -4,7 +4,12 @@ using System.IO;
 using System.Text;
 
 namespace MarkdownPreview.Handler;
-
+/// <summary>
+/// 日志记录器：记录操作日志。日志文件保存在 %LocalAppData%\MarkdownContextViewer\preview-handler.log。
+/// 如果 %LocalAppData%\Low 目录存在，也会记录到 %LocalAppData%\Low\MarkdownContextViewer\preview-handler.log。
+/// 如果两个目录都不存在，也会记录到 %LocalAppData%\MarkdownContextViewer\preview-handler.log。
+/// 如果记录失败，会尝试下一个目录。如果所有目录都失败，会记录到 %Local
+/// </summary>
 internal static class HandlerLog
 {
     private static readonly object Sync = new object();

@@ -57,6 +57,7 @@ public partial class PublishCenterForm : Form
         InitializeFromDocument();
         ApplyPreset(_preset);
         UpdateUi();
+        RefreshMarkdownTree();
     }
 
     private void InitializeFromDocument()
@@ -76,6 +77,110 @@ public partial class PublishCenterForm : Form
         {
             txtDirectory.Text = dir;
         }
+    }
+
+    private void txtDirectory_Leave(object? sender, EventArgs e) => RefreshMarkdownTree();
+
+    private void RefreshMarkdownTree()
+    {
+        treeMarkdown.BeginUpdate();
+        try
+        {
+            treeMarkdown.Nodes.Clear();
+            var root = txtDirectory.Text.Trim();
+            if (string.IsNullOrWhiteSpace(root) || !Directory.Exists(root))
+            {
+                lblFileSummary.Text = "选择文档目录后，将在此列出全部 .md 文件。";
+                grpFiles.Text = "文档列表";
+                return;
+            }
+
+            var rootNode = BuildDirectoryNode(root, isRoot: true);
+            if (rootNode is null)
+            {
+                lblFileSummary.Text = "该目录下未找到 .md 文件。";
+                grpFiles.Text = "文档列表（0）";
+                return;
+            }
+
+            treeMarkdown.Nodes.Add(rootNode);
+            rootNode.Expand();
+            var count = CountMarkdownNodes(rootNode);
+            lblFileSummary.Text = $"根目录：{root}　共 {count} 个 .md 文件";
+            grpFiles.Text = $"文档列表（{count}）";
+        }
+        catch (Exception ex)
+        {
+            lblFileSummary.Text = "读取目录失败：" + ex.Message;
+            grpFiles.Text = "文档列表";
+        }
+        finally
+        {
+            treeMarkdown.EndUpdate();
+        }
+    }
+
+    /// <summary>
+    /// 构建目录树节点；若目录及其子目录都没有 .md，则返回 null（不显示空文件夹）。
+    /// Tag：文件夹为目录完整路径，文件为 .md 完整路径。
+    /// </summary>
+    private static TreeNode? BuildDirectoryNode(string directory, bool isRoot)
+    {
+        var dirInfo = new DirectoryInfo(directory);
+        var node = new TreeNode(isRoot ? dirInfo.FullName : dirInfo.Name)
+        {
+            Tag = dirInfo.FullName,
+            ToolTipText = dirInfo.FullName
+        };
+
+        try
+        {
+            foreach (var sub in dirInfo.EnumerateDirectories()
+                         .Where(d => !d.Attributes.HasFlag(FileAttributes.Hidden)
+                                     && !d.Name.StartsWith('.'))
+                         .OrderBy(d => d.Name, StringComparer.OrdinalIgnoreCase))
+            {
+                var child = BuildDirectoryNode(sub.FullName, isRoot: false);
+                if (child is not null)
+                {
+                    node.Nodes.Add(child);
+                }
+            }
+
+            foreach (var file in dirInfo.EnumerateFiles("*.md")
+                         .OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase))
+            {
+                node.Nodes.Add(new TreeNode(file.Name)
+                {
+                    Tag = file.FullName,
+                    ToolTipText = file.FullName
+                });
+            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // 跳过无权限目录
+        }
+
+        return node.Nodes.Count == 0 ? null : node;
+    }
+
+    private static int CountMarkdownNodes(TreeNode node)
+    {
+        var count = 0;
+        foreach (TreeNode child in node.Nodes)
+        {
+            if (child.Tag is string path
+                && path.EndsWith(".md", StringComparison.OrdinalIgnoreCase)
+                && File.Exists(path))
+            {
+                count++;
+            }
+
+            count += CountMarkdownNodes(child);
+        }
+
+        return count;
     }
 
     public void ApplyPreset(ExportPreset preset)
@@ -220,6 +325,7 @@ public partial class PublishCenterForm : Form
         {
             txtDirectory.Text = dialog.SelectedPath;
             radioFolder.Checked = true;
+            RefreshMarkdownTree();
         }
     }
 

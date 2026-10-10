@@ -11,7 +11,9 @@ using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 
 namespace MarkdownPreview.Handler;
-
+/// <summary>
+/// WinForms Markdown 渲染器：使用 Markdig 进行解析和渲染。
+/// </summary>
 internal static class PreviewEngineChoice
 {
     private static string SettingPath => Path.Combine(
@@ -62,7 +64,9 @@ internal static class PreviewEngineChoice
     private static bool IsWinForms(string text) =>
         string.Equals(text, "WinForms", StringComparison.OrdinalIgnoreCase);
 }
-
+/// <summary>
+/// WinForms Markdown 渲染器：使用 Markdig 进行解析和渲染。样式已内联，本地图片转为 data URI。
+/// </summary>
 internal static class WinFormsMarkdownRenderer
 {
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
