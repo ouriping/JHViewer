@@ -156,15 +156,15 @@ partial class FrmMain
         // mnuRegisterContext
         // 
         mnuRegisterContext.Name = "mnuRegisterContext";
-        mnuRegisterContext.Size = new Size(220, 22);
-        mnuRegisterContext.Text = "注册右键菜单";
+        mnuRegisterContext.Size = new Size(280, 22);
+        mnuRegisterContext.Text = "注册默认打开与右键菜单";
         mnuRegisterContext.Click += mnuRegisterContext_Click;
         // 
         // mnuUnregisterContext
         // 
         mnuUnregisterContext.Name = "mnuUnregisterContext";
-        mnuUnregisterContext.Size = new Size(220, 22);
-        mnuUnregisterContext.Text = "取消右键菜单";
+        mnuUnregisterContext.Size = new Size(280, 22);
+        mnuUnregisterContext.Text = "取消默认打开与右键菜单";
         mnuUnregisterContext.Click += mnuUnregisterContext_Click;
         // 
         // mnuEnablePreview
@@ -354,14 +354,15 @@ partial class FrmMain
         lblHistory.Name = "lblHistory";
         lblHistory.Size = new Size(260, 24);
         lblHistory.TabIndex = 0;
-        lblHistory.Text = "最近文件（双击打开）";
+        lblHistory.Text = "最近文件（双击打开，悬停看完整路径）";
         lblHistory.TextAlign = ContentAlignment.MiddleLeft;
         // 
         // lstHistory
         // 
         lstHistory.Dock = DockStyle.Fill;
         lstHistory.FormattingEnabled = true;
-        lstHistory.HorizontalScrollbar = true;
+        lstHistory.HorizontalScrollbar = false;
+        lstHistory.IntegralHeight = false;
         lstHistory.Location = new Point(0, 24);
         lstHistory.Name = "lstHistory";
         lstHistory.Size = new Size(260, 554);

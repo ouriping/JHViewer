@@ -5,14 +5,23 @@ using Microsoft.Win32;
 namespace MarkdownContextViewer;
 
 /// <summary>
-/// 资源管理器集成：右键菜单 + SharpShell 预览处理程序部署/注册。
+/// 资源管理器集成：默认打开关联 + 右键菜单 + SharpShell 预览处理程序部署/注册。
 /// </summary>
 internal sealed class ExplorerIntegrationService
 {
-    private const string ContextMenuKey = @"Software\Classes\SystemFileAssociations\.md\shell\MarkdownContextViewer";
-    private const string MdExtensionKey = @"Software\Classes\.md";
-    private const string MdSystemAssociationKey = @"Software\Classes\SystemFileAssociations\.md";
+    private const string ProgIdPrefix = "MarkdownContextViewer";
+    private const string AppRegistryRoot = @"Software\MarkdownContextViewer";
+    private const string PreviousAssociationsKey = AppRegistryRoot + @"\PreviousAssociations";
+    private const string CapabilitiesKey = AppRegistryRoot + @"\Capabilities";
+    private const string RegisteredApplicationsKey = @"Software\RegisteredApplications";
+    private const string ContextMenuVerb = "MarkdownContextViewer";
     private const string PreviewHandlersKey = @"Software\Microsoft\Windows\CurrentVersion\PreviewHandlers";
+
+    /// <summary>双击 /「打开」默认用本程序处理的扩展名。</summary>
+    private static readonly string[] OpenFileExtensions =
+    {
+        ".md", ".json", ".xml"
+    };
 
     private static readonly string[] PreviewFileExtensions =
     {
@@ -491,23 +500,230 @@ internal sealed class ExplorerIntegrationService
         }
     }
 
+    /// <summary>
+    /// 注册 .md / .json / .xml 的默认打开（ProgId + shell\open）与右键「用 Markdown 浏览器打开」。
+    /// </summary>
     public void RegisterContextMenu(string exePath)
     {
-        using var shellKey = Registry.CurrentUser.CreateSubKey(ContextMenuKey);
+        if (string.IsNullOrWhiteSpace(exePath) || !File.Exists(exePath))
+        {
+            throw new FileNotFoundException("找不到主程序路径。", exePath);
+        }
+
+        var openCommand = $"\"{exePath}\" \"%1\"";
+        var exeName = Path.GetFileName(exePath);
+
+        foreach (var ext in OpenFileExtensions)
+        {
+            var progId = GetProgId(ext);
+            RegisterProgId(progId, GetFriendlyTypeName(ext), exePath, openCommand);
+            AssociateExtension(ext, progId);
+            RegisterContextMenuVerb(ext, exePath, openCommand);
+            EnsureOpenWithProgId(ext, progId);
+        }
+
+        RegisterApplicationOpenWith(exeName, openCommand);
+        RegisterApplicationCapabilities(exePath);
+
+        using var appKey = Registry.CurrentUser.CreateSubKey(AppRegistryRoot);
+        appKey?.SetValue("EditorExe", exePath);
+
+        NotifyShellAssociationsChanged();
+    }
+
+    /// <summary>取消本程序写入的默认打开关联与右键菜单（并尽量恢复原先 ProgId）。</summary>
+    public void UnregisterContextMenu()
+    {
+        foreach (var ext in OpenFileExtensions)
+        {
+            var progId = GetProgId(ext);
+            UnassociateExtension(ext, progId);
+            RemoveOpenWithProgId(ext, progId);
+            Registry.CurrentUser.DeleteSubKeyTree(
+                $@"Software\Classes\{progId}",
+                throwOnMissingSubKey: false);
+            Registry.CurrentUser.DeleteSubKeyTree(
+                $@"Software\Classes\SystemFileAssociations\{ext}\shell\{ContextMenuVerb}",
+                throwOnMissingSubKey: false);
+        }
+
+        // 兼容旧版仅注册 .md 右键菜单的路径
+        Registry.CurrentUser.DeleteSubKeyTree(
+            $@"Software\Classes\SystemFileAssociations\.md\shell\{ContextMenuVerb}",
+            throwOnMissingSubKey: false);
+
+        UnregisterApplicationCapabilities();
+        Registry.CurrentUser.DeleteSubKeyTree(PreviousAssociationsKey, throwOnMissingSubKey: false);
+        NotifyShellAssociationsChanged();
+    }
+
+    public bool IsFileAssociationRegistered()
+    {
+        foreach (var ext in OpenFileExtensions)
+        {
+            var progId = GetProgId(ext);
+            using var key = Registry.CurrentUser.OpenSubKey($@"Software\Classes\{ext}");
+            var current = key?.GetValue("") as string;
+            if (!string.Equals(current, progId, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            using var command = Registry.CurrentUser.OpenSubKey(
+                $@"Software\Classes\{progId}\shell\open\command");
+            if (command?.GetValue("") is not string cmd || string.IsNullOrWhiteSpace(cmd))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static string GetProgId(string extension) =>
+        ProgIdPrefix + extension.ToLowerInvariant();
+
+    private static string GetFriendlyTypeName(string extension) =>
+        extension.ToLowerInvariant() switch
+        {
+            ".md" => "Markdown 文档",
+            ".json" => "JSON 文档",
+            ".xml" => "XML 文档",
+            _ => "文档"
+        };
+
+    private static void RegisterProgId(string progId, string friendlyName, string exePath, string openCommand)
+    {
+        using var progIdKey = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{progId}");
+        progIdKey?.SetValue("", friendlyName);
+        progIdKey?.SetValue("FriendlyTypeName", friendlyName);
+
+        using var iconKey = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{progId}\DefaultIcon");
+        iconKey?.SetValue("", $"\"{exePath}\",0");
+
+        using var openKey = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{progId}\shell\open");
+        openKey?.SetValue("", "打开(&O)");
+
+        using var commandKey = Registry.CurrentUser.CreateSubKey(
+            $@"Software\Classes\{progId}\shell\open\command");
+        commandKey?.SetValue("", openCommand);
+    }
+
+    private static void AssociateExtension(string extension, string progId)
+    {
+        var extKeyPath = $@"Software\Classes\{extension}";
+        using var extKey = Registry.CurrentUser.CreateSubKey(extKeyPath);
+        if (extKey is null)
+        {
+            return;
+        }
+
+        var previous = extKey.GetValue("") as string;
+        if (!string.IsNullOrWhiteSpace(previous)
+            && !string.Equals(previous, progId, StringComparison.OrdinalIgnoreCase))
+        {
+            using var backup = Registry.CurrentUser.CreateSubKey(PreviousAssociationsKey);
+            backup?.SetValue(extension, previous);
+        }
+
+        extKey.SetValue("", progId);
+
+        using var openWith = Registry.CurrentUser.CreateSubKey($@"{extKeyPath}\OpenWithProgids");
+        openWith?.SetValue(progId, Array.Empty<byte>(), RegistryValueKind.None);
+    }
+
+    private static void UnassociateExtension(string extension, string progId)
+    {
+        var extKeyPath = $@"Software\Classes\{extension}";
+        using var extKey = Registry.CurrentUser.OpenSubKey(extKeyPath, writable: true);
+        if (extKey is null)
+        {
+            return;
+        }
+
+        var current = extKey.GetValue("") as string;
+        if (string.Equals(current, progId, StringComparison.OrdinalIgnoreCase))
+        {
+            using var backup = Registry.CurrentUser.OpenSubKey(PreviousAssociationsKey);
+            var previous = backup?.GetValue(extension) as string;
+            if (!string.IsNullOrWhiteSpace(previous)
+                && !string.Equals(previous, progId, StringComparison.OrdinalIgnoreCase))
+            {
+                extKey.SetValue("", previous);
+            }
+            else
+            {
+                extKey.DeleteValue("", throwOnMissingValue: false);
+            }
+        }
+
+        using var openWith = Registry.CurrentUser.OpenSubKey($@"{extKeyPath}\OpenWithProgids", writable: true);
+        openWith?.DeleteValue(progId, throwOnMissingValue: false);
+    }
+
+    private static void EnsureOpenWithProgId(string extension, string progId)
+    {
+        using var key = Registry.CurrentUser.CreateSubKey(
+            $@"Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\{extension}\OpenWithProgids");
+        key?.SetValue(progId, Array.Empty<byte>(), RegistryValueKind.None);
+    }
+
+    private static void RemoveOpenWithProgId(string extension, string progId)
+    {
+        using var key = Registry.CurrentUser.OpenSubKey(
+            $@"Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\{extension}\OpenWithProgids",
+            writable: true);
+        key?.DeleteValue(progId, throwOnMissingValue: false);
+    }
+
+    private static void RegisterContextMenuVerb(string extension, string exePath, string openCommand)
+    {
+        var shellKeyPath =
+            $@"Software\Classes\SystemFileAssociations\{extension}\shell\{ContextMenuVerb}";
+        using var shellKey = Registry.CurrentUser.CreateSubKey(shellKeyPath);
         shellKey?.SetValue("", "用 Markdown 浏览器打开");
         shellKey?.SetValue("Icon", exePath);
 
-        using var commandKey = Registry.CurrentUser.CreateSubKey($"{ContextMenuKey}\\command");
-        commandKey?.SetValue("", $"\"{exePath}\" \"%1\"");
-
-        // 供预览 Handler 在未装右键菜单时也能定位主程序
-        using var appKey = Registry.CurrentUser.CreateSubKey(@"Software\MarkdownContextViewer");
-        appKey?.SetValue("EditorExe", exePath);
+        using var commandKey = Registry.CurrentUser.CreateSubKey($"{shellKeyPath}\\command");
+        commandKey?.SetValue("", openCommand);
     }
 
-    public void UnregisterContextMenu()
+    private static void RegisterApplicationOpenWith(string exeName, string openCommand)
     {
-        Registry.CurrentUser.DeleteSubKeyTree(ContextMenuKey, throwOnMissingSubKey: false);
+        using var commandKey = Registry.CurrentUser.CreateSubKey(
+            $@"Software\Classes\Applications\{exeName}\shell\open\command");
+        commandKey?.SetValue("", openCommand);
+
+        using var supported = Registry.CurrentUser.CreateSubKey(
+            $@"Software\Classes\Applications\{exeName}\SupportedTypes");
+        foreach (var ext in OpenFileExtensions)
+        {
+            supported?.SetValue(ext, string.Empty);
+        }
+    }
+
+    private static void RegisterApplicationCapabilities(string exePath)
+    {
+        using var caps = Registry.CurrentUser.CreateSubKey(CapabilitiesKey);
+        caps?.SetValue("ApplicationName", "Markdown Context Viewer");
+        caps?.SetValue("ApplicationDescription", "用 Markdown Context Viewer 打开 Markdown / JSON / XML");
+        caps?.SetValue("ApplicationIcon", $"\"{exePath}\",0");
+
+        using var fileAssoc = Registry.CurrentUser.CreateSubKey(CapabilitiesKey + @"\FileAssociations");
+        foreach (var ext in OpenFileExtensions)
+        {
+            fileAssoc?.SetValue(ext, GetProgId(ext));
+        }
+
+        using var registered = Registry.CurrentUser.CreateSubKey(RegisteredApplicationsKey);
+        registered?.SetValue("MarkdownContextViewer", CapabilitiesKey);
+    }
+
+    private static void UnregisterApplicationCapabilities()
+    {
+        Registry.CurrentUser.DeleteSubKeyTree(CapabilitiesKey, throwOnMissingSubKey: false);
+        using var registered = Registry.CurrentUser.OpenSubKey(RegisteredApplicationsKey, writable: true);
+        registered?.DeleteValue("MarkdownContextViewer", throwOnMissingValue: false);
     }
 
     public string DeployPreviewHandlerFiles()

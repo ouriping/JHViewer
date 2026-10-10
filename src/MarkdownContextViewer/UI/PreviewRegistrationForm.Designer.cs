@@ -52,7 +52,7 @@ partial class PreviewRegistrationForm
         rootLayout.Controls.Add(panelButtons, 0, 5);
         rootLayout.Dock = DockStyle.Fill;
         rootLayout.Location = new Point(0, 0);
-        rootLayout.Margin = new Padding(4, 4, 4, 4);
+        rootLayout.Margin = new Padding(4);
         rootLayout.Name = "rootLayout";
         rootLayout.Padding = new Padding(15, 14, 15, 14);
         rootLayout.RowCount = 6;
@@ -83,7 +83,7 @@ partial class PreviewRegistrationForm
         pnlFormatsHost.Dock = DockStyle.Fill;
         pnlFormatsHost.FlowDirection = FlowDirection.TopDown;
         pnlFormatsHost.Location = new Point(19, 47);
-        pnlFormatsHost.Margin = new Padding(4, 4, 4, 4);
+        pnlFormatsHost.Margin = new Padding(4);
         pnlFormatsHost.Name = "pnlFormatsHost";
         pnlFormatsHost.Size = new Size(888, 1);
         pnlFormatsHost.TabIndex = 1;
@@ -106,7 +106,7 @@ partial class PreviewRegistrationForm
         // 
         btnSelectAll.AutoSize = true;
         btnSelectAll.Location = new Point(4, 4);
-        btnSelectAll.Margin = new Padding(4, 4, 4, 4);
+        btnSelectAll.Margin = new Padding(4);
         btnSelectAll.Name = "btnSelectAll";
         btnSelectAll.Size = new Size(63, 35);
         btnSelectAll.TabIndex = 0;
@@ -118,7 +118,7 @@ partial class PreviewRegistrationForm
         // 
         btnSelectNone.AutoSize = true;
         btnSelectNone.Location = new Point(75, 4);
-        btnSelectNone.Margin = new Padding(4, 4, 4, 4);
+        btnSelectNone.Margin = new Padding(4);
         btnSelectNone.Name = "btnSelectNone";
         btnSelectNone.Size = new Size(82, 35);
         btnSelectNone.TabIndex = 1;
@@ -130,7 +130,7 @@ partial class PreviewRegistrationForm
         // 
         btnSelectDefault.AutoSize = true;
         btnSelectDefault.Location = new Point(165, 4);
-        btnSelectDefault.Margin = new Padding(4, 4, 4, 4);
+        btnSelectDefault.Margin = new Padding(4);
         btnSelectDefault.Name = "btnSelectDefault";
         btnSelectDefault.Size = new Size(102, 35);
         btnSelectDefault.TabIndex = 2;
@@ -155,7 +155,7 @@ partial class PreviewRegistrationForm
         panelLog.Controls.Add(logLayout);
         panelLog.Dock = DockStyle.Fill;
         panelLog.Location = new Point(19, 132);
-        panelLog.Margin = new Padding(4, 4, 4, 4);
+        panelLog.Margin = new Padding(4);
         panelLog.Name = "panelLog";
         panelLog.Padding = new Padding(0, 5, 0, 5);
         panelLog.Size = new Size(888, 543);
@@ -170,7 +170,7 @@ partial class PreviewRegistrationForm
         logLayout.Controls.Add(txtLog, 0, 2);
         logLayout.Dock = DockStyle.Fill;
         logLayout.Location = new Point(0, 5);
-        logLayout.Margin = new Padding(4, 4, 4, 4);
+        logLayout.Margin = new Padding(4);
         logLayout.Name = "logLayout";
         logLayout.RowCount = 3;
         logLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 33F));
@@ -183,7 +183,7 @@ partial class PreviewRegistrationForm
         // 
         progressBar.Dock = DockStyle.Fill;
         progressBar.Location = new Point(4, 4);
-        progressBar.Margin = new Padding(4, 4, 4, 4);
+        progressBar.Margin = new Padding(4);
         progressBar.Name = "progressBar";
         progressBar.Size = new Size(880, 25);
         progressBar.Style = ProgressBarStyle.Continuous;
@@ -206,7 +206,7 @@ partial class PreviewRegistrationForm
         txtLog.Dock = DockStyle.Fill;
         txtLog.Font = new Font("Consolas", 9F);
         txtLog.Location = new Point(4, 63);
-        txtLog.Margin = new Padding(4, 4, 4, 4);
+        txtLog.Margin = new Padding(4);
         txtLog.Multiline = true;
         txtLog.Name = "txtLog";
         txtLog.ReadOnly = true;
@@ -224,7 +224,7 @@ partial class PreviewRegistrationForm
         panelButtons.Dock = DockStyle.Fill;
         panelButtons.FlowDirection = FlowDirection.RightToLeft;
         panelButtons.Location = new Point(19, 683);
-        panelButtons.Margin = new Padding(4, 4, 4, 4);
+        panelButtons.Margin = new Padding(4);
         panelButtons.Name = "panelButtons";
         panelButtons.Padding = new Padding(0, 9, 0, 0);
         panelButtons.Size = new Size(888, 52);
@@ -235,7 +235,7 @@ partial class PreviewRegistrationForm
         btnClose.AutoSize = true;
         btnClose.DialogResult = DialogResult.Cancel;
         btnClose.Location = new Point(806, 13);
-        btnClose.Margin = new Padding(4, 4, 4, 4);
+        btnClose.Margin = new Padding(4);
         btnClose.Name = "btnClose";
         btnClose.Size = new Size(78, 35);
         btnClose.TabIndex = 0;
@@ -247,7 +247,7 @@ partial class PreviewRegistrationForm
         // 
         btnDisable.AutoSize = true;
         btnDisable.Location = new Point(642, 13);
-        btnDisable.Margin = new Padding(4, 4, 4, 4);
+        btnDisable.Margin = new Padding(4);
         btnDisable.Name = "btnDisable";
         btnDisable.Size = new Size(156, 35);
         btnDisable.TabIndex = 1;
@@ -259,7 +259,7 @@ partial class PreviewRegistrationForm
         // 
         btnEnable.AutoSize = true;
         btnEnable.Location = new Point(496, 13);
-        btnEnable.Margin = new Padding(4, 4, 4, 4);
+        btnEnable.Margin = new Padding(4);
         btnEnable.Name = "btnEnable";
         btnEnable.Size = new Size(138, 35);
         btnEnable.TabIndex = 2;
@@ -276,7 +276,7 @@ partial class PreviewRegistrationForm
         ClientSize = new Size(926, 753);
         Controls.Add(rootLayout);
         Font = new Font("Microsoft YaHei UI", 9F);
-        Margin = new Padding(4, 4, 4, 4);
+        Margin = new Padding(4);
         MaximizeBox = false;
         MinimumSize = new Size(818, 651);
         Name = "PreviewRegistrationForm";

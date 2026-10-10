@@ -17,8 +17,10 @@ public partial class FrmMain : Form
     private readonly DirectorySiteExportService _directorySiteExportService = null!;
     private readonly SingleHtmlExportService _singleHtmlExportService = null!;
     private readonly LocalWebHostService _localWebHostService = null!;
+    private readonly ToolTip _historyToolTip = new() { ShowAlways = true, AutoPopDelay = 8000 };
 
     private PreviewEngineKind _previewEngine = PreviewEngineKind.WebView;
+    private int _historyTipIndex = -1;
 
     [DllImport("user32.dll")]
     private static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -75,10 +77,9 @@ public partial class FrmMain : Form
                 continue;
             }
 
-            if (File.Exists(normalized)
-                && Path.GetExtension(normalized).Equals(".md", StringComparison.OrdinalIgnoreCase))
+            if (File.Exists(normalized))
             {
-                OpenMarkdownFile(normalized);
+                OpenDocumentFile(normalized);
             }
         }
 
@@ -88,6 +89,9 @@ public partial class FrmMain : Form
     private void WireEvents()
     {
         lstHistory.DoubleClick += (_, _) => OpenFromHistory();
+        lstHistory.SelectedIndexChanged += (_, _) => ShowSelectedHistoryPath();
+        lstHistory.MouseMove += LstHistory_MouseMove;
+        lstHistory.MouseLeave += (_, _) => _historyToolTip.Hide(lstHistory);
         tabsMarkdown.MouseClick += TabsMarkdown_MouseClick;
     }
 
@@ -98,16 +102,7 @@ public partial class FrmMain : Form
             var path = arg.Trim('"');
             if (File.Exists(path))
             {
-                var ext = Path.GetExtension(path);
-                if (ext.Equals(".json", StringComparison.OrdinalIgnoreCase)
-                    || ext.Equals(".xml", StringComparison.OrdinalIgnoreCase))
-                {
-                    OpenStructuredPreview(path);
-                }
-                else if (ext.Equals(".md", StringComparison.OrdinalIgnoreCase))
-                {
-                    OpenMarkdownFile(path);
-                }
+                OpenDocumentFile(path);
             }
         }
     }
@@ -299,9 +294,9 @@ public partial class FrmMain : Form
 
     private void OpenFromHistory()
     {
-        if (lstHistory.SelectedItem is string filePath)
+        if (TryGetSelectedHistoryPath(out var filePath))
         {
-            OpenMarkdownFile(filePath);
+            OpenDocumentFile(filePath);
         }
     }
 
@@ -324,12 +319,93 @@ public partial class FrmMain : Form
         lstHistory.BeginUpdate();
         lstHistory.Items.Clear();
 
-        foreach (var item in _history)
+        // 列表只显示「文件名 · 所在文件夹」，完整路径放在 Tooltip / 状态栏，避免拖分割条才能看清
+        foreach (var path in _history)
         {
-            lstHistory.Items.Add(item);
+            lstHistory.Items.Add(HistoryListItem.FromPath(path));
         }
 
         lstHistory.EndUpdate();
+        _historyTipIndex = -1;
+    }
+
+    private void ShowSelectedHistoryPath()
+    {
+        if (TryGetSelectedHistoryPath(out var path))
+        {
+            lblStatus.Text = path;
+        }
+    }
+
+    private void LstHistory_MouseMove(object? sender, MouseEventArgs e)
+    {
+        var index = lstHistory.IndexFromPoint(e.Location);
+        if (index < 0 || index >= lstHistory.Items.Count)
+        {
+            if (_historyTipIndex >= 0)
+            {
+                _historyToolTip.Hide(lstHistory);
+                _historyTipIndex = -1;
+            }
+
+            return;
+        }
+
+        if (index == _historyTipIndex)
+        {
+            return;
+        }
+
+        _historyTipIndex = index;
+        if (lstHistory.Items[index] is HistoryListItem item)
+        {
+            _historyToolTip.SetToolTip(lstHistory, item.FullPath);
+        }
+    }
+
+    private bool TryGetSelectedHistoryPath(out string filePath)
+    {
+        if (lstHistory.SelectedItem is HistoryListItem item)
+        {
+            filePath = item.FullPath;
+            return !string.IsNullOrWhiteSpace(filePath);
+        }
+
+        // 兼容旧数据形态（若曾直接塞入 string）
+        if (lstHistory.SelectedItem is string path)
+        {
+            filePath = path;
+            return !string.IsNullOrWhiteSpace(filePath);
+        }
+
+        filePath = string.Empty;
+        return false;
+    }
+
+    /// <summary>最近文件列表项：窄栏显示短标题，完整路径另存。</summary>
+    private sealed class HistoryListItem
+    {
+        public string FullPath { get; }
+        public string DisplayText { get; }
+
+        private HistoryListItem(string fullPath, string displayText)
+        {
+            FullPath = fullPath;
+            DisplayText = displayText;
+        }
+
+        public static HistoryListItem FromPath(string path)
+        {
+            var full = Path.GetFullPath(path);
+            var name = Path.GetFileName(full);
+            var parent = Path.GetFileName(Path.GetDirectoryName(full) ?? string.Empty);
+            var display = string.IsNullOrWhiteSpace(parent)
+                ? name
+                : $"{name}  ·  {parent}";
+            return new HistoryListItem(full, display);
+        }
+
+        public override string ToString() => DisplayText;
     }
 
     private void EnableExplorerPreview()
@@ -382,7 +458,14 @@ public partial class FrmMain : Form
         {
             EditorPathStore.Save(Application.ExecutablePath);
             _explorerService.RegisterContextMenu(Application.ExecutablePath);
-            MessageBox.Show("右键菜单注册成功（当前用户）。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(
+                "已为当前用户注册 .md / .json / .xml：\n" +
+                "· 双击与右键「打开」默认使用本软件\n" +
+                "· 右键「用 Markdown 浏览器打开」\n\n" +
+                "若系统「默认应用」仍指向其他程序，请在 Windows 设置中将上述扩展名选为本软件。",
+                "提示",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
         catch (Exception ex)
         {
@@ -408,7 +491,11 @@ public partial class FrmMain : Form
         try
         {
             _explorerService.UnregisterContextMenu();
-            MessageBox.Show("右键菜单已卸载（当前用户）。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(
+                "已取消 .md / .json / .xml 的默认打开关联与右键菜单（当前用户）。",
+                "提示",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
         catch (Exception ex)
         {
@@ -581,6 +668,7 @@ public partial class FrmMain : Form
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
+        _historyToolTip.Dispose();
         _localWebHostService.Dispose();
         base.OnFormClosed(e);
     }

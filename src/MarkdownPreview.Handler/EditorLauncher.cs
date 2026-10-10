@@ -19,6 +19,9 @@ internal static class EditorLauncher
     private const string ContextShellKey =
         @"Software\Classes\SystemFileAssociations\.md\shell\MarkdownContextViewer";
 
+    private const string ProgIdOpenCommandKey =
+        @"Software\Classes\MarkdownContextViewer.md\shell\open\command";
+
     private const string AppRegistryKey = @"Software\MarkdownContextViewer";
     private const string EditorExeValue = "EditorExe";
     private const string ExeName = "MarkdownContextViewer.exe";
@@ -35,7 +38,7 @@ internal static class EditorLauncher
         var exe = FindExecutable();
         if (exe == null)
         {
-            error = "未找到编辑器（MarkdownContextViewer.exe）。\n请先运行主程序，或在主程序中点击「注册右键菜单」。";
+            error = "未找到编辑器（MarkdownContextViewer.exe）。\n请先运行主程序，或在主程序中点击「注册默认打开与右键菜单」。";
             return false;
         }
 
@@ -76,6 +79,7 @@ internal static class EditorLauncher
     {
         yield return ParseExecutable(ReadRegistry(ContextCommandKey, ""));
         yield return ReadRegistry(ContextShellKey, "Icon");
+        yield return ParseExecutable(ReadRegistry(ProgIdOpenCommandKey, ""));
         yield return ReadRegistry(AppRegistryKey, EditorExeValue);
 
         string assemblyDir = null;
