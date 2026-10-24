@@ -6,12 +6,26 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>MarkdownContextViewer</RootNamespace>
+    <!-- 可执行文件名保持不变，避免破坏预览处理程序与已有注册表查找。产品名见 Product。 -->
     <AssemblyName>MarkdownContextViewer</AssemblyName>
-    <PackageTags>MarkdownViewer;MarkdownEditer;</PackageTags>
+    <Product>JHViewer</Product>
+    <AssemblyTitle>JHViewer</AssemblyTitle>
+    <Version>0.1.0</Version>
+    <Description>JHViewer：Windows 上的 Markdown / JSON / XML 查看器。</Description>
+    <PackageTags>JHViewer;MarkdownViewer;MarkdownEditer;</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Markdig" Version="0.37.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\docs\安装说明.txt">
+      <Link>使用说明.txt</Link>
+      <TargetPath>使用说明.txt</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -97,5 +111,20 @@
     </ItemGroup>
     <Copy SourceFiles="@(_HandlerFiles)" DestinationFolder="$(TargetDir)%(RecursiveDir)" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(_RegisterFiles)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- dotnet publish 的输出目录与 TargetDir 不同，发布包需要带上预览处理程序。 -->
+  <Target Name="CopyPreviewHandlerToPublishDir" AfterTargets="Publish">
+    <PropertyGroup>
+      <_HandlerOut>$(MSBuildProjectDirectory)\..\MarkdownPreview.Handler\bin\$(Configuration)\net48\</_HandlerOut>
+      <_RegisterOut>$(MSBuildProjectDirectory)\..\MarkdownPreview.Register\bin\$(Configuration)\net48\</_RegisterOut>
+    </PropertyGroup>
+    <ItemGroup>
+      <_PublishHandlerFiles Include="$(_HandlerOut)**\*.*" Exclude="$(_HandlerOut)**\*.pdb" />
+      <_PublishRegisterFiles Include="$(_RegisterOut)MarkdownPreview.Register.exe" />
+      <_PublishRegisterFiles Include="$(_RegisterOut)MarkdownPreview.Register.exe.config" Condition="Exists('$(_RegisterOut)MarkdownPreview.Register.exe.config')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PublishHandlerFiles)" DestinationFolder="$(PublishDir)%(RecursiveDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_PublishRegisterFiles)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" />
   </Target>
 </Project>

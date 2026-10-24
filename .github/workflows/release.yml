@@ -1,0 +1,73 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build solution
+        run: dotnet build src/MarkdownContextViewer.sln -c Release
+
+      - name: Publish self-contained win-x64
+        shell: pwsh
+        run: |
+          dotnet publish src/MarkdownContextViewer/MarkdownContextViewer.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:BuildProjectReferences=false `
+            -p:DebugType=None `
+            -p:DebugSymbols=false `
+            -o "$env:GITHUB_WORKSPACE\artifacts\publish"
+          if (-not (Test-Path "$env:GITHUB_WORKSPACE\artifacts\publish\MarkdownContextViewer.exe")) {
+            throw "MarkdownContextViewer.exe was not published."
+          }
+
+      - name: Zip publish output
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip = Join-Path $env:GITHUB_WORKSPACE "artifacts\JHViewer-$env:GITHUB_REF_NAME-win-x64.zip"
+          if (Test-Path $zip) { Remove-Item $zip -Force }
+          [System.IO.Compression.ZipFile]::CreateFromDirectory(
+            "$env:GITHUB_WORKSPACE\artifacts\publish",
+            $zip)
+          if (-not (Test-Path $zip)) { throw "Zip was not created." }
+          Get-Item $zip | Select-Object FullName, Length
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: JHViewer ${{ github.ref_name }}
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            JHViewer ${{ github.ref_name }} Windows x64 自包含构建。
+
+            解压后运行 `MarkdownContextViewer.exe` 打开主界面。
+            注册右键和默认打开（当前用户）：`MarkdownContextViewer.exe --register`
+            之后双击或右键打开 `.md` / `.markdown` / `.json` / `.xml` 只显示单文件查看窗口，不打开主界面。
+
+            资产：`JHViewer-${{ github.ref_name }}-win-x64.zip`
+
+            主程序不需要单独安装 .NET 8。资源管理器预览窗格需要系统里的 .NET Framework 4.8 和 WebView2 运行时。
+
+            许可证：木兰宽松许可证第 2 版（MulanPSL-2.0）。
+          files: artifacts/JHViewer-${{ github.ref_name }}-win-x64.zip
+          fail_on_unmatched_files: true
