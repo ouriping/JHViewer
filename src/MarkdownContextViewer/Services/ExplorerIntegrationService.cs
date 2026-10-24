@@ -54,13 +54,22 @@ internal sealed class ExplorerIntegrationService
     public static string GetDeployedHandlerDllPath() =>
         Path.Combine(GetDeployDirectory(), "MarkdownPreview.Handler.dll");
 
+    public static string GetBundledPreviewHandlerDirectory() =>
+        Path.Combine(AppContext.BaseDirectory, "preview-handler");
+
     public static string GetRegisterExePath()
     {
-        // 优先部署目录，其次主程序旁边的 Register 输出
+        // 优先已部署目录，其次发布包里的 preview-handler，最后才是主程序旁边的旧布局
         var deployed = Path.Combine(GetDeployDirectory(), "MarkdownPreview.Register.exe");
         if (File.Exists(deployed))
         {
             return deployed;
+        }
+
+        var bundled = Path.Combine(GetBundledPreviewHandlerDirectory(), "MarkdownPreview.Register.exe");
+        if (File.Exists(bundled))
+        {
+            return bundled;
         }
 
         return Path.Combine(AppContext.BaseDirectory, "MarkdownPreview.Register.exe");
@@ -992,11 +1001,18 @@ internal sealed class ExplorerIntegrationService
 
     private static string? FindHandlerBuildOutput()
     {
-        // 构建输出优先；其次主程序旁已复制的 DLL
+        // 开发时用工程的 net48 输出（门面程序集版本正确）。
         var fromProject = FindSiblingProjectOutput("MarkdownPreview.Handler", "MarkdownPreview.Handler.dll");
         if (fromProject is not null)
         {
             return fromProject;
+        }
+
+        // 发布包把 net48 依赖放在子目录，避免覆盖自包含运行时的 System.Memory 8.0.0.0。
+        var bundled = GetBundledPreviewHandlerDirectory();
+        if (File.Exists(Path.Combine(bundled, "MarkdownPreview.Handler.dll")))
+        {
+            return bundled;
         }
 
         var besideApp = Path.Combine(AppContext.BaseDirectory, "MarkdownPreview.Handler.dll");
@@ -1012,6 +1028,12 @@ internal sealed class ExplorerIntegrationService
         if (fromProject is not null)
         {
             return fromProject;
+        }
+
+        var bundled = GetBundledPreviewHandlerDirectory();
+        if (File.Exists(Path.Combine(bundled, "MarkdownPreview.Register.exe")))
+        {
+            return bundled;
         }
 
         var besideApp = Path.Combine(AppContext.BaseDirectory, "MarkdownPreview.Register.exe");

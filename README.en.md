@@ -33,9 +33,9 @@ Each release attaches a Windows x64 zip:
 JHViewer-<tag>-win-x64.zip
 ```
 
-Example for v0.1.0:
+Current build is v0.1.1. The v0.1.0 zip crashes on startup because a .NET Framework `System.Memory` assembly overwrote the .NET 8 runtime copy. Do not use that zip.
 
-<https://github.com/ouriping/JHViewer/releases/download/v0.1.0/JHViewer-v0.1.0-win-x64.zip>
+<https://github.com/ouriping/JHViewer/releases/download/v0.1.1/JHViewer-v0.1.1-win-x64.zip>
 
 Unzip and run `MarkdownContextViewer.exe` for the main window. `使用说明.txt` in the zip is the short Chinese install note.
 

@@ -1,7 +1,8 @@
-﻿JHViewer 0.1.0
+﻿JHViewer 0.1.1
 许可证：木兰宽松许可证，第 2 版（MulanPSL-2.0）。见仓库 LICENSE。
 
 可执行文件名仍是 MarkdownContextViewer.exe（与预览组件、注册表兼容）。产品名是 JHViewer。
+v0.1.0 的压缩包会在打开时立刻退出，请使用 v0.1.1。
 
 1. 解压后直接运行 MarkdownContextViewer.exe，打开主界面（编辑、导出、Wiki、预览窗格设置）。
 2. 注册资源管理器集成（当前用户，不必管理员）：

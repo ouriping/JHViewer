@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-24
+
+### 修复
+
+- 自包含 `win-x64` 发布包启动即崩溃：`FileNotFoundException: System.Memory, Version=8.0.0.0`。原因是把 net48 预览组件整目录复制进发布根目录时，用 NuGet 的 `System.Memory` 4.x 覆盖了 .NET 8 运行时里的 8.0.0.0。预览组件现改放到 `preview-handler\`，不再覆盖运行时程序集。请勿使用 v0.1.0 的 zip。
+
 ## [0.1.0] - 2026-10-24
 
 ### 新增
@@ -19,5 +25,6 @@
 - 预览窗格中的「编辑」改为传递 `--edit`，因此仍打开主界面。
 - 已有文件关联在主界面启动时会升级为 `--view` 命令（仅当用户曾经注册过）。
 
-[Unreleased]: https://github.com/ouriping/JHViewer/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/ouriping/JHViewer/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/ouriping/JHViewer/releases/tag/v0.1.1
 [0.1.0]: https://github.com/ouriping/JHViewer/releases/tag/v0.1.0

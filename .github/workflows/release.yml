@@ -37,6 +37,20 @@ jobs:
           if (-not (Test-Path "$env:GITHUB_WORKSPACE\artifacts\publish\MarkdownContextViewer.exe")) {
             throw "MarkdownContextViewer.exe was not published."
           }
+          # net48 预览组件自带的 System.Memory 4.x 不能覆盖自包含运行时里的 8.0.0.0。
+          $publish = "$env:GITHUB_WORKSPACE\artifacts\publish"
+          $appMemory = Join-Path $publish "System.Memory.dll"
+          $handlerMemory = Join-Path $publish "preview-handler\System.Memory.dll"
+          if (-not (Test-Path $appMemory)) { throw "Publish output is missing System.Memory.dll." }
+          $appVersion = [System.Reflection.AssemblyName]::GetAssemblyName($appMemory).Version
+          if ($appVersion -ne [Version]"8.0.0.0") {
+            throw "System.Memory.dll is $appVersion; expected 8.0.0.0. A net48 facade overwrote the runtime assembly."
+          }
+          if (-not (Test-Path $handlerMemory)) {
+            throw "preview-handler\System.Memory.dll is missing; Explorer preview deploy would fail."
+          }
+          Write-Host "System.Memory.dll $appVersion"
+          Write-Host "preview-handler System.Memory.dll $([System.Reflection.AssemblyName]::GetAssemblyName($handlerMemory).Version)"
 
       - name: Zip publish output
         shell: pwsh
@@ -59,6 +73,8 @@ jobs:
           generate_release_notes: true
           body: |
             JHViewer ${{ github.ref_name }} Windows x64 自包含构建。
+
+            v0.1.0 的 zip 在启动时会因 System.Memory 被 net48 旧程序集覆盖而直接退出。请改用本版本。
 
             解压后运行 `MarkdownContextViewer.exe` 打开主界面。
             注册右键和默认打开（当前用户）：`MarkdownContextViewer.exe --register`

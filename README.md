@@ -33,9 +33,9 @@ Windows 上的 Markdown / JSON / XML 查看与编辑程序：主界面里编辑�
 JHViewer-<标签>-win-x64.zip
 ```
 
-例如 v0.1.0：
+当前版本 v0.1.1（v0.1.0 的 zip 启动时会因缺少 .NET 8 的 `System.Memory` 而直接退出，请不要使用）：
 
-<https://github.com/ouriping/JHViewer/releases/download/v0.1.0/JHViewer-v0.1.0-win-x64.zip>
+<https://github.com/ouriping/JHViewer/releases/download/v0.1.1/JHViewer-v0.1.1-win-x64.zip>
 
 解压后阅读包内的 `使用说明.txt`。直接运行 `MarkdownContextViewer.exe` 进入主界面。
 
