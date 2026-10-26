@@ -51,6 +51,11 @@ jobs:
           }
           Write-Host "System.Memory.dll $appVersion"
           Write-Host "preview-handler System.Memory.dll $([System.Reflection.AssemblyName]::GetAssemblyName($handlerMemory).Version)"
+          foreach ($icon in 'jhviewer-md.ico','jhviewer-json.ico','jhviewer-xml.ico') {
+            $iconPath = Join-Path $publish "icons\$icon"
+            if (-not (Test-Path $iconPath)) { throw "Publish output is missing icons\$icon" }
+            Write-Host "icon $iconPath"
+          }
 
       - name: Zip publish output
         shell: pwsh
@@ -74,11 +79,12 @@ jobs:
           body: |
             JHViewer ${{ github.ref_name }} Windows x64 自包含构建。
 
-            v0.1.0 的 zip 在启动时会因 System.Memory 被 net48 旧程序集覆盖而直接退出。请改用本版本。
-
             解压后运行 `MarkdownContextViewer.exe` 打开主界面。
             注册右键和默认打开（当前用户）：`MarkdownContextViewer.exe --register`
             之后双击或右键打开 `.md` / `.markdown` / `.json` / `.xml` 只显示单文件查看窗口，不打开主界面。
+            三种扩展名使用同一文档模板的不同图标：绿色 MD、橙色 JSON、蓝色 XML。
+
+            不要使用 v0.1.0 的 zip（启动时缺少 System.Memory 8.0.0.0）。
 
             资产：`JHViewer-${{ github.ref_name }}-win-x64.zip`
 

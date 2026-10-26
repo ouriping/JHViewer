@@ -33,9 +33,9 @@ Each release attaches a Windows x64 zip:
 JHViewer-<tag>-win-x64.zip
 ```
 
-Current build is v0.1.1. The v0.1.0 zip crashes on startup because a .NET Framework `System.Memory` assembly overwrote the .NET 8 runtime copy. Do not use that zip.
+Current build is v0.1.2. The v0.1.0 zip crashes on startup because a .NET Framework `System.Memory` assembly overwrote the .NET 8 runtime copy. Do not use that zip.
 
-<https://github.com/ouriping/JHViewer/releases/download/v0.1.1/JHViewer-v0.1.1-win-x64.zip>
+<https://github.com/ouriping/JHViewer/releases/download/v0.1.2/JHViewer-v0.1.2-win-x64.zip>
 
 Unzip and run `MarkdownContextViewer.exe` for the main window. `使用说明.txt` in the zip is the short Chinese install note.
 
@@ -49,7 +49,7 @@ In the main window choose **资源管理器 → 注册默认打开与右键菜单**, or run:
 MarkdownContextViewer.exe --register
 ```
 
-After that, double-click and **Open** on `.md`, `.markdown`, `.json`, and `.xml` start the single-file viewer. The context menu item **用 JHViewer 打开** does the same. If Windows Default Apps still points elsewhere, pick JHViewer for those extensions.
+After that, double-click and **Open** on `.md`, `.markdown`, `.json`, and `.xml` start the single-file viewer. The context menu item **用 JHViewer 打开** does the same. Each type gets its own icon from the same document template: green **MD**, orange **JSON**, blue **XML** (`.markdown` shares the Markdown icon). If Windows Default Apps still points elsewhere, pick JHViewer for those extensions. Run `--register` again if Explorer keeps the previous icon.
 
 Remove the registration:
 

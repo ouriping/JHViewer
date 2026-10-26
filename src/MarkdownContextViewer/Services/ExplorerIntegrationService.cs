@@ -533,6 +533,7 @@ internal sealed class ExplorerIntegrationService
         foreach (var ext in known)
         {
             changed |= UpdateProgIdCommandIfNeeded(ext, exePath, openCommand);
+            changed |= UpdateProgIdIconIfNeeded(ext, exePath);
             changed |= UpdateContextMenuCommandIfNeeded(ext, exePath, openCommand);
         }
 
@@ -556,7 +557,7 @@ internal sealed class ExplorerIntegrationService
                 if (!IsDefaultOurs(ext) || !ProgIdCommandExists(ext))
                 {
                     var progId = GetProgId(ext);
-                    RegisterProgId(progId, GetFriendlyTypeName(ext), exePath, openCommand);
+                    RegisterProgId(progId, GetFriendlyTypeName(ext), exePath, openCommand, ext);
                     AssociateExtension(ext, progId);
                     EnsureOpenWithProgId(ext, progId);
                     changed = true;
@@ -599,7 +600,7 @@ internal sealed class ExplorerIntegrationService
         foreach (var ext in OpenFileExtensions)
         {
             var progId = GetProgId(ext);
-            RegisterProgId(progId, GetFriendlyTypeName(ext), exePath, openCommand);
+            RegisterProgId(progId, GetFriendlyTypeName(ext), exePath, openCommand, ext);
             AssociateExtension(ext, progId);
             RegisterContextMenuVerb(ext, exePath, openCommand);
             EnsureOpenWithProgId(ext, progId);
@@ -645,7 +646,31 @@ internal sealed class ExplorerIntegrationService
             return false;
         }
 
-        RegisterProgId(GetProgId(extension), GetFriendlyTypeName(extension), exePath, openCommand);
+        RegisterProgId(GetProgId(extension), GetFriendlyTypeName(extension), exePath, openCommand, extension);
+        return true;
+    }
+
+    private static bool UpdateProgIdIconIfNeeded(string extension, string exePath)
+    {
+        if (!ProgIdCommandExists(extension))
+        {
+            return false;
+        }
+
+        var desired = FileTypeIcons.GetShellIconValue(exePath, extension);
+        using var iconKey = Registry.CurrentUser.CreateSubKey(
+            $@"Software\Classes\{GetProgId(extension)}\DefaultIcon");
+        if (iconKey is null)
+        {
+            return false;
+        }
+
+        if (string.Equals(iconKey.GetValue("") as string, desired, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        iconKey.SetValue("", desired);
         return true;
     }
 
@@ -663,7 +688,7 @@ internal sealed class ExplorerIntegrationService
             return false;
         }
 
-        if (!string.Equals(shellKey.GetValue("Icon") as string, exePath, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(shellKey.GetValue("Icon") as string, FileTypeIcons.GetShellIconValue(exePath, extension), StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
@@ -752,14 +777,19 @@ internal sealed class ExplorerIntegrationService
             _ => "文档"
         };
 
-    private static void RegisterProgId(string progId, string friendlyName, string exePath, string openCommand)
+    private static void RegisterProgId(
+        string progId,
+        string friendlyName,
+        string exePath,
+        string openCommand,
+        string extension)
     {
         using var progIdKey = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{progId}");
         progIdKey?.SetValue("", friendlyName);
         progIdKey?.SetValue("FriendlyTypeName", friendlyName);
 
         using var iconKey = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{progId}\DefaultIcon");
-        iconKey?.SetValue("", $"\"{exePath}\",0");
+        iconKey?.SetValue("", FileTypeIcons.GetShellIconValue(exePath, extension));
 
         using var openKey = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{progId}\shell\open");
         openKey?.SetValue("", "打开(&O)");
@@ -842,7 +872,7 @@ internal sealed class ExplorerIntegrationService
             $@"Software\Classes\SystemFileAssociations\{extension}\shell\{ContextMenuVerb}";
         using var shellKey = Registry.CurrentUser.CreateSubKey(shellKeyPath);
         shellKey?.SetValue("", ViewerMenuLabel);
-        shellKey?.SetValue("Icon", exePath);
+        shellKey?.SetValue("Icon", FileTypeIcons.GetShellIconValue(exePath, extension));
 
         using var commandKey = Registry.CurrentUser.CreateSubKey($"{shellKeyPath}\\command");
         commandKey?.SetValue("", openCommand);
@@ -867,7 +897,7 @@ internal sealed class ExplorerIntegrationService
         using var caps = Registry.CurrentUser.CreateSubKey(CapabilitiesKey);
         caps?.SetValue("ApplicationName", "JHViewer");
         caps?.SetValue("ApplicationDescription", "用 JHViewer 单独打开 Markdown / JSON / XML（不进入主界面）");
-        caps?.SetValue("ApplicationIcon", $"\"{exePath}\",0");
+        caps?.SetValue("ApplicationIcon", FileTypeIcons.GetShellIconValue(exePath, ".md"));
 
         using var fileAssoc = Registry.CurrentUser.CreateSubKey(CapabilitiesKey + @"\FileAssociations");
         foreach (var ext in OpenFileExtensions)

@@ -10,13 +10,34 @@
     <AssemblyName>MarkdownContextViewer</AssemblyName>
     <Product>JHViewer</Product>
     <AssemblyTitle>JHViewer</AssemblyTitle>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <Description>JHViewer：Windows 上的 Markdown / JSON / XML 查看器。</Description>
     <PackageTags>JHViewer;MarkdownViewer;MarkdownEditer;</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Markdig" Version="0.37.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\Icons\jhviewer-md.ico">
+      <Link>icons\jhviewer-md.ico</Link>
+      <TargetPath>icons\jhviewer-md.ico</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Assets\Icons\jhviewer-json.ico">
+      <Link>icons\jhviewer-json.ico</Link>
+      <TargetPath>icons\jhviewer-json.ico</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Assets\Icons\jhviewer-xml.ico">
+      <Link>icons\jhviewer-xml.ico</Link>
+      <TargetPath>icons\jhviewer-xml.ico</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

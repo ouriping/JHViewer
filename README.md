@@ -33,9 +33,11 @@ Windows 上的 Markdown / JSON / XML 查看与编辑程序：主界面里编辑�
 JHViewer-<标签>-win-x64.zip
 ```
 
-当前版本 v0.1.1（v0.1.0 的 zip 启动时会因缺少 .NET 8 的 `System.Memory` 而直接退出，请不要使用）：
+当前版本 v0.1.2：
 
-<https://github.com/ouriping/JHViewer/releases/download/v0.1.1/JHViewer-v0.1.1-win-x64.zip>
+<https://github.com/ouriping/JHViewer/releases/download/v0.1.2/JHViewer-v0.1.2-win-x64.zip>
+
+v0.1.0 的 zip 启动时会因缺少 .NET 8 的 `System.Memory` 而直接退出，请不要使用。
 
 解压后阅读包内的 `使用说明.txt`。直接运行 `MarkdownContextViewer.exe` 进入主界面。
 
@@ -53,7 +55,8 @@ MarkdownContextViewer.exe --register
 
 - `.md`、`.markdown`、`.json`、`.xml` 的双击和右键「打开」启动单文件查看窗口。
 - 右键菜单有 **用 JHViewer 打开**，同样不打开主界面。
-- 若 Windows「默认应用」仍指向其他程序，请在系统设置里把这些扩展名改成 JHViewer。
+- 三种类型使用同一套文档图标，徽章不同：绿色 **MD**、橙色 **JSON**、蓝色 **XML**。`.markdown` 与 `.md` 共用 Markdown 图标。
+- 若 Windows「默认应用」仍指向其他程序，请在系统设置里把这些扩展名改成 JHViewer。图标没马上换掉时，再执行一次 `--register`，或重新打开资源管理器窗口。
 
 取消注册：
 
