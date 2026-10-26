@@ -17,7 +17,7 @@ public partial class MarkdownPreviewForm : Form
 
     public void LoadFile(string filePath)
     {
-        Text = $"Markdown 预览 - {Path.GetFileName(filePath)}";
+        Text = $"JHViewer - {Path.GetFileName(filePath)}";
         markdownPreviewControl.LoadMarkdownFile(filePath);
     }
 

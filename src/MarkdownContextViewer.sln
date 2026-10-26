@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarkdownPreview.Register", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
+		..\docs\单文件打开.md = ..\docs\单文件打开.md
+		..\docs\构建与发布.md = ..\docs\构建与发布.md
 		..\docs\网站访问功能设计说明.md = ..\docs\网站访问功能设计说明.md
 		..\docs\说明文档.md = ..\docs\说明文档.md
 		..\docs\预览窗格.md = ..\docs\预览窗格.md
@@ -20,6 +22,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{02EA681E-C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决方案项", "{9FA3D6BD-1EC1-3BA5-80CB-CE02773A58D5}"
 	ProjectSection(SolutionItems) = preProject
+		..\CHANGELOG.md = ..\CHANGELOG.md
+		..\CONTRIBUTING.md = ..\CONTRIBUTING.md
 		..\README.en.md = ..\README.en.md
 		..\README.md = ..\README.md
 	EndProjectSection

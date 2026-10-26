@@ -60,7 +60,23 @@ public partial class FrmMain : Form
         ApplyEngineToOpenEditors();
         RefreshStatus();
         LoadHistory();
+        TryUpgradeViewerAssociations();
         OpenFilesFromArgs();
+    }
+
+    /// <summary>
+    /// 用户曾经注册过文件关联时，把打开命令升级为单文件查看，避免右键仍进入主界面。
+    /// </summary>
+    private void TryUpgradeViewerAssociations()
+    {
+        try
+        {
+            _explorerService.UpgradeViewerAssociations(Application.ExecutablePath);
+        }
+        catch
+        {
+            // 启动时刷新关联失败不影响主界面。
+        }
     }
 
     /// <summary>
@@ -459,11 +475,12 @@ public partial class FrmMain : Form
             EditorPathStore.Save(Application.ExecutablePath);
             _explorerService.RegisterContextMenu(Application.ExecutablePath);
             MessageBox.Show(
-                "已为当前用户注册 .md / .json / .xml：\n" +
-                "· 双击与右键「打开」默认使用本软件\n" +
-                "· 右键「用 Markdown 浏览器打开」\n\n" +
-                "若系统「默认应用」仍指向其他程序，请在 Windows 设置中将上述扩展名选为本软件。",
-                "提示",
+                "已为当前用户注册 .md / .markdown / .json / .xml：\n" +
+                "· 双击、右键「打开」和「用 JHViewer 打开」只显示单文件查看窗口\n" +
+                "· 不会因此打开主界面；主界面请直接运行本程序\n" +
+                "· 预览窗格中的「编辑」仍会打开主界面\n\n" +
+                "若系统「默认应用」仍指向其他程序，请在 Windows 设置中将上述扩展名选为 JHViewer。",
+                "JHViewer",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
         }
@@ -492,8 +509,8 @@ public partial class FrmMain : Form
         {
             _explorerService.UnregisterContextMenu();
             MessageBox.Show(
-                "已取消 .md / .json / .xml 的默认打开关联与右键菜单（当前用户）。",
-                "提示",
+                "已取消 .md / .markdown / .json / .xml 的默认打开关联与右键菜单（当前用户）。",
+                "JHViewer",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
         }
