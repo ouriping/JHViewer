@@ -19,5 +19,7 @@ x86/
 *.log
 *.pdb
 artifacts/
+__pycache__/
+*.pyc
 /chm-output/Help.chw
 /chm-output
