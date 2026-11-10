@@ -5,10 +5,23 @@ internal static class Program
     private static Mutex? _mutex;
     private static CancellationTokenSource? _ipcCts;
 
+    /// <summary>
+    /// 
+    /// args参数：
+    /// --view C:\path\to\file.md C:\path\to\file2.md
+    /// --edit C:\path\to\file.md C:\path\to\file2.md
+    /// --register
+    /// --unregister
+    /// </summary>
+    /// <param name="args"></param>
     [STAThread]
     static void Main(string[] args)
     {
         ApplicationConfiguration.Initialize();
+
+        //args 格式化,转在字符串方便查看 
+        //var argsStr = string.Join(", ", args);
+        //MessageBox.Show(argsStr, "JHViewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
         var request = LaunchRequest.Parse(args);
         if (request.UnregisterAssociations)
@@ -23,6 +36,8 @@ internal static class Program
 
         if (request.ShouldOpenViewer)
         {
+            //如果想在visual studio 里调试以下，在命令行参数里填入以下参数
+            //--view "E:\Work2026\Lexus_Shanghai\LexusBatteryTrace2026\docs\使用文档\02-Web端使用手册.md" 
             SingleFileViewerHost.Run(request.ViewerFiles);
             return;
         }
@@ -67,7 +82,10 @@ internal static class Program
             _mutex = null;
         }
     }
-
+    /// <summary>
+    /// 运行关联命令
+    /// </summary>
+    /// <param name="register">true = 注册, false = 取消注册</param>
     private static void RunAssociationCommand(bool register)
     {
         try

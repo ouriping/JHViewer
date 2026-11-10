@@ -17,6 +17,12 @@ public partial class MarkdownPreviewForm : Form
 
     private readonly TabControl _documentTabs = new();
     private readonly Dictionary<TabPage, Rectangle> _closeButtonBounds = new();
+    private readonly ToolStripMenuItem _showSourceMenuItem = new("原文本(&T)")
+    {
+        CheckOnClick = true,
+        ToolTipText = "在渲染结果和 Markdown 原文之间切换"
+    };
+    private bool _exporting;
     private TabPage? _dragTab;
     private Point _dragStart;
     private bool _captionDragCandidate;
@@ -26,20 +32,28 @@ public partial class MarkdownPreviewForm : Form
     public MarkdownPreviewForm()
     {
         InitializeComponent();
+        AddViewMenuItems();
 
         Controls.Remove(markdownPreviewControl);
         _documentTabs.Dock = DockStyle.Fill;
         _documentTabs.DrawMode = TabDrawMode.OwnerDrawFixed;
-        _documentTabs.ItemSize = new Size(190, 28);
-        _documentTabs.SizeMode = TabSizeMode.Fixed;
+        _documentTabs.SizeMode = TabSizeMode.Normal;
+        // 水平留白要盖住关闭按钮，否则标题会被挤成省略号。
+        _documentTabs.Padding = new Point(32, 6);
+        _documentTabs.ShowToolTips = true;
         _documentTabs.DrawItem += DocumentTabs_DrawItem;
         _documentTabs.MouseDown += DocumentTabs_MouseDown;
         _documentTabs.MouseMove += DocumentTabs_MouseMove;
         _documentTabs.MouseUp += DocumentTabs_MouseUp;
         _documentTabs.MouseClick += DocumentTabs_MouseClick;
-        _documentTabs.SelectedIndexChanged += (_, _) => UpdateWindowTitle();
+        _documentTabs.SelectedIndexChanged += (_, _) =>
+        {
+            UpdateWindowTitle();
+            SyncSourceMenu();
+        };
         Controls.Add(_documentTabs);
-        menuStrip1.BringToFront();
+        // 填充控件放在 Z 序最前，停靠时才会排在菜单栏下方；否则标签会被菜单盖住，只露出底边。
+        _documentTabs.BringToFront();
 
         AddPreviewTab(markdownPreviewControl, "新建文档", null);
         UpdateWindowTitle();
@@ -60,8 +74,7 @@ public partial class MarkdownPreviewForm : Form
         }
 
         var fullPath = Path.GetFullPath(filePath);
-        var existing = FindOpenDocument(fullPath);
-        if (existing is not null)
+        if (FindOpenDocument(fullPath) is { } existing)
         {
             existing.Form._documentTabs.SelectedTab = existing.Page;
             existing.Form.RestoreAndActivate();
@@ -83,8 +96,7 @@ public partial class MarkdownPreviewForm : Form
     /// <summary>从文件管理器或其它入口调用，使用非模态预览窗体打开 Markdown 文件。</summary>
     public static MarkdownPreviewForm OpenFileWindow(string filePath, IWin32Window? owner = null)
     {
-        var existing = FindOpenDocument(Path.GetFullPath(filePath));
-        if (existing is not null)
+        if (FindOpenDocument(Path.GetFullPath(filePath)) is { } existing)
         {
             existing.Form._documentTabs.SelectedTab = existing.Page;
             existing.Form.RestoreAndActivate();
@@ -174,13 +186,19 @@ public partial class MarkdownPreviewForm : Form
 
         var page = _documentTabs.TabPages[e.Index];
         var selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-        using var background = new SolidBrush(selected ? SystemColors.ControlLightLight : SystemColors.Control);
-        e.Graphics.FillRectangle(background, e.Bounds);
+        var tabBounds = _documentTabs.GetTabRect(e.Index);
+        if (selected)
+        {
+            tabBounds.Inflate(2, 2);
+        }
 
-        var closeRect = GetCloseButtonBounds(e.Bounds);
+        using var background = new SolidBrush(selected ? SystemColors.ControlLightLight : SystemColors.Control);
+        e.Graphics.FillRectangle(background, tabBounds);
+
+        var closeRect = GetCloseButtonBounds(tabBounds);
         _closeButtonBounds[page] = closeRect;
-        var textRect = new Rectangle(e.Bounds.Left + 8, e.Bounds.Top + 2,
-            closeRect.Left - e.Bounds.Left - 10, e.Bounds.Height - 4);
+        var textRect = new Rectangle(tabBounds.Left + 8, tabBounds.Top + 2,
+            Math.Max(0, closeRect.Left - tabBounds.Left - 10), Math.Max(0, tabBounds.Height - 4));
         TextRenderer.DrawText(e.Graphics, page.Text, e.Font, textRect,
             selected ? SystemColors.ControlText : SystemColors.GrayText,
             TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
@@ -402,45 +420,6 @@ public partial class MarkdownPreviewForm : Form
         {
             Filter = "Markdown 文件 (*.md)|*.md|所有文件 (*.*)|*.*",
             Title = "选择要预览的 Markdown 文件",
-namespace MarkdownPreview.Shell;
-
-/// <summary>
-/// 可在 VS2022 设计器中打开的 Markdown 预览窗口，便于调试渲染效果。
-/// </summary>
-public partial class MarkdownPreviewForm : Form
-{
-    public MarkdownPreviewForm()
-    {
-        InitializeComponent();
-    }
-
-    public MarkdownPreviewForm(string filePath) : this()
-    {
-        LoadFile(filePath);
-    }
-
-    public void LoadFile(string filePath)
-    {
-        Text = $"JHViewer - {Path.GetFileName(filePath)}";
-        markdownPreviewControl.LoadMarkdownFile(filePath);
-    }
-
-    public void LoadMarkdown(string markdown, string? title = null)
-    {
-        if (!string.IsNullOrWhiteSpace(title))
-        {
-            Text = title;
-        }
-
-        markdownPreviewControl.LoadMarkdown(markdown);
-    }
-
-    private void btnOpen_Click(object? sender, EventArgs e)
-    {
-        using var dialog = new OpenFileDialog
-        {
-            Filter = "Markdown 文件 (*.md)|*.md|所有文件 (*.*)|*.*",
-            Title = "选择要预览的 Markdown 文件",
             //打开历史记录
             RestoreDirectory = true,
             CheckFileExists = true,
@@ -451,6 +430,101 @@ public partial class MarkdownPreviewForm : Form
         if (dialog.ShowDialog(this) == DialogResult.OK)
         {
             LoadFile(dialog.FileName);
+        }
+    }
+
+    private void AddViewMenuItems()
+    {
+        _showSourceMenuItem.Click += (_, _) =>
+        {
+            if (CurrentView() is not { } view)
+            {
+                _showSourceMenuItem.Checked = false;
+                return;
+            }
+
+            view.ShowSource = _showSourceMenuItem.Checked;
+        };
+
+        var exportMenu = new ToolStripMenuItem("导出(&E)");
+        exportMenu.DropDownItems.Add("PDF 文件(&P)...", null, async (_, _) => await ExportCurrentAsync(pdf: true));
+        exportMenu.DropDownItems.Add("Word 文档(&W)...", null, async (_, _) => await ExportCurrentAsync(pdf: false));
+        menuStrip1.Items.Add(_showSourceMenuItem);
+        menuStrip1.Items.Add(exportMenu);
+    }
+
+    private void SyncSourceMenu()
+    {
+        _showSourceMenuItem.Checked = CurrentView()?.ShowSource == true;
+    }
+
+    private MarkdownPreviewControl? CurrentView() =>
+        _documentTabs.SelectedTab?.Controls.OfType<MarkdownPreviewControl>().FirstOrDefault();
+
+    private async Task ExportCurrentAsync(bool pdf)
+    {
+        if (_exporting)
+        {
+            return;
+        }
+
+        var view = CurrentView();
+        if (view is null || string.IsNullOrWhiteSpace(view.MarkdownText))
+        {
+            MessageBox.Show(this, "当前标签没有可导出的 Markdown 内容。", "导出", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        var extension = pdf ? ".pdf" : ".docx";
+        var filter = pdf ? "PDF 文件 (*.pdf)|*.pdf" : "Word 文档 (*.docx)|*.docx";
+        var defaultName = string.IsNullOrWhiteSpace(view.CurrentFilePath)
+            ? "预览" + extension
+            : Path.ChangeExtension(Path.GetFileName(view.CurrentFilePath), extension);
+        using var dialog = new SaveFileDialog
+        {
+            Filter = filter,
+            FileName = defaultName,
+            Title = pdf ? "导出 PDF" : "导出 Word",
+            AddExtension = true,
+            OverwritePrompt = true,
+            RestoreDirectory = true,
+            InitialDirectory = string.IsNullOrWhiteSpace(view.CurrentFilePath)
+                ? null
+                : Path.GetDirectoryName(view.CurrentFilePath)
+        };
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+        {
+            return;
+        }
+
+        var markdown = view.MarkdownText;
+        var assetDirectory = view.AssetDirectory;
+        var outputPath = dialog.FileName;
+        _exporting = true;
+        UseWaitCursor = true;
+        try
+        {
+            await Task.Run(() =>
+            {
+                if (pdf)
+                {
+                    new MarkdownPdfExporter().Export(markdown, assetDirectory, outputPath);
+                }
+                else
+                {
+                    new MarkdownDocxExporter().Export(markdown, assetDirectory, outputPath);
+                }
+            });
+            MessageBox.Show(this, "已导出：\n" + outputPath, pdf ? "导出 PDF" : "导出 Word", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, "导出失败：" + ex.Message, pdf ? "导出 PDF" : "导出 Word", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+            UseWaitCursor = false;
+            _exporting = false;
         }
     }
 

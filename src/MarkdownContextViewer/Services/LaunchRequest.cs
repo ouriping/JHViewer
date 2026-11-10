@@ -21,7 +21,9 @@ internal sealed class LaunchRequest
 
     public bool ShouldOpenViewer =>
         !EditInMainShell && (ViewRequested || ViewerFiles.Count > 0);
-
+    /// <summary>
+    /// 
+    /// </summary>
     public bool ShouldOpenMain =>
         EditInMainShell
         || (!ViewRequested

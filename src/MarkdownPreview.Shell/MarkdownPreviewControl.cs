@@ -8,17 +8,64 @@ namespace MarkdownPreview.Shell;
 public partial class MarkdownPreviewControl : UserControl
 {
     private readonly MarkdownRenderService _renderService = new();
+    private readonly TextBox _sourceView;
+    private readonly Font _sourceFont;
     private string? _pendingHtml;
-    private string? _tempHtmlPath;
+    private string? _tempPreviewDirectory;
+    private string _markdownText = string.Empty;
 
     public MarkdownPreviewControl()
     {
         InitializeComponent();
+        _sourceFont = new Font("Microsoft YaHei UI", 10.5f);
+        _sourceView = new TextBox
+        {
+            Name = "sourceView",
+            Dock = DockStyle.Fill,
+            Multiline = true,
+            ReadOnly = true,
+            ScrollBars = ScrollBars.Both,
+            WordWrap = false,
+            AcceptsTab = true,
+            HideSelection = false,
+            BackColor = SystemColors.Window,
+            Font = _sourceFont,
+            Visible = false
+        };
+        Controls.Add(_sourceView);
         webBrowserPreview.DocumentCompleted += WebBrowserPreview_DocumentCompleted;
-        Disposed += (_, _) => CleanupTempFile();
+        Disposed += (_, _) =>
+        {
+            CleanupTempFile();
+            _sourceFont.Dispose();
+        };
     }
 
     public string? CurrentFilePath { get; private set; }
+
+    /// <summary>解析相对图片时使用的目录，通常是 Markdown 文件所在目录。</summary>
+    public string? AssetDirectory { get; private set; }
+
+    public string MarkdownText => _markdownText;
+
+    public bool ShowSource
+    {
+        get => _sourceView.Visible;
+        set
+        {
+            _sourceView.Visible = value;
+            webBrowserPreview.Visible = !value;
+            if (value)
+            {
+                _sourceView.Text = _markdownText;
+                _sourceView.BringToFront();
+            }
+            else
+            {
+                webBrowserPreview.BringToFront();
+            }
+        }
+    }
 
     public void LoadMarkdownFile(string filePath)
     {
@@ -28,17 +75,26 @@ public partial class MarkdownPreviewControl : UserControl
             return;
         }
 
-        CurrentFilePath = filePath;
-        var markdown = File.ReadAllText(filePath);
-        LoadMarkdown(markdown);
+        CurrentFilePath = Path.GetFullPath(filePath);
+        var markdown = File.ReadAllText(CurrentFilePath, Encoding.UTF8);
+        LoadMarkdown(markdown, Path.GetDirectoryName(CurrentFilePath));
     }
 
-    public void LoadMarkdown(string markdown)
+    public void LoadMarkdown(string markdown) => LoadMarkdown(markdown, AssetDirectory);
+
+    public void LoadMarkdown(string markdown, string? baseDirectory)
     {
         try
         {
-            var html = _renderService.RenderHtml(markdown);
-            NavigateHtml(html);
+            _markdownText = markdown ?? string.Empty;
+            AssetDirectory = baseDirectory;
+            if (_sourceView.Visible)
+            {
+                _sourceView.Text = _markdownText;
+            }
+
+            var html = _renderService.RenderHtml(_markdownText);
+            NavigateHtml(html, baseDirectory);
         }
         catch (Exception ex)
         {
@@ -49,37 +105,38 @@ public partial class MarkdownPreviewControl : UserControl
     public void ClearPreview()
     {
         CurrentFilePath = null;
-        NavigateHtml(_renderService.RenderHtml("_暂无预览内容_"));
+        AssetDirectory = null;
+        _markdownText = string.Empty;
+        _sourceView.Clear();
+        NavigateHtml(_renderService.RenderHtml("_暂无预览内容_"), null);
     }
 
     public void ShowStatus(string message)
     {
-        NavigateHtml(_renderService.RenderHtml($"**{message}**"));
+        NavigateHtml(_renderService.RenderHtml($"**{message}**"), null);
     }
 
-    private void NavigateHtml(string html)
+    private void NavigateHtml(string html, string? baseDirectory)
     {
         CleanupTempFile();
 
-        // 低完整性 prevhost 只能可靠写入 LocalLow\Temp；优先用 GetTempPath()。
-        var tempDir = Path.GetTempPath();
+        var root = Path.GetTempPath();
         try
         {
-            Directory.CreateDirectory(tempDir);
+            Directory.CreateDirectory(root);
         }
         catch
         {
-            tempDir = Path.Combine(
+            root = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "Low",
                 "Temp");
-            Directory.CreateDirectory(tempDir);
+            Directory.CreateDirectory(root);
         }
 
-        _tempHtmlPath = Path.Combine(tempDir, $"MarkdownContextViewer-{Guid.NewGuid():N}.html");
-        File.WriteAllText(_tempHtmlPath, html, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
-
+        _tempPreviewDirectory = Path.Combine(root, "JHViewerPreview-" + Guid.NewGuid().ToString("N"));
+        var htmlPath = MarkdownHtmlPackager.Write(html, baseDirectory, _tempPreviewDirectory);
         _pendingHtml = html;
-        webBrowserPreview.Navigate(_tempHtmlPath);
+        webBrowserPreview.Navigate(htmlPath);
     }
 
     private void WebBrowserPreview_DocumentCompleted(object? sender, WebBrowserDocumentCompletedEventArgs e)
@@ -111,25 +168,25 @@ public partial class MarkdownPreviewControl : UserControl
 
     private void CleanupTempFile()
     {
-        if (string.IsNullOrWhiteSpace(_tempHtmlPath))
+        if (string.IsNullOrWhiteSpace(_tempPreviewDirectory))
         {
             return;
         }
 
         try
         {
-            if (File.Exists(_tempHtmlPath))
+            if (Directory.Exists(_tempPreviewDirectory))
             {
-                File.Delete(_tempHtmlPath);
+                Directory.Delete(_tempPreviewDirectory, recursive: true);
             }
         }
         catch
         {
-            // ignore
+            // 浏览器可能仍占用刚才打开的页面。
         }
         finally
         {
-            _tempHtmlPath = null;
+            _tempPreviewDirectory = null;
         }
     }
 }
