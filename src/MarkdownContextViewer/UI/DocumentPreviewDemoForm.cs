@@ -20,6 +20,21 @@ public sealed partial class DocumentPreviewDemoForm : Form
 
     private LayoutMode _layout = LayoutMode.Both;
     private string? _currentPath;
+    private bool _singleFile;
+
+    /// <summary>
+    /// 资源管理器 / <c>--view</c> 打开时使用：只保留当前文件，不显示演示入口，也不依赖主界面。
+    /// </summary>
+    public void UseSingleFileChrome()
+    {
+        _singleFile = true;
+        btnDemoJson.Visible = false;
+        btnDemoXml.Visible = false;
+        btnFolder.Visible = false;
+        sep1.Visible = false;
+        StartPosition = FormStartPosition.CenterScreen;
+        Text = "JHViewer";
+    }
 
     public DocumentPreviewDemoForm()
     {
@@ -54,7 +69,8 @@ public sealed partial class DocumentPreviewDemoForm : Form
         var text = File.ReadAllText(path);
         rawView.Text = text;
         lblPath.Text = path;
-        Text = $"结构化预览 - {Path.GetFileName(path)}";
+        var fileName = Path.GetFileName(path);
+        Text = _singleFile ? $"JHViewer - {fileName}" : $"结构化预览 - {fileName}";
 
         treeView.BeginUpdate();
         try

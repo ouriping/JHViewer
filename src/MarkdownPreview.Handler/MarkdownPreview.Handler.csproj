@@ -12,9 +12,11 @@
     <AssemblyVersion>1.0.0.1</AssemblyVersion>
     <FileVersion>1.0.0.1</FileVersion>
     <Company>大白菜</Company>
-    <Product>菁华 Markdown 浏览器</Product>
+    <Product>JHViewer</Product>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Platforms>AnyCPU;x64</Platforms>
+    <!-- 让主程序 dotnet publish -r win-x64 时仍能解析此 net48 项目。 -->
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>
