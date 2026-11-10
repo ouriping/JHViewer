@@ -388,7 +388,7 @@ partial class FrmMain
         Controls.Add(menuStrip);
         MainMenuStrip = menuStrip;
         Name = "FrmMain";
-        Text = "Markdown 文件管理器";
+        Text = "JHViewer";
         menuStrip.ResumeLayout(false);
         menuStrip.PerformLayout();
         toolStrip.ResumeLayout(false);

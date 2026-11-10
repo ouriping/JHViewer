@@ -10,14 +10,14 @@ namespace MarkdownPreview.Handler;
 internal static class PreviewAbout
 {
     public const string Author = "大白菜";
-    public const string HelpUrl = "https://gitee.com/ouriping/jinghua-markdown-viewer/blob/master/docs/说明文档.md";
-    public const string ReleasesUrl = "https://gitee.com/ouriping/jinghua-markdown-viewer/releases";
+    public const string HelpUrl = "https://github.com/ouriping/JHViewer/blob/master/docs/说明文档.md";
+    public const string ReleasesUrl = "https://github.com/ouriping/JHViewer/releases";
 
     private const string LatestReleaseApi =
-        "https://gitee.com/api/v5/repos/ouriping/jinghua-markdown-viewer/releases/latest";
+        "https://api.github.com/repos/ouriping/JHViewer/releases/latest";
 
     private const string TagsApi =
-        "https://gitee.com/api/v5/repos/ouriping/jinghua-markdown-viewer/tags?page=1&per_page=1";
+        "https://api.github.com/repos/ouriping/JHViewer/tags?per_page=1";
 
     public static Version CurrentVersion =>
         Assembly.GetExecutingAssembly().GetName().Version ?? new Version(1, 0, 0, 0);
@@ -40,7 +40,7 @@ internal static class PreviewAbout
             using (var client = new WebClient())
             {
                 client.Encoding = Encoding.UTF8;
-                client.Headers[HttpRequestHeader.UserAgent] = "JinghuaMarkdownViewer-Preview";
+                client.Headers[HttpRequestHeader.UserAgent] = "JHViewer";
 
                 var release = await GetAsync(client, LatestReleaseApi, cancellationToken).ConfigureAwait(false);
                 var tag = release == null ? null : ExtractJsonString(release, "tag_name");

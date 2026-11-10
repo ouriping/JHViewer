@@ -6,12 +6,47 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>MarkdownContextViewer</RootNamespace>
+    <!-- 可执行文件名保持不变，避免破坏预览处理程序与已有注册表查找。产品名见 Product。 -->
     <AssemblyName>MarkdownContextViewer</AssemblyName>
-    <PackageTags>MarkdownViewer;MarkdownEditer;</PackageTags>
+    <Product>JHViewer</Product>
+    <AssemblyTitle>JHViewer</AssemblyTitle>
+    <Version>0.1.2</Version>
+    <Description>JHViewer：Windows 上的 Markdown / JSON / XML 查看器。</Description>
+    <PackageTags>JHViewer;MarkdownViewer;MarkdownEditer;</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Markdig" Version="0.37.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\Icons\jhviewer-md.ico">
+      <Link>icons\jhviewer-md.ico</Link>
+      <TargetPath>icons\jhviewer-md.ico</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Assets\Icons\jhviewer-json.ico">
+      <Link>icons\jhviewer-json.ico</Link>
+      <TargetPath>icons\jhviewer-json.ico</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Assets\Icons\jhviewer-xml.ico">
+      <Link>icons\jhviewer-xml.ico</Link>
+      <TargetPath>icons\jhviewer-xml.ico</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\docs\安装说明.txt">
+      <Link>使用说明.txt</Link>
+      <TargetPath>使用说明.txt</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -84,7 +119,12 @@
           SkipUnchangedFiles="true" />
   </Target>
 
-  <!-- 把 Handler / Register 输出复制到主程序目录，便于部署 -->
+  <!--
+    预览组件是 net48，输出里带有 NuGet 版 System.Memory / System.Buffers 等门面程序集。
+    不能复制到自包含发布目录的根上，否则会覆盖 .NET 8 运行时里的 System.Memory 8.0.0.0，
+    WinForms 启动时会因找不到该版本而直接退出。
+    因此统一放到 preview-handler 子目录，部署预览窗格时再从那里取。
+  -->
   <Target Name="CopyPreviewHandlerOutputs" AfterTargets="Build">
     <PropertyGroup>
       <_HandlerOut>$(MSBuildProjectDirectory)\..\MarkdownPreview.Handler\bin\$(Configuration)\net48\</_HandlerOut>
@@ -95,7 +135,21 @@
       <_RegisterFiles Include="$(_RegisterOut)MarkdownPreview.Register.exe" />
       <_RegisterFiles Include="$(_RegisterOut)MarkdownPreview.Register.exe.config" Condition="Exists('$(_RegisterOut)MarkdownPreview.Register.exe.config')" />
     </ItemGroup>
-    <Copy SourceFiles="@(_HandlerFiles)" DestinationFolder="$(TargetDir)%(RecursiveDir)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="@(_RegisterFiles)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_HandlerFiles)" DestinationFolder="$(TargetDir)preview-handler\%(RecursiveDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_RegisterFiles)" DestinationFolder="$(TargetDir)preview-handler\" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="CopyPreviewHandlerToPublishDir" AfterTargets="Publish">
+    <PropertyGroup>
+      <_HandlerOut>$(MSBuildProjectDirectory)\..\MarkdownPreview.Handler\bin\$(Configuration)\net48\</_HandlerOut>
+      <_RegisterOut>$(MSBuildProjectDirectory)\..\MarkdownPreview.Register\bin\$(Configuration)\net48\</_RegisterOut>
+    </PropertyGroup>
+    <ItemGroup>
+      <_PublishHandlerFiles Include="$(_HandlerOut)**\*.*" Exclude="$(_HandlerOut)**\*.pdb" />
+      <_PublishRegisterFiles Include="$(_RegisterOut)MarkdownPreview.Register.exe" />
+      <_PublishRegisterFiles Include="$(_RegisterOut)MarkdownPreview.Register.exe.config" Condition="Exists('$(_RegisterOut)MarkdownPreview.Register.exe.config')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PublishHandlerFiles)" DestinationFolder="$(PublishDir)preview-handler\%(RecursiveDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_PublishRegisterFiles)" DestinationFolder="$(PublishDir)preview-handler\" SkipUnchangedFiles="true" />
   </Target>
 </Project>

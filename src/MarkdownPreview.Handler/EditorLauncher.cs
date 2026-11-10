@@ -9,7 +9,7 @@ namespace MarkdownPreview.Handler;
 /// <summary>
 /// 定位 MarkdownContextViewer.exe 并用路径打开当前 Markdown。
 /// 查找顺序：注册表右键菜单 → EditorExe → 旁路/部署目录 → 向上搜索。
-/// 单实例由主程序 Mutex + Named Pipe 处理，此处只需 Process.Start。
+/// 传入 --edit，让主程序打开编辑主界面；不带该参数的文件关联只会打开单文件查看窗口。
 /// </summary>
 internal static class EditorLauncher
 {
@@ -47,7 +47,7 @@ internal static class EditorLauncher
             Process.Start(new ProcessStartInfo
             {
                 FileName = exe,
-                Arguments = "\"" + markdownPath + "\"",
+                Arguments = "--edit \"" + markdownPath + "\"",
                 WorkingDirectory = Path.GetDirectoryName(exe) ?? "",
                 UseShellExecute = false
             });
