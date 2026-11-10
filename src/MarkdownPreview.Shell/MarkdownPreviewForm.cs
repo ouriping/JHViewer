@@ -1,19 +1,26 @@
 namespace MarkdownPreview.Shell;
 
 /// <summary>
-/// Markdown 预览窗口。每个窗口可打开多个文档标签；拖动窗口与另一个预览窗口重叠后，会合并为一个带标签的窗口。
+/// Markdown 预览窗口。每个窗口可打开多个文档标签；将一个窗口的标题栏拖到另一个预览窗口上并松开时合并标签。
 /// </summary>
 public partial class MarkdownPreviewForm : Form
 {
+    private const int WmNcLButtonDown = 0x00A1;
+    private const int WmEnterSizeMove = 0x0231;
     private const int WmExitSizeMove = 0x0232;
+    private const int HtCaption = 2;
     private const int CloseButtonSize = 16;
-    private const int DragThreshold = 5;
+    private const int TabDragThreshold = 5;
+    private const int MinimumMergeWidth = 120;
+    private const int MinimumMergeHeight = 80;
+    private const double MinimumOverlapRatio = 0.30;
 
     private readonly TabControl _documentTabs = new();
-    private readonly ToolTip _tabToolTip = new();
+    private readonly Dictionary<TabPage, Rectangle> _closeButtonBounds = new();
     private TabPage? _dragTab;
     private Point _dragStart;
-    private Rectangle _closeButtonBounds;
+    private bool _captionDragCandidate;
+    private bool _windowMoveInProgress;
     private bool _merging;
 
     public MarkdownPreviewForm()
@@ -56,12 +63,8 @@ public partial class MarkdownPreviewForm : Form
         var existing = FindOpenDocument(fullPath);
         if (existing is not null)
         {
-            existing.Form.WindowState = existing.Form.WindowState == FormWindowState.Minimized
-                ? FormWindowState.Normal
-                : existing.Form.WindowState;
             existing.Form._documentTabs.SelectedTab = existing.Page;
-            existing.Form.Show();
-            existing.Form.Activate();
+            existing.Form.RestoreAndActivate();
             return;
         }
 
@@ -84,11 +87,7 @@ public partial class MarkdownPreviewForm : Form
         if (existing is not null)
         {
             existing.Form._documentTabs.SelectedTab = existing.Page;
-            existing.Form.WindowState = existing.Form.WindowState == FormWindowState.Minimized
-                ? FormWindowState.Normal
-                : existing.Form.WindowState;
-            existing.Form.Show();
-            existing.Form.Activate();
+            existing.Form.RestoreAndActivate();
             return existing.Form;
         }
 
@@ -104,6 +103,22 @@ public partial class MarkdownPreviewForm : Form
         }
 
         return form;
+    }
+
+    private void RestoreAndActivate()
+    {
+        if (WindowState == FormWindowState.Minimized)
+        {
+            WindowState = FormWindowState.Normal;
+        }
+
+        if (!Visible)
+        {
+            Show();
+        }
+
+        Activate();
+        BringToFront();
     }
 
     private void AddPreviewTab(MarkdownPreviewControl view, string title, string? filePath)
@@ -131,7 +146,8 @@ public partial class MarkdownPreviewForm : Form
 
             foreach (TabPage page in previewForm._documentTabs.TabPages)
             {
-                if (page.Tag is string path && string.Equals(Path.GetFullPath(path), fullPath, StringComparison.OrdinalIgnoreCase))
+                if (page.Tag is string path
+                    && string.Equals(Path.GetFullPath(path), fullPath, StringComparison.OrdinalIgnoreCase))
                 {
                     return (previewForm, page);
                 }
@@ -161,20 +177,23 @@ public partial class MarkdownPreviewForm : Form
         using var background = new SolidBrush(selected ? SystemColors.ControlLightLight : SystemColors.Control);
         e.Graphics.FillRectangle(background, e.Bounds);
 
-        var closeRect = new Rectangle(e.Bounds.Right - CloseButtonSize - 5, e.Bounds.Top + (e.Bounds.Height - CloseButtonSize) / 2, CloseButtonSize, CloseButtonSize);
-        var textRect = new Rectangle(e.Bounds.Left + 8, e.Bounds.Top + 2, closeRect.Left - e.Bounds.Left - 10, e.Bounds.Height - 4);
+        var closeRect = GetCloseButtonBounds(e.Bounds);
+        _closeButtonBounds[page] = closeRect;
+        var textRect = new Rectangle(e.Bounds.Left + 8, e.Bounds.Top + 2,
+            closeRect.Left - e.Bounds.Left - 10, e.Bounds.Height - 4);
         TextRenderer.DrawText(e.Graphics, page.Text, e.Font, textRect,
             selected ? SystemColors.ControlText : SystemColors.GrayText,
             TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
         TextRenderer.DrawText(e.Graphics, "×", e.Font, closeRect,
             selected ? SystemColors.ControlText : SystemColors.GrayText,
             TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-
-        if (selected)
-        {
-            _closeButtonBounds = closeRect;
-        }
     }
+
+    private static Rectangle GetCloseButtonBounds(Rectangle tabBounds) => new(
+        tabBounds.Right - CloseButtonSize - 5,
+        tabBounds.Top + (tabBounds.Height - CloseButtonSize) / 2,
+        CloseButtonSize,
+        CloseButtonSize);
 
     private void DocumentTabs_MouseDown(object? sender, MouseEventArgs e)
     {
@@ -186,12 +205,17 @@ public partial class MarkdownPreviewForm : Form
         var index = HitTab(e.Location);
         _dragTab = index >= 0 ? _documentTabs.TabPages[index] : null;
         _dragStart = e.Location;
+        if (_dragTab is not null && _closeButtonBounds.TryGetValue(_dragTab, out var closeBounds)
+            && closeBounds.Contains(e.Location))
+        {
+            _dragTab = null;
+        }
     }
 
     private void DocumentTabs_MouseMove(object? sender, MouseEventArgs e)
     {
         if (_dragTab is null || e.Button != MouseButtons.Left
-            || (Math.Abs(e.X - _dragStart.X) < DragThreshold && Math.Abs(e.Y - _dragStart.Y) < DragThreshold))
+            || (Math.Abs(e.X - _dragStart.X) < TabDragThreshold && Math.Abs(e.Y - _dragStart.Y) < TabDragThreshold))
         {
             return;
         }
@@ -220,9 +244,13 @@ public partial class MarkdownPreviewForm : Form
         }
 
         var page = _documentTabs.TabPages[index];
-        if (e.Button == MouseButtons.Left && page == _documentTabs.SelectedTab && _closeButtonBounds.Contains(e.Location))
+        if (e.Button == MouseButtons.Left)
         {
-            CloseTab(page);
+            if (_closeButtonBounds.TryGetValue(page, out var closeBounds) && closeBounds.Contains(e.Location))
+            {
+                CloseTab(page);
+            }
+
             return;
         }
 
@@ -256,6 +284,7 @@ public partial class MarkdownPreviewForm : Form
             return;
         }
 
+        _closeButtonBounds.Remove(page);
         _documentTabs.TabPages.Remove(page);
         page.Dispose();
         if (_documentTabs.TabCount == 0)
@@ -272,6 +301,7 @@ public partial class MarkdownPreviewForm : Form
     {
         foreach (TabPage page in _documentTabs.TabPages.Cast<TabPage>().Where(page => page != keep).ToArray())
         {
+            _closeButtonBounds.Remove(page);
             _documentTabs.TabPages.Remove(page);
             page.Dispose();
         }
@@ -282,23 +312,55 @@ public partial class MarkdownPreviewForm : Form
 
     protected override void WndProc(ref Message m)
     {
-        base.WndProc(ref m);
-        if (m.Msg == WmExitSizeMove && !_merging)
+        // 仅由标题栏拖动触发合并；调整窗口大小不会触发合并。
+        if (m.Msg == WmNcLButtonDown && m.WParam.ToInt32() == HtCaption)
         {
-            MergeWithOverlappedPreviewWindow();
+            _captionDragCandidate = true;
+        }
+
+        if (m.Msg == WmEnterSizeMove)
+        {
+            _windowMoveInProgress = _captionDragCandidate;
+        }
+
+        base.WndProc(ref m);
+
+        if (m.Msg == WmExitSizeMove)
+        {
+            var shouldCheckMerge = _windowMoveInProgress && _captionDragCandidate;
+            _windowMoveInProgress = false;
+            _captionDragCandidate = false;
+            if (shouldCheckMerge && !_merging && WindowState == FormWindowState.Normal)
+            {
+                MergeWithOverlappedPreviewWindow();
+            }
         }
     }
 
     private void MergeWithOverlappedPreviewWindow()
     {
         var target = Application.OpenForms.OfType<MarkdownPreviewForm>()
-            .FirstOrDefault(form => form != this && !form.IsDisposed && form.Visible && form.Bounds.IntersectsWith(Bounds));
-        if (target is null)
+            .Where(form => form != this && !form.IsDisposed && form.Visible
+                && form.WindowState == FormWindowState.Normal)
+            .Select(form => new { Form = form, Overlap = Rectangle.Intersect(Bounds, form.Bounds) })
+            .Where(candidate => IsIntentionalOverlap(candidate.Overlap, Bounds, candidate.Form.Bounds))
+            .OrderByDescending(candidate => (long)candidate.Overlap.Width * candidate.Overlap.Height)
+            .Select(candidate => candidate.Form)
+            .FirstOrDefault();
+
+        target?.AbsorbTabs(this);
+    }
+
+    private static bool IsIntentionalOverlap(Rectangle overlap, Rectangle first, Rectangle second)
+    {
+        if (overlap.Width < MinimumMergeWidth || overlap.Height < MinimumMergeHeight)
         {
-            return;
+            return false;
         }
 
-        target.AbsorbTabs(this);
+        var overlapArea = (long)overlap.Width * overlap.Height;
+        var smallerWindowArea = Math.Min((long)first.Width * first.Height, (long)second.Width * second.Height);
+        return smallerWindowArea > 0 && overlapArea >= smallerWindowArea * MinimumOverlapRatio;
     }
 
     private void AbsorbTabs(MarkdownPreviewForm source)
@@ -319,6 +381,7 @@ public partial class MarkdownPreviewForm : Form
             source._documentTabs.TabPages.Remove(page);
             if (duplicate is null)
             {
+                source._closeButtonBounds.Remove(page);
                 _documentTabs.TabPages.Add(page);
                 _documentTabs.SelectedTab = page;
             }
@@ -330,7 +393,7 @@ public partial class MarkdownPreviewForm : Form
 
         UpdateWindowTitle();
         source.Close();
-        Activate();
+        RestoreAndActivate();
     }
 
     private void btnOpen_Click(object? sender, EventArgs e)
@@ -358,11 +421,5 @@ public partial class MarkdownPreviewForm : Form
         {
             view.LoadMarkdownFile(path);
         }
-    }
-
-    protected override void OnFormClosed(FormClosedEventArgs e)
-    {
-        _tabToolTip.Dispose();
-        base.OnFormClosed(e);
     }
 }
